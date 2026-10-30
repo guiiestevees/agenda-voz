@@ -236,6 +236,19 @@
   .checkin-txt b { font-size: 16px; }
   .checkin-txt small { color: var(--muted); font-size: 13px; }
   .checkin-btn { flex: none; border: 0; border-radius: 12px; padding: 12px 14px; background: var(--accent); color: #fff; font: inherit; font-weight: 800; cursor: pointer; box-shadow: 0 4px 14px rgba(224,89,42,.35); }
+  .seq-habito { color: var(--accent); font-weight: 700; }
+  .desafio { margin-top: 10px; padding: 14px 16px; border-radius: 18px; background: var(--card); border: 1px solid var(--line); box-shadow: var(--shadow); }
+  .desafio.ganho { border-color: var(--ok); }
+  .desafio-topo { display: flex; justify-content: space-between; align-items: center; }
+  .desafio-rot { font-size: 12px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+  .desafio-premio { font-size: 13px; font-weight: 800; color: var(--accent); background: var(--accent-soft); padding: 3px 9px; border-radius: 999px; }
+  .desafio.ganho .desafio-premio { color: var(--ok); background: none; }
+  .desafio-txt { font-size: 18px; font-weight: 800; margin: 4px 0 2px; }
+  .desafio-sub { font-size: 12px; color: var(--muted); }
+  .chip.destaque { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .compartilhar h3 { margin-bottom: 10px; }
+  .card-prev { display: block; width: 62%; max-width: 260px; margin: 4px auto 0; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.3); aspect-ratio: 9 / 16; background: var(--bg); }
+  .dica-salvar { font-size: 13px; text-align: center; margin-top: 10px !important; }
   .titulo-card {
     width: 100%; display: flex; align-items: center; gap: 14px; margin-top: 10px; padding: 14px 16px; border-radius: 18px;
     background: var(--card); border: 1px solid var(--line); box-shadow: var(--shadow); color: var(--text); font: inherit; text-align: left; cursor: pointer;
@@ -656,10 +669,25 @@ function cartao({ ev: e, inicio }, agora) {
       <div class="hora">${fmtHora(inicio)}</div>
       <div class="info">
         <div class="titulo">${esc(e.titulo)}</div>
-        <div class="lembrete">${e.lembreteMin !== null ? '🔔 ' : ''}${fmtLembrete(e.lembreteMin)}${e.repetir ? ' · 🔁 ' + fmtRepetir(e.repetir) : ''}</div>
+        <div class="lembrete">${seqHabitoHtml(e)}${e.lembreteMin !== null ? '🔔 ' : ''}${fmtLembrete(e.lembreteMin)}${e.repetir ? ' · 🔁 ' + fmtRepetir(e.repetir) : ''}</div>
       </div>
     </div>`;
 }
+// Hábito = compromisso que se repete (todo dia ou toda semana). Conta quantas vezes seguidas foi feito.
+function sequenciaHabito(ev) {
+  if (!ev.repetir || !['diaria', 'semanal'].includes(ev.repetir.freq)) return 0;
+  const hoje = inicioDoDia(new Date()), comeco = inicioDoDia(new Date(ev.inicio));
+  let n = 0;
+  for (let i = 0, d = hoje; i < 400 && d >= comeco; i++, d = maisDias(d, -1)) {
+    if (!caiNoDia(ev, d) || (ev.excecoes || []).includes(chaveDia(d))) continue;
+    const feito = (ev.feitos || []).includes(chaveDia(d));
+    if (!feito && i === 0) continue;   // hoje ainda dá tempo
+    if (!feito) break;
+    n++;
+  }
+  return n;
+}
+const seqHabitoHtml = (ev) => { const n = sequenciaHabito(ev); return n >= 2 ? `<span class="seq-habito">🔥 ${n} seguidas</span> ` : ''; };
 const livre = (de, ate) => `<div class="livre">Livre das ${fmtH(de)} às ${fmtH(ate)}</div>`;
 const linhaAgora = (agora) => `<div class="agora"><span></span>agora · ${fmtHora(agora)}<span></span></div>`;
 
@@ -728,9 +756,11 @@ function telaHoje() {
       </div>
     </div>
     ${htmlTitulo()}
+    ${htmlDesafio()}
     <div class="chips">
-      <span class="chip">✓ ${feitosSemana} feito${feitosSemana === 1 ? '' : 's'} na semana</span>
-      <button class="chip" data-ir="foco">🍅 ${focosHoje} foco${focosHoje === 1 ? '' : 's'} hoje</button>
+      <button class="chip destaque" data-compartilhar>📸 Compartilhar meu dia</button>
+      <span class="chip">✓ ${feitosSemana} na semana</span>
+      <button class="chip" data-ir="foco">🍅 ${focosHoje} hoje</button>
     </div>`;
   html += `<section class="grupo"><h2>Hoje</h2>${linhaDoTempo(hoje, agora, true)}</section>`;
   for (let i = 1; i <= 7; i++) {
@@ -892,6 +922,7 @@ let visao = lerPref('agenda.visao', 'semana');   // dentro da aba Semana: 'seman
 if (aba === 'mes') { aba = 'semana'; visao = 'mes'; }
 
 function render() {
+  verificarDesafio();
   const lista = document.getElementById('lista');
   const gradeAnt = document.getElementById('grade3');
   const pos = gradeAnt && !rolarParaDia ? { l: gradeAnt.scrollLeft, t: gradeAnt.scrollTop } : null;
@@ -941,9 +972,10 @@ document.querySelectorAll('[data-visao]').forEach(b => b.onclick = () => {
 });
 window.addEventListener('resize', () => { if (aba === 'semana') render(); });
 document.getElementById('lista').addEventListener('click', (ev) => {
-  const alvo = ev.target.closest('[data-checkin], [data-check], [data-niveis], [data-id], [data-dia], [data-nav], [data-ir]');
+  const alvo = ev.target.closest('[data-compartilhar], [data-checkin], [data-check], [data-niveis], [data-id], [data-dia], [data-nav], [data-ir]');
   if (!alvo) return;
-  if ('checkin' in alvo.dataset) fazerCheckin(alvo);
+  if ('compartilhar' in alvo.dataset) abrirCompartilhar();
+  else if ('checkin' in alvo.dataset) fazerCheckin(alvo);
   else if (alvo.dataset.check) marcarFeito(alvo);
   else if ('niveis' in alvo.dataset) abrirNiveis();
   else if (alvo.dataset.ir) { ev.preventDefault(); irPara(alvo.dataset.ir); }
@@ -1017,7 +1049,7 @@ function marcarFeito(botao) {
       xp.bonus = [...xp.bonus.slice(-60), hoje];
       setTimeout(() => ganhar(PONTOS.diaCompleto, { x: innerWidth / 2, y: innerHeight / 3 }), 400);
     }
-    if (diaCompleto) setTimeout(() => { confete(innerWidth / 2, innerHeight / 3, true); toast(`🎉 Dia concluído! +${PONTOS.diaCompleto} de bônus`, 4000); }, 250);
+    if (diaCompleto) setTimeout(() => { confete(innerWidth / 2, innerHeight / 3, true); toast(`🎉 Dia concluído! +${PONTOS.diaCompleto} de bônus. Que tal compartilhar? 📸`, 5000); }, 250);
   }
   setTimeout(render, 700);
 }
@@ -1296,6 +1328,146 @@ function abrirNiveis() {
       <div class="botoes"><button class="primario" id="bOk">Fechar</button></div>
     </div>`);
   document.getElementById('bOk').onclick = fecharFolha;
+}
+
+// ---------- Desafio da semana: um por semana, muda todo domingo ----------
+const PREMIO_DESAFIO = 30;
+const naSemana = (diaK, ini, fim) => diaK >= chaveDia(ini) && diaK < chaveDia(fim);
+const DESAFIOS = [
+  { meta: 15, texto: (n) => `Conclua ${n} compromissos`, medir: (ini, fim) => ocorrencias(ini, fim).filter(o => estaFeito(o.ev, o.inicio)).length },
+  { meta: 6, texto: (n) => `Faça ${n} focos`, medir: (ini, fim) => focos.filter(f => naSemana(f.dia, ini, fim)).length },
+  { meta: 6, texto: (n) => `Faça check-in em ${n} dias`, medir: (ini, fim) => xp.checkins.filter(d => naSemana(d, ini, fim)).length },
+  { meta: 150, texto: (n) => `Some ${n} minutos de foco`, medir: (ini, fim) => focos.filter(f => naSemana(f.dia, ini, fim)).reduce((s, f) => s + f.min, 0) },
+  { meta: 3, texto: (n) => `Complete ${n} dias inteiros`, medir: (ini, fim) => xp.bonus.filter(d => naSemana(d, ini, fim)).length },
+];
+function desafioDaSemana() {
+  const hoje = inicioDoDia(new Date()), ini = maisDias(hoje, -hoje.getDay()), fim = maisDias(ini, 7);
+  const d = DESAFIOS[Math.floor(ini.getTime() / (7 * 86400000)) % DESAFIOS.length];
+  return { ...d, chave: chaveDia(ini), feito: Math.min(d.medir(ini, fim), d.meta), faltamDias: 7 - hoje.getDay() };
+}
+function verificarDesafio() {
+  const d = desafioDaSemana();
+  xp.desafios = xp.desafios || [];
+  if (d.feito < d.meta || xp.desafios.includes(d.chave)) return;
+  xp.desafios = [...xp.desafios.slice(-60), d.chave];
+  salvarXp();
+  setTimeout(() => {
+    tocarSom(true);
+    confete(innerWidth / 2, innerHeight / 3, true);
+    ganhar(PREMIO_DESAFIO, { x: innerWidth / 2, y: innerHeight / 3 });
+    toast(`🎯 Desafio da semana concluído! +${PREMIO_DESAFIO} pontos`, 4500);
+  }, 900);
+}
+function htmlDesafio() {
+  const d = desafioDaSemana(), ganho = (xp.desafios || []).includes(d.chave);
+  return `
+    <div class="desafio ${ganho ? 'ganho' : ''}">
+      <div class="desafio-topo"><span class="desafio-rot">🎯 Desafio da semana</span><span class="desafio-premio">+${PREMIO_DESAFIO} pts</span></div>
+      <div class="desafio-txt">${d.texto(d.meta)}</div>
+      <div class="titulo-barra"><i style="width:${Math.round(d.feito / d.meta * 100)}%"></i></div>
+      <div class="desafio-sub">${ganho ? '✅ Concluído! Novo desafio no domingo.' : `${d.feito} de ${d.meta} · ${d.faltamDias === 1 ? 'último dia!' : `faltam ${d.faltamDias} dias`}`}</div>
+    </div>`;
+}
+
+// ---------- Card para compartilhar (Stories) ----------
+const RE_TREINO = /academia|treino|muscula|corrida|correr|pilates|crossfit|yoga|ioga|futebol|natacao|bike|funcional|caminhada|luta|jiu|boxe|danca/;
+const fmtMin = (m) => m >= 60 ? `${Math.floor(m / 60)}h${m % 60 ? pad(m % 60) : ''}` : `${m} min`;
+function dadosCard(tipo) {
+  const hoje = inicioDoDia(new Date());
+  const ini = tipo === 'semana' ? maisDias(hoje, -hoje.getDay()) : hoje, fim = maisDias(hoje, 1);
+  const ocs = ocorrencias(ini, fim), feitos = ocs.filter(o => estaFeito(o.ev, o.inicio));
+  const treinos = feitos.filter(o => RE_TREINO.test(normalizar(o.ev.titulo)));
+  const focoMin = focos.filter(f => naSemana(f.dia, ini, fim)).reduce((s, f) => s + f.min, 0);
+  const completo = ocs.length > 0 && feitos.length === ocs.length;
+  const semana = tipo === 'semana';
+  const frase = completo ? (semana ? 'Semana merecida 💪' : 'Dia merecido 💪')
+    : feitos.length >= (semana ? 10 : 3) || focoMin >= 100 ? (semana ? 'Semana produtiva ⚡' : 'Dia produtivo ⚡') : (semana ? 'Semana em evolução 🌱' : 'Um passo por dia 🌱');
+  const itens = [];
+  if (feitos.length) itens.push(['✅', `${feitos.length}`, `compromisso${feitos.length > 1 ? 's' : ''} feito${feitos.length > 1 ? 's' : ''}`]);
+  if (focoMin) itens.push(['⏱️', fmtMin(focoMin), 'de foco']);
+  if (treinos.length) itens.push(['🏋️', semana ? `${treinos.length}` : '✓', semana ? `treino${treinos.length > 1 ? 's' : ''}` : 'treino feito']);
+  if (!itens.length) itens.push(['📅', '✓', 'dia organizado']);
+  const periodo = semana
+    ? `Semana de ${ini.getDate()}/${pad(ini.getMonth() + 1)} a ${hoje.getDate()}/${pad(hoje.getMonth() + 1)}`
+    : maiuscula(fmtDataLonga(hoje));
+  return { periodo, frase, itens, completo, titulo: tituloDe(xp.pontos), fogo: sequencia(), semana };
+}
+function desenharCard(tipo) {
+  const W = 1080, H = 1920, c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const g = c.getContext('2d'), d = dadosCard(tipo);
+  const fonte = (peso, tam) => `${peso} ${tam}px -apple-system, "SF Pro Display", system-ui, "Segoe UI", Roboto, sans-serif`;
+  const caber = (texto, peso, tam, max) => { do { g.font = fonte(peso, tam); tam -= 4; } while (g.measureText(texto).width > max && tam > 20); };
+  const caixa = (x, y, w, h, r) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); };
+  // fundo
+  const grad = g.createLinearGradient(0, 0, W, H);
+  if (d.completo) { grad.addColorStop(0, '#3fb37a'); grad.addColorStop(.55, '#2f8a5b'); grad.addColorStop(1, '#1f5f40'); }
+  else { grad.addColorStop(0, '#f2a03d'); grad.addColorStop(.45, '#e0592a'); grad.addColorStop(1, '#b23a14'); }
+  g.fillStyle = grad; g.fillRect(0, 0, W, H);
+  g.fillStyle = 'rgba(255,255,255,.08)';
+  g.beginPath(); g.arc(960, 220, 330, 0, Math.PI * 2); g.fill();
+  g.beginPath(); g.arc(80, 1780, 420, 0, Math.PI * 2); g.fill();
+  g.textAlign = 'center'; g.textBaseline = 'alphabetic'; g.fillStyle = '#fff';
+  // topo
+  g.globalAlpha = .85; caber(d.periodo.toUpperCase(), 700, 42, 900); g.fillText(d.periodo.toUpperCase(), W / 2, 200); g.globalAlpha = 1;
+  caber(d.frase, 900, 112, 960); g.fillText(d.frase, W / 2, 340);
+  // título
+  g.font = fonte(400, 250); g.fillText(d.titulo.emoji, W / 2, 660);
+  g.globalAlpha = .9; g.font = fonte(600, 50); g.fillText(d.semana ? 'Nesta semana eu fui' : 'Hoje eu fui', W / 2, 770); g.globalAlpha = 1;
+  caber(d.titulo.nome, 900, 104, 960); g.fillText(d.titulo.nome, W / 2, 880);
+  // fogo
+  if (d.fogo) {
+    const txt = `🔥 ${d.fogo} dia${d.fogo > 1 ? 's' : ''} seguido${d.fogo > 1 ? 's' : ''}`;
+    g.font = fonte(800, 50); const w = g.measureText(txt).width + 80;
+    g.fillStyle = 'rgba(255,255,255,.2)'; caixa((W - w) / 2, 935, w, 96, 48); g.fill();
+    g.fillStyle = '#fff'; g.fillText(txt, W / 2, 1000);
+  }
+  // números
+  let y = 1110;
+  for (const [ico, num, rot] of d.itens) {
+    g.fillStyle = 'rgba(255,255,255,.16)'; caixa(110, y, W - 220, 170, 40); g.fill();
+    g.fillStyle = '#fff'; g.textAlign = 'left';
+    g.font = fonte(400, 80); g.fillText(ico, 160, y + 115);
+    g.font = fonte(900, 88); g.fillText(num, 290, y + 118);
+    const wn = g.measureText(num).width;
+    g.font = fonte(600, 48); g.globalAlpha = .92; g.fillText(rot, 290 + wn + 26, y + 112); g.globalAlpha = 1;
+    g.textAlign = 'center'; y += 200;
+  }
+  // rodapé
+  g.globalAlpha = .85; g.font = fonte(700, 42); g.fillText('feito com Agenda por Voz 🎙️', W / 2, 1830); g.globalAlpha = 1;
+  return c;
+}
+let arquivoCard = null;
+function prepararCard(tipo) {
+  const c = desenharCard(tipo);
+  document.getElementById('cardImg').src = c.toDataURL('image/png');
+  document.querySelectorAll('[data-card]').forEach(b => b.classList.toggle('ativa', b.dataset.card === tipo));
+  arquivoCard = null;
+  c.toBlob(b => { arquivoCard = new File([b], tipo === 'semana' ? 'minha-semana.png' : 'meu-dia.png', { type: 'image/png' }); }, 'image/png');
+}
+function abrirCompartilhar() {
+  abrirFolha(`
+    <div class="compartilhar">
+      <h3>Compartilhar</h3>
+      <div class="visoes"><button data-card="dia">Meu dia</button><button data-card="semana">Minha semana</button></div>
+      <img id="cardImg" class="card-prev" alt="Card para compartilhar">
+      <div class="botoes"><button id="bFechar">Fechar</button><button class="primario" id="bShare">Compartilhar 📸</button></div>
+      <p class="dica-salvar">Dica: no Instagram, escolha “Stories”. Você também pode tocar e segurar na imagem para salvar.</p>
+    </div>`);
+  document.querySelectorAll('[data-card]').forEach(b => b.onclick = () => prepararCard(b.dataset.card));
+  document.getElementById('bFechar').onclick = fecharFolha;
+  document.getElementById('bShare').onclick = async () => {
+    if (!arquivoCard) { toast('Preparando a imagem…'); return; }
+    if (navigator.canShare && navigator.canShare({ files: [arquivoCard] })) {
+      try { await navigator.share({ files: [arquivoCard] }); } catch {}
+    } else {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(arquivoCard); a.download = arquivoCard.name;
+      document.body.appendChild(a); a.click(); a.remove();
+      toast('Imagem salva. Agora é só postar!');
+    }
+  };
+  prepararCard('dia');
 }
 
 // ---------- Secretária: entende a frase com IA e executa ----------
