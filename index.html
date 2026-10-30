@@ -166,6 +166,7 @@
     <li>Toque no botão abaixo e depois em <b>Adicionar Atalho</b>.
       <a class="instalar" href="https://www.icloud.com/shortcuts/7935ee07c5ac46bea2381cffcf53d948">⬇️ Instalar atalho “Anotar Compromisso”</a></li>
     <li>Vá em <b>Ajustes → Acessibilidade → Toque → Toque Traseiro → Toque Duplo</b> e escolha <b>Anotar Compromisso</b> (lá embaixo, em Atalhos).</li>
+    <li>Na primeira vez que usar, o iPhone pede permissão para o atalho abrir a agenda: toque em <b>Permitir</b>.</li>
   </ol>
   <p style="color:var(--muted);margin:0">Pronto: 2 toques atrás → fale com calma → toque em “Concluído” → o compromisso aparece aqui já salvo. Também funciona dizendo “E aí Siri, Anotar Compromisso”.</p>
 </details>
@@ -228,8 +229,13 @@ function interpretar(fraseOriginal, agora = new Date()) {
     }
     remover(m);
   }
+  // "me lembra de tomar remédio às 8" → é o próprio lembrete, avisa na hora
+  if ((m = /,?\s*(?:\be\s+)?\b(?:me|mim)\s+(?:lembr|avis)\w*(?:\s+me)?\s+(?:de|que|da|do)\b/.exec(n))) {
+    if (lembreteMin === null) lembreteMin = 0;
+    remover(m);
+  }
   // "me lembre" sem quantidade → lembrete padrão de 15 min
-  if ((m = /,?\s*(?:\be\s+)?me\s+(?:lembr|avis)\w*/.exec(n))) {
+  if ((m = /,?\s*(?:\be\s+)?\b(?:me|mim)\s+(?:lembr|avis)\w*/.exec(n))) {
     if (lembreteMin === null) lembreteMin = 15;
     remover(m);
   }
@@ -314,10 +320,16 @@ function interpretar(fraseOriginal, agora = new Date()) {
   const inicio = new Date(data); inicio.setHours(hora, minuto, 0, 0);
 
   // Título: o que sobrou, sem palavras de enchimento
-  const ENCHIMENTO_INICIO = new Set(['eu','tenho','tem','vou','ter','marca','marcar','marque','agenda','agendar','agende','anota','anotar','anote','coloca','colocar','coloque','cria','criar','crie','adiciona','adicionar','adicione','lembrete','compromisso','evento','um','uma','de','que','preciso','por','favor','ai','e','o','a','os','as','para','pra','no','na']);
-  const ENCHIMENTO_FIM = new Set(['e','as','a','o','no','na','de','do','da','para','pra','com','me','por','favor','feira','em']);
+  // Muletas e pedaços da fala que nunca fazem parte do nome do compromisso
+  for (const re of [/\bpor\s+favor\b/, /\bobrigad[oa]\b/, /\b(?:ta|ok|ne|beleza|tipo|entao|olha|oi|hum|ah|bom)\b(?=\s|$|[,.?!])/, /\ba\s+gente\s+(?:tem|vai)\b/]) {
+    while ((m = re.exec(n))) remover(m);
+  }
+  const ENCHIMENTO_INICIO = new Set(['eu','mim','me','nos','tenho','tem','temos','tinha','vou','vai','ter','preciso','precisa','marca','marcar','marque','agenda','agendar','agende','anota','anotar','anote','coloca','colocar','coloque','cria','criar','crie','adiciona','adicionar','adicione','salva','salvar','lembra','lembre','lembrar','lembrete','avisa','avise','esquecer','nao','compromisso','evento','um','uma','de','que','ai','la','e','o','a','os','as','para','pra','no','na','com']);
+  const ENCHIMENTO_FIM = new Set(['e','as','a','o','os','no','na','de','do','da','para','pra','com','me','mim','eu','que','feira','em','ai','la','tenho','tem']);
   let palavras = original.replace(/[,.;!?]+/g, ' ').split(/\s+/).filter(Boolean);
   while (palavras.length && ENCHIMENTO_INICIO.has(normalizar(palavras[0]))) palavras.shift();
+  // "ir ao médico" → "Médico", "ir na academia" → "Academia"
+  if (palavras.length > 2 && normalizar(palavras[0]) === 'ir' && /^(ao|a|no|na|pro|pra|num|numa)$/.test(normalizar(palavras[1]))) palavras.splice(0, 2);
   while (palavras.length && ENCHIMENTO_FIM.has(normalizar(palavras.at(-1)))) palavras.pop();
   let titulo = palavras.join(' ') || 'Compromisso';
   titulo = titulo[0].toUpperCase() + titulo.slice(1);
