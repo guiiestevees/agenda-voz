@@ -7,6 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Agenda">
 <title>Agenda por Voz</title>
+<script>try { document.documentElement.dataset.tema = localStorage.getItem('agenda.tema') || 'indigo'; } catch { document.documentElement.dataset.tema = 'indigo'; }</script>
 <style>
   :root {
     --bg: #f6f5f2;
@@ -16,8 +17,18 @@
     --line: #e6e3dc;
     --accent: #e0592a;
     --accent-soft: #fbe8df;
+    --accent-rgb: 224,89,42;
+    --grad-a: #f2a03d; --grad-b: #e0592a; --grad-c: #b23a14;
     --ok: #2f8a5b;
     --shadow: 0 1px 2px rgba(0,0,0,.05), 0 4px 16px rgba(0,0,0,.06);
+    /* o fogo da sequência é sempre laranja, em qualquer tema */
+    --fogo-a: #f2a03d; --fogo-b: #e0592a; --fogo-rgb: 224,89,42;
+  }
+  :root[data-tema="indigo"] {
+    --bg: #f5f6fb; --card: #ffffff; --text: #1b1d2e; --muted: #6e7191; --line: #e3e5f0;
+    --accent: #5b5fef; --accent-soft: #ecedfd; --accent-rgb: 91,95,239;
+    --grad-a: #8e91f8; --grad-b: #5b5fef; --grad-c: #3b3dc8;
+    --ok: #22a06b;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -28,8 +39,14 @@
       --line: #2f2d2a;
       --accent: #f07444;
       --accent-soft: #3a2419;
+      --accent-rgb: 240,116,68;
       --ok: #5cc28d;
       --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.3);
+    }
+    :root[data-tema="indigo"] {
+      --bg: #0f1020; --card: #1a1b2e; --text: #eef0ff; --muted: #9a9cc0; --line: #2a2c47;
+      --accent: #8386ff; --accent-soft: #262860; --accent-rgb: 131,134,255;
+      --ok: #4cc38a;
     }
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -80,7 +97,7 @@
     color: var(--accent); font: 700 11px/1.2 -apple-system, sans-serif; }
   .mic {
     width: 62px; height: 62px; margin-top: -28px; border-radius: 50%; border: 4px solid var(--card);
-    background: var(--accent); color: #fff; box-shadow: 0 6px 18px rgba(224,89,42,.4); display: grid; place-items: center;
+    background: var(--accent); color: #fff; box-shadow: 0 6px 18px rgba(var(--accent-rgb),.4); display: grid; place-items: center;
   }
   .mic svg { width: 28px; height: 28px; }
 
@@ -220,7 +237,7 @@
 
   .hero {
     display: flex; gap: 16px; align-items: center; padding: 18px; border-radius: 22px; color: #fff;
-    background: linear-gradient(135deg, #f07444 0%, #e0592a 45%, #f2a03d 100%); box-shadow: 0 10px 30px rgba(224,89,42,.35);
+    background: linear-gradient(135deg, var(--grad-a) 0%, var(--grad-b) 50%, var(--grad-c) 100%); box-shadow: 0 10px 30px rgba(var(--accent-rgb),.35);
   }
   .hero.completo { background: linear-gradient(135deg, #3fb37a 0%, #2f8a5b 55%, #8bd17c 100%); box-shadow: 0 10px 30px rgba(47,138,91,.35); }
   .anel { position: relative; width: 78px; height: 78px; flex: none; }
@@ -236,7 +253,7 @@
   .hero-prox { font-size: 14px; opacity: .95; cursor: pointer; overflow-wrap: anywhere; }
   .chips { display: flex; gap: 8px; margin: 12px 0 4px; flex-wrap: wrap; }
   .chip { font: inherit; font-size: 13px; font-weight: 600; padding: 7px 12px; border-radius: 999px; background: var(--card); color: var(--text); border: 1px solid var(--line); box-shadow: var(--shadow); cursor: pointer; }
-  .fogo { border: 0; background: var(--accent-soft); color: var(--accent); font: inherit; font-weight: 800; font-size: 18px; padding: 6px 12px; border-radius: 999px; cursor: pointer; }
+  .fogo { border: 0; background: rgba(var(--fogo-rgb),.14); color: var(--fogo-b); font: inherit; font-weight: 800; font-size: 18px; padding: 6px 12px; border-radius: 999px; cursor: pointer; }
   .fogo.apagado { filter: grayscale(1); opacity: .55; }
   .checkin {
     display: flex; align-items: center; gap: 12px; padding: 12px 14px; margin-bottom: 12px; border-radius: 18px;
@@ -247,7 +264,7 @@
   .checkin-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .checkin-txt b { font-size: 16px; }
   .checkin-txt small { color: var(--muted); font-size: 13px; }
-  .checkin-btn { flex: none; border: 0; border-radius: 12px; padding: 12px 14px; background: var(--accent); color: #fff; font: inherit; font-weight: 800; cursor: pointer; box-shadow: 0 4px 14px rgba(224,89,42,.35); }
+  .checkin-btn { flex: none; border: 0; border-radius: 12px; padding: 12px 14px; background: var(--accent); color: #fff; font: inherit; font-weight: 800; cursor: pointer; box-shadow: 0 4px 14px rgba(var(--accent-rgb),.35); }
   .seq-habito { color: var(--accent); font-weight: 700; }
   .desafio { margin-top: 10px; padding: 14px 16px; border-radius: 18px; background: var(--card); border: 1px solid var(--line); box-shadow: var(--shadow); }
   .desafio.ganho { border-color: var(--ok); }
@@ -294,18 +311,18 @@
     border-radius: 22px; background: var(--card); border: 2px dashed var(--accent); box-shadow: var(--shadow); }
   .cg-fogo { font-weight: 800; color: var(--accent); }
   .cg-botao { width: 96px; height: 96px; border-radius: 50%; border: 0; cursor: pointer; display: grid; place-items: center;
-    background: linear-gradient(135deg, #f2a03d, #e0592a); box-shadow: 0 8px 22px rgba(224,89,42,.45); animation: chama 1.6s ease-in-out infinite; }
+    background: linear-gradient(135deg, var(--grad-a), var(--grad-b)); box-shadow: 0 8px 22px rgba(var(--accent-rgb),.45); animation: chama 1.6s ease-in-out infinite; }
   .cg-botao svg { width: 52px; height: 52px; fill: none; stroke: #fff; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
   .cg-botao:active { transform: scale(.92); }
-  @keyframes chama { 0%, 100% { box-shadow: 0 8px 22px rgba(224,89,42,.45), 0 0 0 0 rgba(240,116,68,.55); } 60% { box-shadow: 0 8px 22px rgba(224,89,42,.45), 0 0 0 18px rgba(240,116,68,0); } }
+  @keyframes chama { 0%, 100% { box-shadow: 0 8px 22px rgba(var(--fogo-rgb),.45), 0 0 0 0 rgba(var(--fogo-rgb),.55); } 60% { box-shadow: 0 8px 22px rgba(var(--fogo-rgb),.45), 0 0 0 18px rgba(var(--fogo-rgb),0); } }
   .cg-txt { display: flex; flex-direction: column; gap: 2px; }
   .cg-txt b { font-size: 16px; }
   .cg-txt small { color: var(--muted); font-size: 13px; }
   .checkin-faixa { width: 100%; display: flex; align-items: center; gap: 14px; padding: 12px 14px; margin-bottom: 12px; border-radius: 18px; cursor: pointer; text-align: left;
-    border: 2px dashed var(--accent); background: var(--card); color: var(--text); font: inherit; box-shadow: var(--shadow); }
+    border: 2px dashed var(--fogo-b); background: var(--card); color: var(--text); font: inherit; box-shadow: var(--shadow); }
   .checkin-faixa:active { transform: scale(.98); }
   .cf-botao { flex: none; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center;
-    background: linear-gradient(135deg, #f2a03d, #e0592a); animation: chama 1.6s ease-in-out infinite; }
+    background: linear-gradient(135deg, var(--fogo-a), var(--fogo-b)); animation: chama 1.6s ease-in-out infinite; }
   .cf-botao svg { width: 30px; height: 30px; fill: none; stroke: #fff; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
   .cf-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
   .cf-txt b { font-size: 16px; }
@@ -324,9 +341,9 @@
   .hero-share span { font-size: 20px; }
   .grupo-topo { display: flex; align-items: center; justify-content: space-between; margin: 18px 0 8px; }
   .grupo-topo h2 { margin: 0; }
-  .novo-mini { border: 0; border-radius: 999px; padding: 7px 14px; background: var(--accent); color: #fff; font: inherit; font-size: 14px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 12px rgba(224,89,42,.35); }
+  .novo-mini { border: 0; border-radius: 999px; padding: 7px 14px; background: var(--accent); color: #fff; font: inherit; font-size: 14px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 12px rgba(var(--accent-rgb),.35); }
   .checkin-show { text-align: center; padding: 6px 0 4px; }
-  .cs-fogo { font-size: 110px; line-height: 1; animation: fogoEntra .9s cubic-bezier(.2,1.6,.4,1) both; filter: drop-shadow(0 8px 24px rgba(240,116,68,.55)); }
+  .cs-fogo { font-size: 110px; line-height: 1; animation: fogoEntra .9s cubic-bezier(.2,1.6,.4,1) both; filter: drop-shadow(0 8px 24px rgba(var(--accent-rgb),.55)); }
   @keyframes fogoEntra { 0% { transform: scale(.2) rotate(-20deg); opacity: 0; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
   .cs-num { font-size: 72px; font-weight: 900; line-height: 1; margin-top: 4px; font-variant-numeric: tabular-nums; }
   .cs-num.pula { animation: checkpop .5s ease; color: var(--accent); }
@@ -420,7 +437,7 @@
   }
   .novo-comp:active { transform: scale(.98); }
   .nc-mais { flex: none; width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; font-size: 26px; font-weight: 700; color: #fff;
-    background: linear-gradient(135deg, #f2a03d, #e0592a); box-shadow: 0 4px 10px rgba(224,89,42,.4); }
+    background: linear-gradient(135deg, var(--grad-a), var(--grad-b)); box-shadow: 0 4px 10px rgba(var(--accent-rgb),.4); }
   .nc-txt { flex: 1; display: flex; flex-direction: column; }
   .nc-txt b { font-size: 17px; font-weight: 800; }
   .nc-txt small { font-size: 13px; color: #6b5fa0; }
@@ -442,7 +459,7 @@
   .titulo-rot { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
   .titulo-txt b { font-size: 19px; font-weight: 800; }
   .titulo-barra { height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; margin: 4px 0 2px; }
-  .titulo-barra i { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, #f2a03d, #e0592a); transition: width .8s ease; }
+  .titulo-barra i { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--grad-a), var(--grad-b)); transition: width .8s ease; }
   .titulo-sub { font-size: 12px; color: var(--muted); }
   .titulo-seta { font-size: 24px; color: var(--muted); }
   .pontos-voando { position: fixed; z-index: 31; transform: translate(-50%, -50%); font-weight: 800; font-size: 20px; color: var(--ok); pointer-events: none; animation: sobe 1.2s ease-out forwards; text-shadow: 0 1px 6px rgba(0,0,0,.25); }
@@ -466,6 +483,10 @@
   #mais .icon-btn { width: 100%; padding: 14px; font-size: 16px; font-weight: 600; }
   #mais details.ajuda { margin-top: 12px; }
   .dicas { margin-top: 12px; background: var(--card); border-radius: 14px; padding: 14px 16px; box-shadow: var(--shadow); }
+  .temas { display: flex; gap: 10px; }
+  .tema-btn { flex: 1; display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 14px; border: 2px solid var(--line); background: var(--bg); color: var(--text); font: inherit; font-weight: 700; cursor: pointer; }
+  .tema-btn i { width: 26px; height: 26px; border-radius: 50%; flex: none; }
+  .tema-btn.ativa { border-color: var(--accent); }
   .dicas h2 { font-size: 16px; margin: 0 0 6px; }
   .dicas ul { margin: 0; padding-left: 18px; color: var(--muted); }
   .dicas li { margin: 6px 0; }
@@ -489,7 +510,7 @@
   }
   .pulse.ativo { animation: pulse 1.4s infinite; }
   .pulse svg { width: 40px; height: 40px; }
-  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(224,89,42,.5); } 100% { box-shadow: 0 0 0 28px rgba(224,89,42,0); } }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb),.5); } 100% { box-shadow: 0 0 0 28px rgba(var(--accent-rgb),0); } }
   .transcricao { min-height: 56px; font-size: 20px; font-weight: 500; margin: 8px 0 16px; color: var(--text); }
   .exemplo { font-size: 14px; color: var(--muted); }
 
@@ -577,6 +598,13 @@
     </ol>
     <p style="color:var(--muted);margin:0">Pronto: 2 toques atrás → fale com calma → toque em “Concluído” → o compromisso aparece aqui já salvo. Também funciona dizendo “E aí Siri, Anotar Compromisso”.</p>
   </details>
+  <div class="dicas">
+    <h2>Cor do app</h2>
+    <div class="temas">
+      <button class="tema-btn" data-escolher-tema="indigo"><i style="background:linear-gradient(135deg,#8e91f8,#5b5fef)"></i>Índigo</button>
+      <button class="tema-btn" data-escolher-tema="laranja"><i style="background:linear-gradient(135deg,#f2a03d,#e0592a)"></i>Laranja</button>
+    </div>
+  </div>
   <div class="dicas">
     <h2>O que você pode falar</h2>
     <ul>
@@ -1116,6 +1144,11 @@ document.getElementById('fogo').onclick = (e) => {
 };
 document.getElementById('btnMais').onclick = () => irPara('mais');
 document.getElementById('btnNovo').onclick = escolherComoCriar;
+function marcarTema() { document.querySelectorAll('.tema-btn').forEach(b => b.classList.toggle('ativa', b.dataset.escolherTema === document.documentElement.dataset.tema)); }
+document.querySelectorAll('.tema-btn').forEach(b => b.onclick = () => {
+  document.documentElement.dataset.tema = b.dataset.escolherTema; gravarPref('agenda.tema', b.dataset.escolherTema); marcarTema();
+});
+marcarTema();
 document.querySelectorAll('[data-visao]').forEach(b => b.onclick = () => {
   visao = b.dataset.visao; gravarPref('agenda.visao', visao); rolarParaDia = true; render(); window.scrollTo(0, 0);
 });
@@ -2000,7 +2033,10 @@ function novoCard(d) {
   const grad = g.createLinearGradient(0, 0, W, H);
   if (d.titulo.secreto) { grad.addColorStop(0, '#f7d774'); grad.addColorStop(.5, '#d4a017'); grad.addColorStop(1, '#6e5006'); }
   else if (d.completo) { grad.addColorStop(0, '#3fb37a'); grad.addColorStop(.55, '#2f8a5b'); grad.addColorStop(1, '#1f5f40'); }
-  else { grad.addColorStop(0, '#f2a03d'); grad.addColorStop(.45, '#e0592a'); grad.addColorStop(1, '#b23a14'); }
+  else {
+    const cor = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+    grad.addColorStop(0, cor('--grad-a')); grad.addColorStop(.45, cor('--grad-b')); grad.addColorStop(1, cor('--grad-c'));
+  }
   g.fillStyle = grad; g.fillRect(0, 0, W, H);
   g.fillStyle = 'rgba(255,255,255,.08)';
   g.beginPath(); g.arc(960, 220, 330, 0, Math.PI * 2); g.fill();
@@ -2074,7 +2110,7 @@ function desenharCardCompleto() {
       g.fillStyle = '#fff';
       // bolinha com ✓
       g.beginPath(); g.arc(140, meio, 22 * Math.max(esc1, .8), 0, Math.PI * 2); g.fill();
-      g.fillStyle = d.completo ? '#2f8a5b' : '#e0592a'; g.font = fonteCard(900, 30 * Math.max(esc1, .8)); g.textAlign = 'center'; g.fillText('✓', 140, meio + 10 * Math.max(esc1, .8));
+      g.fillStyle = d.completo ? '#2f8a5b' : getComputedStyle(document.documentElement).getPropertyValue('--grad-b').trim(); g.font = fonteCard(900, 30 * Math.max(esc1, .8)); g.textAlign = 'center'; g.fillText('✓', 140, meio + 10 * Math.max(esc1, .8));
       g.fillStyle = '#fff'; g.textAlign = 'left';
       g.font = fonteCard(800, Math.round(36 * Math.max(esc1, .75))); const hora = `${a.de}–${a.ate}`;
       g.fillText(hora, 190, meio + 13 * Math.max(esc1, .75));
