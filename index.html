@@ -7,7 +7,13 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Agenda">
 <title>Agenda por Voz</title>
-<script>try { document.documentElement.dataset.tema = localStorage.getItem('agenda.tema') || 'indigo'; } catch { document.documentElement.dataset.tema = 'indigo'; }</script>
+<script>
+  (function () {
+    const ler = (k, p) => { try { return localStorage.getItem(k) || p; } catch { return p; } };
+    document.documentElement.dataset.tema = ler('agenda.tema', 'indigo');
+    document.documentElement.dataset.modo = ler('agenda.modo', 'claro');
+  })();
+</script>
 <style>
   :root {
     --bg: #f6f5f2;
@@ -25,13 +31,14 @@
     --fogo-a: #f2a03d; --fogo-b: #e0592a; --fogo-rgb: 224,89,42;
   }
   :root[data-tema="indigo"] {
-    --bg: #f5f6fb; --card: #ffffff; --text: #1b1d2e; --muted: #6e7191; --line: #e3e5f0;
-    --accent: #5b5fef; --accent-soft: #ecedfd; --accent-rgb: 91,95,239;
-    --grad-a: #8e91f8; --grad-b: #5b5fef; --grad-c: #3b3dc8;
+    --bg: #fbfbfe; --card: #ffffff; --text: #1b1d2e; --muted: #6b6f8a; --line: #e9eaf3;
+    --accent: #5b5fef; --accent-soft: #eef0ff; --accent-rgb: 91,95,239;
+    --grad-a: #7f8cff; --grad-b: #5b5fef; --grad-c: #4a3fe0;
+    --shadow: 0 1px 2px rgba(40,44,90,.05), 0 6px 18px rgba(40,44,90,.07);
     --ok: #22a06b;
   }
   @media (prefers-color-scheme: dark) {
-    :root {
+    :root[data-modo="auto"] {
       --bg: #141413;
       --card: #1f1e1c;
       --text: #f2f0eb;
@@ -43,11 +50,28 @@
       --ok: #5cc28d;
       --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.3);
     }
-    :root[data-tema="indigo"] {
+    :root[data-modo="auto"][data-tema="indigo"] {
       --bg: #0f1020; --card: #1a1b2e; --text: #eef0ff; --muted: #9a9cc0; --line: #2a2c47;
       --accent: #8386ff; --accent-soft: #262860; --accent-rgb: 131,134,255;
       --ok: #4cc38a;
     }
+  }
+  :root[data-modo="escuro"] {
+    --bg: #141413;
+    --card: #1f1e1c;
+    --text: #f2f0eb;
+    --muted: #9a958c;
+    --line: #2f2d2a;
+    --accent: #f07444;
+    --accent-soft: #3a2419;
+    --accent-rgb: 240,116,68;
+    --ok: #5cc28d;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.3);
+  }
+  :root[data-modo="escuro"][data-tema="indigo"] {
+    --bg: #0f1020; --card: #1a1b2e; --text: #eef0ff; --muted: #9a9cc0; --line: #2a2c47;
+    --accent: #8386ff; --accent-soft: #262860; --accent-rgb: 131,134,255;
+    --ok: #4cc38a;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   [hidden] { display: none !important; }
@@ -318,6 +342,14 @@
   .cg-txt { display: flex; flex-direction: column; gap: 2px; }
   .cg-txt b { font-size: 16px; }
   .cg-txt small { color: var(--muted); font-size: 13px; }
+  .checkin-centro { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 14px 12px 12px; margin-bottom: 12px; border-radius: 20px;
+    border: 2px dashed var(--fogo-b); background: var(--card); box-shadow: var(--shadow); text-align: center; }
+  .checkin-centro .cf-botao { width: 66px; height: 66px; border: 0; cursor: pointer; }
+  .checkin-centro .cf-botao svg { width: 36px; height: 36px; }
+  .checkin-centro .cf-botao:active { transform: scale(.92); }
+  .cc-txt { display: flex; flex-direction: column; gap: 1px; }
+  .cc-txt b { font-size: 16px; }
+  .cc-txt small { color: var(--muted); font-size: 13px; }
   .checkin-faixa { width: 100%; display: flex; align-items: center; gap: 14px; padding: 12px 14px; margin-bottom: 12px; border-radius: 18px; cursor: pointer; text-align: left;
     border: 2px dashed var(--fogo-b); background: var(--card); color: var(--text); font: inherit; box-shadow: var(--shadow); }
   .checkin-faixa:active { transform: scale(.98); }
@@ -419,29 +451,6 @@
   .hc.compartilhar { background: #fff; color: var(--accent); padding: 10px 18px; font-size: 14px; }
   .proximo-linha { margin: 12px 2px 0; font-size: 14px; color: var(--muted); cursor: pointer; }
   .proximo-linha b { color: var(--text); }
-  .inspira {
-    margin-top: 18px; padding: 18px 16px 16px; border-radius: 22px; color: #fff; position: relative; overflow: hidden;
-    background: linear-gradient(135deg, #5b4bd6 0%, #8a4fd8 55%, #c45ab3 100%); box-shadow: 0 10px 28px rgba(108,78,214,.35);
-  }
-  .inspira::before { content: ''; position: absolute; right: -40px; top: -50px; width: 160px; height: 160px; border-radius: 50%; background: rgba(255,255,255,.08); }
-  .insp-topo { display: flex; justify-content: space-between; align-items: center; position: relative; }
-  .insp-rot { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; opacity: .9; }
-  .insp-outra { width: 32px; height: 32px; border-radius: 50%; border: 0; background: rgba(255,255,255,.2); color: #fff; font-size: 17px; cursor: pointer; }
-  .insp-outra:active { transform: rotate(180deg); transition: transform .3s; }
-  .insp-pergunta { position: relative; font-family: Georgia, "Times New Roman", serif; font-style: italic; font-size: 21px; line-height: 1.35; margin: 10px 2px 16px; }
-  .insp-pergunta.troca { animation: trocaPergunta .3s ease; }
-  @keyframes trocaPergunta { 0% { opacity: 1; transform: none; } 50% { opacity: 0; transform: translateY(6px); } 100% { opacity: 1; transform: none; } }
-  .novo-comp {
-    width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 16px; border: 0; cursor: pointer; text-align: left;
-    background: #fff; color: #2a1f5c; font: inherit; box-shadow: 0 6px 16px rgba(30,10,80,.25); position: relative; transition: transform .1s;
-  }
-  .novo-comp:active { transform: scale(.98); }
-  .nc-mais { flex: none; width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; font-size: 26px; font-weight: 700; color: #fff;
-    background: linear-gradient(135deg, var(--grad-a), var(--grad-b)); box-shadow: 0 4px 10px rgba(var(--accent-rgb),.4); }
-  .nc-txt { flex: 1; display: flex; flex-direction: column; }
-  .nc-txt b { font-size: 17px; font-weight: 800; }
-  .nc-txt small { font-size: 13px; color: #6b5fa0; }
-  .nc-seta { font-size: 26px; color: #8a7fc0; }
   .mais-btn { width: 38px; height: 38px; border-radius: 50%; border: 0; background: var(--accent); color: #fff; font-size: 22px; font-weight: 700; cursor: pointer; line-height: 1; }
   .como-criar p { margin-bottom: 12px !important; }
   .cc-opcao { width: 100%; display: grid; grid-template-columns: 44px 1fr; grid-template-rows: auto auto; column-gap: 10px; align-items: center; text-align: left;
@@ -485,6 +494,7 @@
   .dicas { margin-top: 12px; background: var(--card); border-radius: 14px; padding: 14px 16px; box-shadow: var(--shadow); }
   .temas { display: flex; gap: 10px; }
   .tema-btn { flex: 1; display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 14px; border: 2px solid var(--line); background: var(--bg); color: var(--text); font: inherit; font-weight: 700; cursor: pointer; }
+  .modo-btn { justify-content: center; font-size: 13px; padding: 12px 6px; }
   .tema-btn i { width: 26px; height: 26px; border-radius: 50%; flex: none; }
   .tema-btn.ativa { border-color: var(--accent); }
   .dicas h2 { font-size: 16px; margin: 0 0 6px; }
@@ -588,6 +598,19 @@
 
 <section id="mais" hidden>
   <button class="icon-btn" id="btnNotif">🔔 Ativar avisos</button>
+  <div class="dicas">
+    <h2>Cor do app</h2>
+    <div class="temas">
+      <button class="tema-btn" data-escolher-tema="indigo"><i style="background:linear-gradient(135deg,#8e91f8,#5b5fef)"></i>Índigo</button>
+      <button class="tema-btn" data-escolher-tema="laranja"><i style="background:linear-gradient(135deg,#f2a03d,#e0592a)"></i>Laranja</button>
+    </div>
+    <h2 style="margin-top:14px">Aparência</h2>
+    <div class="temas">
+      <button class="tema-btn modo-btn" data-escolher-modo="claro">☀️ Claro</button>
+      <button class="tema-btn modo-btn" data-escolher-modo="escuro">🌙 Escuro</button>
+      <button class="tema-btn modo-btn" data-escolher-modo="auto">📱 Igual ao iPhone</button>
+    </div>
+  </div>
   <details class="ajuda" open>
     <summary>Como abrir com 2 toques atrás do iPhone</summary>
     <ol>
@@ -598,13 +621,6 @@
     </ol>
     <p style="color:var(--muted);margin:0">Pronto: 2 toques atrás → fale com calma → toque em “Concluído” → o compromisso aparece aqui já salvo. Também funciona dizendo “E aí Siri, Anotar Compromisso”.</p>
   </details>
-  <div class="dicas">
-    <h2>Cor do app</h2>
-    <div class="temas">
-      <button class="tema-btn" data-escolher-tema="indigo"><i style="background:linear-gradient(135deg,#8e91f8,#5b5fef)"></i>Índigo</button>
-      <button class="tema-btn" data-escolher-tema="laranja"><i style="background:linear-gradient(135deg,#f2a03d,#e0592a)"></i>Laranja</button>
-    </div>
-  </div>
   <div class="dicas">
     <h2>O que você pode falar</h2>
     <ul>
@@ -955,16 +971,6 @@ function telaHoje() {
     </div>`;
   html += `<section class="grupo"><div class="grupo-topo"><h2>Hoje</h2><button class="novo-mini" data-novo-comp>＋ Novo</button></div>${total && tudo ? '<div class="tudo-feito">Tudo feito por hoje. Merecido! 💪</div>' : linhaDoTempo(hoje, agora, true)}</section>`;
   if (feitos) html += `<details class="feitos"><summary>Feitos (${feitos})</summary>${feitosL.map(o => cartao(o, agora)).join('')}</details>`;
-  html += `
-    <div class="inspira">
-      <div class="insp-topo"><span class="insp-rot">💡 Pergunta do dia</span><button class="insp-outra" data-outra-pergunta aria-label="Outra pergunta">↻</button></div>
-      <div class="insp-pergunta" id="pergunta">${perguntaDoDia()}</div>
-      <button class="novo-comp" data-novo-comp>
-        <span class="nc-mais">＋</span>
-        <span class="nc-txt"><b>Novo compromisso</b><small>Fale, escreva ou preencha</small></span>
-        <span class="nc-seta">›</span>
-      </button>
-    </div>`;
   if (eventos.length < 3 && !lerPref('agenda.dicaFechada', '')) html += `
     <div class="dica-criar">
       <b>🎙️ Como criar um compromisso</b>
@@ -1144,9 +1150,16 @@ document.getElementById('fogo').onclick = (e) => {
 };
 document.getElementById('btnMais').onclick = () => irPara('mais');
 document.getElementById('btnNovo').onclick = escolherComoCriar;
-function marcarTema() { document.querySelectorAll('.tema-btn').forEach(b => b.classList.toggle('ativa', b.dataset.escolherTema === document.documentElement.dataset.tema)); }
-document.querySelectorAll('.tema-btn').forEach(b => b.onclick = () => {
+function marcarTema() {
+  const raiz = document.documentElement.dataset;
+  document.querySelectorAll('[data-escolher-tema]').forEach(b => b.classList.toggle('ativa', b.dataset.escolherTema === raiz.tema));
+  document.querySelectorAll('[data-escolher-modo]').forEach(b => b.classList.toggle('ativa', b.dataset.escolherModo === raiz.modo));
+}
+document.querySelectorAll('[data-escolher-tema]').forEach(b => b.onclick = () => {
   document.documentElement.dataset.tema = b.dataset.escolherTema; gravarPref('agenda.tema', b.dataset.escolherTema); marcarTema();
+});
+document.querySelectorAll('[data-escolher-modo]').forEach(b => b.onclick = () => {
+  document.documentElement.dataset.modo = b.dataset.escolherModo; gravarPref('agenda.modo', b.dataset.escolherModo); marcarTema();
 });
 marcarTema();
 document.querySelectorAll('[data-visao]').forEach(b => b.onclick = () => {
@@ -1154,10 +1167,9 @@ document.querySelectorAll('[data-visao]').forEach(b => b.onclick = () => {
 });
 window.addEventListener('resize', () => { if (aba === 'semana') render(); });
 document.getElementById('lista').addEventListener('click', (ev) => {
-  const alvo = ev.target.closest('[data-outra-pergunta], [data-novo-comp], [data-falar], [data-fechar-dica], [data-desafio], [data-hab-check], [data-hab], [data-novo-hab], [data-compartilhar], [data-checkin], [data-check], [data-niveis], [data-id], [data-dia], [data-nav], [data-ir]');
+  const alvo = ev.target.closest('[data-novo-comp], [data-falar], [data-fechar-dica], [data-desafio], [data-hab-check], [data-hab], [data-novo-hab], [data-compartilhar], [data-checkin], [data-check], [data-niveis], [data-id], [data-dia], [data-nav], [data-ir]');
   if (!alvo) return;
-  if ('outraPergunta' in alvo.dataset) outraPergunta();
-  else if ('novoComp' in alvo.dataset) escolherComoCriar();
+  if ('novoComp' in alvo.dataset) escolherComoCriar();
   else if ('falar' in alvo.dataset) abrirVoz();
   else if ('fecharDica' in alvo.dataset) { gravarPref('agenda.dicaFechada', '1'); render(); }
   else if ('desafio' in alvo.dataset) abrirDesafio();
@@ -1545,51 +1557,6 @@ const FRASES_DIA = [
   'Sequência é igual planta: rega todo dia.', 'Hoje é um ótimo dia pra ser produtivo.',
   'Você tá construindo um hábito. Isso muda vidas.', 'Missão de hoje: ser 1% melhor que ontem.',
 ];
-// Perguntas que ajudam a escolher bons compromissos (uma por dia, dá pra trocar no ↻)
-const PERGUNTAS_DIA = [
-  'Qual tarefa simples pode trazer um resultado desproporcional hoje?',
-  'O que você está adiando que, se feito, te faria prosperar muito mais?',
-  'Qual é a única coisa que, feita hoje, deixaria todo o resto mais fácil?',
-  'Que conversa difícil você vem evitando?',
-  'O que te deixaria orgulhoso de ter feito, quando chegar a noite?',
-  'Qual pequena ação te aproxima do seu maior objetivo do ano?',
-  'Tem alguém que você precisa agradecer, ligar ou visitar?',
-  'Qual hábito do seu “eu do futuro” você pode começar hoje?',
-  'O que você pode tirar da lista pra sobrar energia pro que importa?',
-  'Qual tarefa de 2 minutos você pode resolver agora e esquecer?',
-  'O que valeria a pena estudar por 30 minutos hoje?',
-  'Como você vai cuidar da sua saúde hoje?',
-  'Qual decisão você está empurrando com a barriga?',
-  'Se o seu dia tivesse só 3 horas, o que você faria?',
-  'O que traria mais dinheiro ou oportunidade se você fizesse esta semana?',
-  'Qual projeto parado merece só 25 minutos de foco hoje?',
-  'Que momento com quem você ama dá pra marcar hoje?',
-  'O que você faria hoje se não tivesse medo de errar?',
-  'Qual tarefa chata, se resolvida, te daria um alívio enorme?',
-  'Quem pode te ajudar a chegar mais rápido onde você quer?',
-  'Qual é o próximo passo concreto do seu maior sonho?',
-  'O que você pode deixar pronto hoje pra amanhã começar leve?',
-  'Que tempo só pra você você vai proteger hoje?',
-  'Qual meta grande cabe num primeiro passo de 15 minutos?',
-  'O que o você de um ano atrás adoraria te ver fazendo hoje?',
-  'Que bagunça (gaveta, e-mail, contas) está roubando sua paz?',
-  'Com qual cliente, contato ou amigo você não fala há tempo demais?',
-  'O que você aprendeu ontem que pode colocar em prática hoje?',
-  'Qual tarefa você mais quer evitar? Talvez seja a mais importante.',
-  'Como você vai descansar de verdade hoje?',
-];
-let perguntaExtra = 0;   // quantas vezes tocou no ↻ (só nesta visita)
-function perguntaDoDia() {
-  const d = new Date(), diaDoAno = Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 86400000);
-  return PERGUNTAS_DIA[(diaDoAno * 7 + perguntaExtra) % PERGUNTAS_DIA.length];
-}
-function outraPergunta() {
-  perguntaExtra++;
-  const el = document.getElementById('pergunta');
-  if (!el) return;
-  el.classList.remove('troca'); void el.offsetWidth; el.classList.add('troca');
-  setTimeout(() => { el.textContent = perguntaDoDia(); }, 150);
-}
 function fraseDoDia() {
   const d = new Date(), inicioAno = new Date(d.getFullYear(), 0, 0);
   return FRASES_DIA[Math.floor((d - inicioAno) / 86400000) % FRASES_DIA.length];
@@ -1653,10 +1620,10 @@ function htmlCheckin() {
   if (fezCheckinHoje()) return '';
   const n = sequencia();
   return `
-    <button class="checkin-faixa" data-checkin aria-label="Fazer check-in de hoje">
-      <span class="cf-botao">${ICONE_CHECK}</span>
-      <span class="cf-txt"><b>Toque aqui para o check-in</b><small>${n ? `🔥 ${n} dia${n > 1 ? 's' : ''} seguido${n > 1 ? 's' : ''} · não deixa apagar` : '🔥 Comece sua sequência · +1 ponto'}</small></span>
-    </button>`;
+    <div class="checkin-centro">
+      <button class="cf-botao" data-checkin aria-label="Fazer check-in de hoje">${ICONE_CHECK}</button>
+      <div class="cc-txt"><b>Toque no ✓ para o check-in</b><small>${n ? `🔥 ${n} dia${n > 1 ? 's' : ''} seguido${n > 1 ? 's' : ''} · não deixa apagar` : '🔥 Comece sua sequência · +1 ponto'}</small></div>
+    </div>`;
 }
 
 const salvarXp = () => gravarJSON('agenda.xp', xp);
