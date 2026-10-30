@@ -224,6 +224,34 @@
   .hero-prox { font-size: 14px; opacity: .95; cursor: pointer; overflow-wrap: anywhere; }
   .chips { display: flex; gap: 8px; margin: 12px 0 4px; flex-wrap: wrap; }
   .chip { font: inherit; font-size: 13px; font-weight: 600; padding: 7px 12px; border-radius: 999px; background: var(--card); color: var(--text); border: 1px solid var(--line); box-shadow: var(--shadow); cursor: pointer; }
+  .titulo-card {
+    width: 100%; display: flex; align-items: center; gap: 14px; margin-top: 10px; padding: 14px 16px; border-radius: 18px;
+    background: var(--card); border: 1px solid var(--line); box-shadow: var(--shadow); color: var(--text); font: inherit; text-align: left; cursor: pointer;
+  }
+  .titulo-emoji { font-size: 40px; line-height: 1; flex: none; }
+  .titulo-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .titulo-rot { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
+  .titulo-txt b { font-size: 19px; font-weight: 800; }
+  .titulo-barra { height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; margin: 4px 0 2px; }
+  .titulo-barra i { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, #f2a03d, #e0592a); transition: width .8s ease; }
+  .titulo-sub { font-size: 12px; color: var(--muted); }
+  .titulo-seta { font-size: 24px; color: var(--muted); }
+  .pontos-voando { position: fixed; z-index: 31; transform: translate(-50%, -50%); font-weight: 800; font-size: 20px; color: var(--ok); pointer-events: none; animation: sobe 1.2s ease-out forwards; text-shadow: 0 1px 6px rgba(0,0,0,.25); }
+  .pontos-voando.neg { color: #e53935; }
+  @keyframes sobe { 0% { opacity: 0; transform: translate(-50%, -20%) scale(.6); } 15% { opacity: 1; transform: translate(-50%, -60%) scale(1.15); } 100% { opacity: 0; transform: translate(-50%, -260%) scale(1); } }
+  .nivel-up { text-align: center; }
+  .nivel-emoji { font-size: 84px; line-height: 1.1; animation: checkpop .6s ease; }
+  .nivel-rot { color: var(--accent); font-weight: 800; text-transform: uppercase; letter-spacing: .08em; font-size: 13px; margin-top: 6px; }
+  .nivel-up h3 { font-size: 24px; margin: 4px 0 6px; }
+  .niveis .escada { list-style: none; padding: 0; margin: 12px 0; }
+  .niveis .escada li { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 12px; margin: 4px 0; }
+  .niveis .escada li span { font-size: 26px; }
+  .niveis .escada li b { flex: 1; }
+  .niveis .escada li small { color: var(--muted); }
+  .niveis .escada li.atual { background: var(--accent-soft); outline: 2px solid var(--accent); }
+  .niveis .escada li.bloq { opacity: .4; filter: grayscale(1); }
+  .niveis .regras { font-size: 14px; color: var(--muted); display: flex; flex-direction: column; gap: 8px; background: var(--bg); padding: 12px; border-radius: 12px; }
+  .niveis .regras b { color: var(--text); }
   .resumo { text-align: center; color: var(--muted); font-size: 14px; margin-top: 12px; }
 
   #mais .icon-btn { width: 100%; padding: 14px; font-size: 16px; font-weight: 600; }
@@ -686,6 +714,7 @@ function telaHoje() {
         ${prox ? `<div class="hero-prox" data-id="${prox.ev.id}">Próximo: <b>${esc(prox.ev.titulo)}</b> · ${quandoFalta(prox.inicio, agora)}</div>` : ''}
       </div>
     </div>
+    ${htmlTitulo()}
     <div class="chips">
       <span class="chip">✓ ${feitosSemana} feito${feitosSemana === 1 ? '' : 's'} na semana</span>
       <button class="chip" data-ir="foco">🍅 ${focosHoje} foco${focosHoje === 1 ? '' : 's'} hoje</button>
@@ -891,9 +920,10 @@ document.querySelectorAll('[data-visao]').forEach(b => b.onclick = () => {
 });
 window.addEventListener('resize', () => { if (aba === 'semana') render(); });
 document.getElementById('lista').addEventListener('click', (ev) => {
-  const alvo = ev.target.closest('[data-check], [data-id], [data-dia], [data-nav], [data-ir]');
+  const alvo = ev.target.closest('[data-check], [data-niveis], [data-id], [data-dia], [data-nav], [data-ir]');
   if (!alvo) return;
   if (alvo.dataset.check) marcarFeito(alvo);
+  else if ('niveis' in alvo.dataset) abrirNiveis();
   else if (alvo.dataset.ir) { ev.preventDefault(); irPara(alvo.dataset.ir); }
   else if (alvo.dataset.nav) navegar(alvo.dataset.nav);
   else if (alvo.dataset.dia) { const [a, m, d] = alvo.dataset.dia.split('-').map(Number); diaSel = new Date(a, m - 1, d); render(); }
@@ -949,6 +979,8 @@ function marcarFeito(botao) {
   salvar();
   // anima no lugar e só depois redesenha a tela
   const cartaoEl = botao.closest('.evento');
+  const rb = botao.getBoundingClientRect(), perto = { x: rb.left + rb.width / 2, y: rb.top };
+  ganhar(feito ? PONTOS.feito : -PONTOS.feito, perto);
   botao.classList.toggle('on', feito);
   cartaoEl.classList.toggle('feito', feito);
   if (feito) {
@@ -959,7 +991,11 @@ function marcarFeito(botao) {
     const diaCompleto = dia === hoje && deHoje.length > 1 && deHoje.every(o => estaFeito(o.ev, o.inicio));
     tocarSom(diaCompleto);
     confete(r.left + r.width / 2, r.top + r.height / 2, false);
-    if (diaCompleto) setTimeout(() => { confete(innerWidth / 2, innerHeight / 3, true); toast('🎉 Dia concluído! Mandou bem.', 4000); }, 250);
+    if (diaCompleto && !xp.bonus.includes(hoje)) {
+      xp.bonus = [...xp.bonus.slice(-60), hoje];
+      setTimeout(() => ganhar(PONTOS.diaCompleto, { x: innerWidth / 2, y: innerHeight / 3 }), 400);
+    }
+    if (diaCompleto) setTimeout(() => { confete(innerWidth / 2, innerHeight / 3, true); toast(`🎉 Dia concluído! +${PONTOS.diaCompleto} de bônus`, 4000); }, 250);
   }
   setTimeout(render, 700);
 }
@@ -971,7 +1007,6 @@ const gravarJSON = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v));
 let foco = lerJSON('agenda.foco', { modo: 'foco', duracao: 25, ultimoFoco: 25, fim: null, restante: null, tarefa: '' });
 let focos = lerJSON('agenda.focos', []);   // histórico: [{ dia: 'AAAA-MM-DD', min, tarefa }]
 const META_DIA = 4;
-const NIVEIS = [[0, 'Iniciante'], [10, 'Focado'], [30, 'Concentrado'], [75, 'Mestre do foco'], [150, 'Lenda']];
 
 const restanteMs = () => foco.fim ? Math.max(foco.fim - Date.now(), 0) : foco.restante ?? foco.duracao * 60000;
 const fmtMS = (ms) => { const t = Math.ceil(ms / 1000); return `${pad(Math.floor(t / 60))}:${pad(t % 60)}`; };
@@ -986,9 +1021,7 @@ function estatisticasFoco() {
     const dia = maisDias(new Date(), i - 6);
     return { dia, min: focosDoDia(dia).reduce((s, f) => s + f.min, 0) };
   });
-  let nivel = NIVEIS[0], proximo = null;
-  for (const n of NIVEIS) { if (focos.length >= n[0]) nivel = n; else { proximo = n; break; } }
-  return { hoje, seq, semana, nivel, proximo };
+  return { hoje, seq, semana };
 }
 
 function telaFoco() {
@@ -1011,6 +1044,7 @@ function telaFoco() {
       </div>
     </div>
     <div class="foco-stats">
+      ${htmlTitulo()}
       <div class="painel">
         <div class="rot">Meta de hoje</div>
         <div class="tomates">${Array.from({ length: Math.max(META_DIA, st.hoje.length) }, (_, i) => `<span class="${i < st.hoje.length ? 'feito' : ''}">🍅</span>`).join('')}</div>
@@ -1018,7 +1052,7 @@ function telaFoco() {
       </div>
       <div class="duo">
         <div class="painel"><div class="num">🔥 ${st.seq}</div><div class="sub">dia${st.seq === 1 ? '' : 's'} seguido${st.seq === 1 ? '' : 's'}</div></div>
-        <div class="painel"><div class="num">${st.nivel[1]}</div><div class="sub">${st.proximo ? `faltam ${st.proximo[0] - focos.length} focos para ${st.proximo[1]}` : 'nível máximo'}</div></div>
+        <div class="painel"><div class="num">🍅 ${focos.length}</div><div class="sub">focos no total</div></div>
       </div>
       <div class="painel">
         <div class="rot">Últimos 7 dias</div>
@@ -1042,7 +1076,7 @@ function terminarCiclo() {
   const qtd = focosDoDia(new Date()).length;
   iniciarModo(eraFoco ? 'pausa' : 'foco');
   salvarFoco();
-  if (eraFoco) tocarSom(qtd === META_DIA);
+  if (eraFoco) { tocarSom(qtd === META_DIA); ganhar(focos.at(-1).min >= 50 ? PONTOS.foco50 : PONTOS.foco25, { x: innerWidth / 2, y: innerHeight / 3 }); }
   avisarFoco(!eraFoco ? 'Pausa acabou. Bora focar de novo?'
     : qtd === META_DIA ? '🎉 Meta do dia batida! Hora de uma pausa.' : `+1 🍅 Foco concluído! Hora de uma pausa.`);
   if (aba === 'foco') render();
@@ -1073,6 +1107,132 @@ setInterval(() => {
   if (t) t.textContent = fmtMS(restanteMs());
   if (anel) anel.setAttribute('stroke-dashoffset', 100 * (1 - restanteMs() / (foco.duracao * 60000)));
 }, 1000);
+
+// ---------- Títulos: pontos, prestígio e vergonha ----------
+// Todo mundo começa como Bicho-preguiça. Ninguém quer continuar sendo.
+const TITULOS = [
+  { min: 0, emoji: '🦥', nome: 'Bicho-preguiça' },
+  { min: 50, emoji: '🐌', nome: 'Lesma Lerda' },
+  { min: 150, emoji: '🐢', nome: 'Tartaruga' },
+  { min: 350, emoji: '🐜', nome: 'Formiguinha' },
+  { min: 700, emoji: '🐝', nome: 'Abelha Operária' },
+  { min: 1200, emoji: '🚀', nome: 'Foguete' },
+  { min: 2000, emoji: '🤖', nome: 'Máquina' },
+  { min: 3500, emoji: '👑', nome: 'Lenda Viva' },
+];
+const PONTOS = { feito: 10, diaCompleto: 25, foco25: 15, foco50: 30, esquecido: -15 };
+// pontos: total; desde: só penaliza o que vier depois disso; penalizados/bonus: o que já foi contado
+let xp = lerJSON('agenda.xp', null) || { pontos: 0, desde: chaveDia(new Date()), penalizados: [], bonus: [] };
+const salvarXp = () => gravarJSON('agenda.xp', xp);
+const tituloDe = (pts) => TITULOS.filter(t => pts >= t.min).at(-1);
+const proximoTitulo = (pts) => TITULOS.find(t => t.min > pts);
+
+// Soma (ou tira) pontos e avisa se subiu ou caiu de título
+function ganhar(delta, perto, semAvisoDeQueda) {
+  const antes = tituloDe(xp.pontos);
+  xp.pontos = Math.max(0, xp.pontos + delta);
+  salvarXp();
+  if (perto) pontosVoando(delta, perto.x, perto.y);
+  const depois = tituloDe(xp.pontos);
+  if (depois.min > antes.min) setTimeout(() => subiuDeTitulo(depois), 900);
+  else if (depois.min < antes.min && !semAvisoDeQueda) setTimeout(() => caiuDeTitulo(depois), 600);
+  return depois.min < antes.min ? depois : null;   // título novo, se caiu
+}
+function pontosVoando(delta, x, y) {
+  const el = document.createElement('div');
+  el.className = 'pontos-voando ' + (delta < 0 ? 'neg' : '');
+  el.textContent = (delta > 0 ? '+' : '') + delta;
+  el.style.left = x + 'px'; el.style.top = y + 'px';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1300);
+}
+function somTriste() {
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const t = audioCtx.currentTime;
+    [392, 349.23, 311.13].forEach((f, i) => {   // sol, fá, mi bemol descendo: "wah wah wah"
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain(), ini = t + i * 0.28;
+      o.type = 'triangle'; o.frequency.setValueAtTime(f, ini); o.frequency.linearRampToValueAtTime(f * 0.97, ini + 0.26);
+      g.gain.setValueAtTime(0.0001, ini); g.gain.linearRampToValueAtTime(0.18, ini + 0.02); g.gain.exponentialRampToValueAtTime(0.001, ini + 0.4);
+      o.connect(g); g.connect(audioCtx.destination); o.start(ini); o.stop(ini + 0.45);
+    });
+  } catch {}
+}
+function subiuDeTitulo(t) {
+  tocarSom(true);
+  confete(innerWidth / 2, innerHeight / 3, true);
+  const prox = proximoTitulo(xp.pontos);
+  abrirFolha(`
+    <div class="nivel-up">
+      <div class="nivel-emoji">${t.emoji}</div>
+      <div class="nivel-rot">Subiu de nível!</div>
+      <h3>Agora você é ${t.nome}</h3>
+      <p>${prox ? `Próximo: ${prox.emoji} ${prox.nome} com ${prox.min} pontos.` : 'Você chegou ao topo. Respeito.'}</p>
+      <div class="botoes"><button class="primario" id="bOk">Bora!</button></div>
+    </div>`);
+  document.getElementById('bOk').onclick = fecharFolha;
+  render();
+}
+function caiuDeTitulo(t) {
+  somTriste();
+  toast(`😬 Rebaixado para ${t.emoji} ${t.nome}`, 5000);
+  render();
+}
+
+// Compromissos de dias que já passaram sem check perdem pontos (uma vez cada).
+// Aniversários e datas anuais não contam.
+function aplicarPenalidades() {
+  const hoje = inicioDoDia(new Date());
+  const [a, m, d] = xp.desde.split('-').map(Number);
+  const de = new Date(Math.max(new Date(a, m - 1, d), maisDias(hoje, -30)));
+  if (de >= hoje) return;
+  const esquecidos = ocorrencias(de, hoje).filter(o =>
+    o.ev.repetir?.freq !== 'anual' && !estaFeito(o.ev, o.inicio) && !xp.penalizados.includes(`${o.ev.id}|${chaveDia(o.inicio)}`));
+  if (!esquecidos.length) return;
+  xp.penalizados = [...xp.penalizados, ...esquecidos.map(o => `${o.ev.id}|${chaveDia(o.inicio)}`)].slice(-500);
+  const perda = esquecidos.length * PONTOS.esquecido;
+  const caiu = ganhar(perda, null, true);
+  setTimeout(() => {
+    somTriste();
+    toast(`😬 ${esquecidos.length} compromisso${esquecidos.length > 1 ? 's ficaram' : ' ficou'} sem check: ${perda} pontos.` +
+      (caiu ? ` Rebaixado para ${caiu.emoji} ${caiu.nome}` : ''), 7000);
+    render();
+  }, 800);
+}
+
+function htmlTitulo() {
+  const t = tituloDe(xp.pontos), prox = proximoTitulo(xp.pontos);
+  const pct = prox ? Math.round((xp.pontos - t.min) / (prox.min - t.min) * 100) : 100;
+  return `
+    <button class="titulo-card" data-niveis>
+      <span class="titulo-emoji">${t.emoji}</span>
+      <span class="titulo-txt">
+        <span class="titulo-rot">Seu título</span>
+        <b>${t.nome}</b>
+        <span class="titulo-barra"><i style="width:${pct}%"></i></span>
+        <span class="titulo-sub">${xp.pontos} pts · ${prox ? `faltam ${prox.min - xp.pontos} para ${prox.emoji} ${prox.nome}` : 'topo alcançado'}</span>
+      </span>
+      <span class="titulo-seta">›</span>
+    </button>`;
+}
+
+function abrirNiveis() {
+  const atual = tituloDe(xp.pontos);
+  abrirFolha(`
+    <div class="niveis">
+      <h3>Seus títulos</h3>
+      <p>Você tem <b>${xp.pontos} pontos</b>.</p>
+      <ol class="escada">${[...TITULOS].reverse().map(t => `
+        <li class="${t === atual ? 'atual' : t.min > xp.pontos ? 'bloq' : 'passou'}">
+          <span>${t.emoji}</span><b>${t.nome}</b><small>${t.min} pts</small></li>`).join('')}</ol>
+      <div class="regras">
+        <div><b>Ganha</b> ✓ compromisso feito +${PONTOS.feito} · dia completo +${PONTOS.diaCompleto} · foco de 25 min +${PONTOS.foco25} · foco de 50 min +${PONTOS.foco50}</div>
+        <div><b>Perde</b> compromisso que passou do dia sem check ${PONTOS.esquecido}. Dá pra cair de título!</div>
+      </div>
+      <div class="botoes"><button class="primario" id="bOk">Fechar</button></div>
+    </div>`);
+  document.getElementById('bOk').onclick = fecharFolha;
+}
 
 // ---------- Secretária: entende a frase com IA e executa ----------
 const IA_URL = 'https://agenda-voz.guiiestevees.workers.dev/';
@@ -1409,7 +1569,7 @@ function checarLembretes() {
   }
   if (mudou) salvar();
 }
-setInterval(() => { checarLembretes(); if (aba !== 'foco') render(); }, 30000);
+setInterval(() => { checarLembretes(); aplicarPenalidades(); if (aba !== 'foco') render(); }, 30000);
 
 // ---------- Toast ----------
 let toastTimer;
@@ -1422,6 +1582,7 @@ function toast(msg, ms = 2500) {
 // ---------- Entrada vinda do atalho do iPhone ----------
 // ?texto=...  → cria o compromisso direto (Atalho "Ditar Texto")
 // ?voz=1      → abre a tela de ouvir
+aplicarPenalidades();
 render();
 checarLembretes();
 const params = new URLSearchParams(location.search);
