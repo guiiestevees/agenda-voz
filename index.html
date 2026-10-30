@@ -84,8 +84,10 @@
   }
   .aba svg { width: 24px; height: 24px; }
   .aba.ativa { color: var(--accent); font-weight: 600; }
+  .mic-aba { flex: none; background: none; border: 0; padding: 0 6px; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer;
+    color: var(--accent); font: 700 11px/1.2 -apple-system, sans-serif; }
   .mic {
-    flex: none; width: 64px; height: 64px; margin: -28px 6px 0; border-radius: 50%; border: 4px solid var(--card); cursor: pointer;
+    width: 62px; height: 62px; margin-top: -28px; border-radius: 50%; border: 4px solid var(--card);
     background: var(--accent); color: #fff; box-shadow: 0 6px 18px rgba(224,89,42,.4); display: grid; place-items: center;
   }
   .mic svg { width: 28px; height: 28px; }
@@ -249,6 +251,76 @@
   .compartilhar h3 { margin-bottom: 10px; }
   .card-prev { display: block; width: 62%; max-width: 260px; margin: 4px auto 0; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.3); aspect-ratio: 9 / 16; background: var(--bg); }
   .dica-salvar { font-size: 13px; text-align: center; margin-top: 10px !important; }
+  .topo-dir { display: flex; align-items: center; gap: 8px; }
+  .engrenagem { border: 1px solid var(--line); background: var(--card); width: 38px; height: 38px; border-radius: 50%; font-size: 17px; cursor: pointer; }
+  .hero { display: block; }
+  .hero-topo { display: flex; gap: 16px; align-items: center; }
+  .hero-faixa { display: flex; gap: 8px; margin-top: 14px; }
+  .hf-item { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; border: 0; border-radius: 12px; padding: 8px 10px;
+    background: rgba(255,255,255,.2); color: #fff; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; overflow: hidden; }
+  .hf-item.titulo-hf { flex: 2.2; }
+  .hf-nome { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .hf-item.icone { flex: none; justify-content: center; width: 44px; font-size: 17px; }
+  .mini-barra { flex: 1; min-width: 24px; height: 5px; border-radius: 3px; background: rgba(255,255,255,.3); overflow: hidden; }
+  .mini-barra i { display: block; height: 100%; background: #fff; border-radius: 3px; }
+  .dica-criar { margin-top: 12px; padding: 14px 16px; border-radius: 18px; background: var(--card); border: 2px dashed var(--line); display: flex; flex-direction: column; gap: 4px; }
+  .dica-criar span { color: var(--muted); font-size: 14px; }
+  .dica-criar .acoes-dica { display: flex; gap: 8px; margin-top: 8px; }
+  .dica-criar button { border: 0; border-radius: 10px; padding: 10px 12px; font: inherit; font-weight: 700; cursor: pointer; }
+  .dica-criar .falar { background: var(--accent); color: #fff; flex: 1; }
+  .dica-criar .fechar { background: none; color: var(--muted); }
+  details.feitos { margin-top: 8px; }
+  details.feitos summary { list-style: none; cursor: pointer; color: var(--muted); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; padding: 8px 0; }
+  details.feitos summary::-webkit-details-marker { display: none; }
+  details.feitos summary::after { content: ' ›'; }
+  details.feitos[open] summary::after { content: ' ⌄'; }
+  .tudo-feito { text-align: center; padding: 18px; color: var(--muted); background: var(--card); border-radius: 14px; }
+  .checkin.compacto { padding: 10px 12px; }
+  .checkin.compacto .checkin-fogo { font-size: 26px; }
+
+  .checkin-show { text-align: center; padding: 6px 0 4px; }
+  .cs-fogo { font-size: 110px; line-height: 1; animation: fogoEntra .9s cubic-bezier(.2,1.6,.4,1) both; filter: drop-shadow(0 8px 24px rgba(240,116,68,.55)); }
+  @keyframes fogoEntra { 0% { transform: scale(.2) rotate(-20deg); opacity: 0; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
+  .cs-num { font-size: 72px; font-weight: 900; line-height: 1; margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .cs-num.pula { animation: checkpop .5s ease; color: var(--accent); }
+  .cs-rot { color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .08em; font-size: 13px; }
+  .cs-marco { display: inline-block; margin-top: 10px; background: var(--accent-soft); color: var(--accent); font-weight: 800; padding: 6px 12px; border-radius: 999px; }
+  .cs-frase { font-size: 19px; font-weight: 700; margin: 16px 8px 4px; line-height: 1.35; }
+  .cs-pts { color: var(--ok); font-weight: 800; margin-top: 6px; }
+
+  .hab-resumo { padding: 14px 16px; border-radius: 18px; background: var(--card); box-shadow: var(--shadow); margin-bottom: 12px; }
+  .hab-resumo b { font-size: 18px; }
+  .hab { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 16px; background: var(--card); box-shadow: var(--shadow); margin-bottom: 8px; }
+  .hab-emoji { font-size: 30px; flex: none; width: 40px; text-align: center; }
+  .hab-info { flex: 1; min-width: 0; cursor: pointer; }
+  .hab-nome { font-weight: 700; overflow-wrap: anywhere; }
+  .hab.feito .hab-nome { color: var(--muted); }
+  .hab-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .hab-sub .seq-habito { font-size: 12px; }
+  .hab-dias { display: flex; gap: 4px; margin-top: 6px; }
+  .hab-dias i { width: 14px; height: 14px; border-radius: 50%; background: var(--line); font-style: normal; font-size: 8px; display: grid; place-items: center; color: var(--muted); }
+  .hab-dias i.ok { background: var(--ok); }
+  .hab-dias i.folga { background: none; border: 1px dashed var(--line); }
+  .hab .check { width: 40px; height: 40px; }
+  .hab .check svg { width: 22px; height: 22px; }
+  .hab-folga { font-size: 12px; color: var(--muted); flex: none; }
+  .novo-hab { width: 100%; margin-top: 4px; padding: 14px; border-radius: 14px; border: 2px dashed var(--accent); background: none; color: var(--accent); font: inherit; font-weight: 800; cursor: pointer; }
+  .sugestoes { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+  .sugestoes button { border: 1px solid var(--line); background: var(--bg); color: var(--text); border-radius: 999px; padding: 8px 12px; font: inherit; font-size: 14px; cursor: pointer; }
+  .sugestoes button.ativa { border-color: var(--accent); background: var(--accent-soft); }
+  .dias-sel { display: flex; gap: 6px; }
+  .dias-sel button { flex: 1; border: 1px solid var(--line); background: var(--bg); color: var(--muted); border-radius: 10px; padding: 10px 0; font: inherit; font-weight: 700; cursor: pointer; }
+  .dias-sel button.ativa { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .boas-vindas { text-align: center; }
+  .bv-emoji { font-size: 72px; line-height: 1.1; }
+  .bv-pontos { display: flex; gap: 6px; justify-content: center; margin: 14px 0 0; }
+  .bv-pontos i { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+  .bv-pontos i.ativa { background: var(--accent); width: 22px; border-radius: 4px; }
+  .digitar { display: flex; gap: 8px; margin-top: 12px; }
+  .digitar input { flex: 1; min-width: 0; font: inherit; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); color: var(--text); }
+  .digitar button, .link-digitar { font: inherit; font-weight: 700; border: 0; cursor: pointer; }
+  .digitar button { padding: 0 16px; border-radius: 12px; background: var(--accent); color: #fff; }
+  .link-digitar { background: none; color: var(--accent); margin-top: 14px; padding: 6px; }
   .titulo-card {
     width: 100%; display: flex; align-items: center; gap: 14px; margin-top: 10px; padding: 14px 16px; border-radius: 18px;
     background: var(--card); border: 1px solid var(--line); box-shadow: var(--shadow); color: var(--text); font: inherit; text-align: left; cursor: pointer;
@@ -367,14 +439,12 @@
     <h1 id="titulo">Hoje</h1>
     <div class="hoje" id="hoje"></div>
   </div>
-  <button class="icon-btn" id="btnHoje" hidden>Hoje</button>
-  <button class="fogo" id="fogo" hidden aria-label="Sequência de dias"></button>
+  <div class="topo-dir">
+    <button class="icon-btn" id="btnHoje" hidden>Hoje</button>
+    <button class="fogo" id="fogo" hidden aria-label="Sequência de dias"></button>
+    <button class="engrenagem" id="btnMais" aria-label="Ajustes e ajuda">⚙️</button>
+  </div>
 </header>
-
-<form class="quick" id="quick">
-  <input id="quickInput" placeholder="Ex.: médico terça às 4, me lembre 15 min antes" autocomplete="off">
-  <button type="submit">Criar</button>
-</form>
 
 <div class="visoes" id="visoes" hidden>
   <button data-visao="semana">Semana</button><button data-visao="mes">Mês</button>
@@ -410,11 +480,11 @@
 <nav class="abas">
   <button class="aba" data-aba="hoje"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>Hoje</button>
   <button class="aba" data-aba="semana"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16M15 4v16"/></svg>Agenda</button>
-  <button class="mic" id="btnMic" aria-label="Falar com a secretária">
-    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2Z"/></svg>
+  <button class="mic-aba" id="btnMic" aria-label="Falar com a secretária">
+    <span class="mic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2Z"/></svg></span>Falar
   </button>
+  <button class="aba" data-aba="habitos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><path d="M8 12.5l2.8 2.8L16.5 9"/></svg>Hábitos</button>
   <button class="aba" data-aba="foco"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6M12 2v3"/></svg>Foco</button>
-  <button class="aba" data-aba="mais"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>Mais</button>
 </nav>
 
 <div class="overlay" id="overlay"><div class="sheet" id="sheet"></div></div>
@@ -702,7 +772,7 @@ function quandoFalta(inicio, agora) {
 }
 
 // Os compromissos de um dia, com os horários livres (8h–22h) entre eles
-function linhaDoTempo(dia, agora, comLivres) {
+function linhaDoTempo(dia, agora, comLivres, esconderFeitos) {
   const ocs = ocorrencias(dia, maisDias(dia, 1));
   const ehHoje = chaveDia(dia) === chaveDia(agora);
   if (!ocs.length) return `<div class="dia-livre">Nada marcado. Dia livre ✨</div>${ehHoje ? linhaAgora(agora) : ''}`;
@@ -717,7 +787,7 @@ function linhaDoTempo(dia, agora, comLivres) {
   for (const o of ocs) {
     if (!agoraPosto && o.inicio > agora) { html += linhaAgora(agora); agoraPosto = true; }
     lacuna(o.inicio);
-    html += cartao(o, agora);
+    if (!(esconderFeitos && estaFeito(o.ev, o.inicio))) html += cartao(o, agora);
     const fim = new Date(Math.ceil((o.inicio.getTime() + 3600000) / 1800000) * 1800000); // +1h, arredondado à meia hora
     if (fim > cursor) cursor = fim;
   }
@@ -735,39 +805,40 @@ function telaHoje() {
   const agora = new Date(), hoje = inicioDoDia(agora);
   const prox = ocorrencias(agora, maisDias(hoje, 8)).find(o => !estaFeito(o.ev, o.inicio));
   const deHoje = ocorrencias(hoje, maisDias(hoje, 1));
-  const feitos = deHoje.filter(o => estaFeito(o.ev, o.inicio)).length, total = deHoje.length;
+  const feitosL = deHoje.filter(o => estaFeito(o.ev, o.inicio)), total = deHoje.length, feitos = feitosL.length;
   const tudo = total > 0 && feitos === total;
   const frase = !total ? 'Dia livre ✨' : tudo ? 'Tudo concluído! 🎉'
     : `Falta${total - feitos > 1 ? 'm' : ''} ${total - feitos} de ${total}`;
-  // conquistas da semana (domingo até hoje)
-  const semanaIni = maisDias(hoje, -hoje.getDay());
-  const feitosSemana = ocorrencias(semanaIni, maisDias(hoje, 1)).filter(o => estaFeito(o.ev, o.inicio)).length;
-  const focosHoje = focos.filter(f => f.dia === chaveDia(hoje)).length;
+  const t = tituloDe(xp.pontos), proxT = proximoTitulo(xp.pontos);
+  const pctT = proxT ? Math.round((xp.pontos - t.min) / (proxT.min - t.min) * 100) : 100;
+  const d = desafioDaSemana();
   let html = htmlCheckin() + `
     <div class="hero ${tudo ? 'completo' : ''}">
-      <div class="anel">
-        <svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="34" class="trilha"/><circle cx="40" cy="40" r="34" class="prog" pathLength="100" stroke-dasharray="100" stroke-dashoffset="${total ? 100 - feitos / total * 100 : 100}"/></svg>
-        <div class="anel-txt">${total ? `<b>${feitos}</b>/${total}` : '☀️'}</div>
+      <div class="hero-topo">
+        <div class="anel">
+          <svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="34" class="trilha"/><circle cx="40" cy="40" r="34" class="prog" pathLength="100" stroke-dasharray="100" stroke-dashoffset="${total ? 100 - feitos / total * 100 : 100}"/></svg>
+          <div class="anel-txt">${total ? `<b>${feitos}</b>/${total}` : '☀️'}</div>
+        </div>
+        <div class="hero-txt">
+          <div class="hero-rot">Seu dia</div>
+          <div class="hero-tit">${frase}</div>
+          ${prox ? `<div class="hero-prox" data-id="${prox.ev.id}">Próximo: <b>${esc(prox.ev.titulo)}</b> · ${quandoFalta(prox.inicio, agora)}</div>` : ''}
+        </div>
       </div>
-      <div class="hero-txt">
-        <div class="hero-rot">Seu dia</div>
-        <div class="hero-tit">${frase}</div>
-        ${prox ? `<div class="hero-prox" data-id="${prox.ev.id}">Próximo: <b>${esc(prox.ev.titulo)}</b> · ${quandoFalta(prox.inicio, agora)}</div>` : ''}
+      <div class="hero-faixa">
+        <button class="hf-item titulo-hf" data-niveis><span>${t.emoji}</span><span class="hf-nome">${t.nome}</span><span class="mini-barra"><i style="width:${pctT}%"></i></span></button>
+        <button class="hf-item" data-desafio>🎯 ${d.feito}/${d.meta}</button>
+        <button class="hf-item icone" data-compartilhar aria-label="Compartilhar meu dia">📸</button>
       </div>
-    </div>
-    ${htmlTitulo()}
-    ${htmlDesafio()}
-    <div class="chips">
-      <button class="chip destaque" data-compartilhar>📸 Compartilhar meu dia</button>
-      <span class="chip">✓ ${feitosSemana} na semana</span>
-      <button class="chip" data-ir="foco">🍅 ${focosHoje} hoje</button>
     </div>`;
-  html += `<section class="grupo"><h2>Hoje</h2>${linhaDoTempo(hoje, agora, true)}</section>`;
-  for (let i = 1; i <= 7; i++) {
-    const dia = maisDias(hoje, i), ocs = ocorrencias(dia, maisDias(dia, 1));
-    if (ocs.length) html += `<section class="grupo"><h2>${esc(maiuscula(rotuloDia(dia)))}</h2>${ocs.map(o => cartao(o, agora)).join('')}</section>`;
-  }
-  if (!eventos.length) html += `<div class="vazio">Toque no microfone e fale como se fosse com uma secretária:<br><b>“dentista quinta às 3, me lembre 30 minutos antes”</b><br><br><a href="#" data-ir="mais">Configurar os 2 toques atrás do iPhone →</a></div>`;
+  if (eventos.length < 3 && !lerPref('agenda.dicaFechada', '')) html += `
+    <div class="dica-criar">
+      <b>🎙️ Como criar um compromisso</b>
+      <span>Toque em <b>Falar</b>, lá embaixo, e diga do seu jeito: “dentista quinta às 3, me lembra meia hora antes”.</span>
+      <div class="acoes-dica"><button class="falar" data-falar>Experimentar agora</button><button class="fechar" data-fechar-dica>Entendi</button></div>
+    </div>`;
+  html += `<section class="grupo"><h2>Hoje</h2>${total && tudo ? '<div class="tudo-feito">Tudo feito por hoje. Merecido! 💪</div>' : linhaDoTempo(hoje, agora, true, true)}</section>`;
+  if (feitos) html += `<details class="feitos"><summary>Feitos (${feitos})</summary>${feitosL.map(o => cartao(o, agora)).join('')}</details>`;
   return html;
 }
 
@@ -930,14 +1001,14 @@ function render() {
   document.body.classList.toggle('cheia', aba === 'semana' && visao === 'semana');
   document.getElementById('btnHoje').hidden = aba !== 'semana';
   const fogo = document.getElementById('fogo');
-  fogo.hidden = aba === 'semana';
+  fogo.hidden = aba === 'semana' || aba === 'mais';
   fogo.textContent = `🔥 ${sequencia()}`;
   fogo.classList.toggle('apagado', !fezCheckinHoje());
   document.getElementById('visoes').hidden = aba !== 'semana';
   document.querySelectorAll('[data-visao]').forEach(b => b.classList.toggle('ativa', b.dataset.visao === visao));
   document.querySelectorAll('.aba').forEach(b => b.classList.toggle('ativa', b.dataset.aba === aba));
-  document.getElementById('titulo').textContent = { hoje: saudacao(), semana: 'Agenda', foco: 'Foco', mais: 'Mais' }[aba];
-  document.getElementById('quick').hidden = aba !== 'hoje';
+  document.getElementById('titulo').textContent = { hoje: saudacao(), semana: 'Agenda', habitos: 'Hábitos', foco: 'Foco', mais: 'Ajustes' }[aba];
+  document.getElementById('btnMais').hidden = aba === 'mais';
   document.getElementById('mais').hidden = aba !== 'mais';
   lista.hidden = aba === 'mais';
   document.getElementById('hoje').textContent = maiuscula(fmtDataLonga(new Date()));
@@ -945,6 +1016,7 @@ function render() {
   else if (aba === 'semana' && visao === 'semana') { lista.innerHTML = telaSemana(); montarGrade(pos); }
   else if (aba === 'semana') lista.innerHTML = telaMes();
   else if (aba === 'foco') lista.innerHTML = telaFoco();
+  else if (aba === 'habitos') lista.innerHTML = telaHabitos();
   destacarId = null;
 }
 
@@ -963,18 +1035,26 @@ function navegar(passo) {
 }
 document.querySelectorAll('.aba').forEach(b => b.onclick = () => irPara(b.dataset.aba));
 document.getElementById('btnHoje').onclick = () => navegar('hoje');
-document.getElementById('fogo').onclick = () => {
+document.getElementById('fogo').onclick = (e) => {
+  if (!fezCheckinHoje()) return fazerCheckin(e.currentTarget);
   const n = sequencia();
-  toast(fezCheckinHoje() ? `🔥 ${n} dia${n > 1 ? 's' : ''} seguido${n > 1 ? 's' : ''}. Volta amanhã pra manter!` : 'Faça o check-in de hoje na tela Hoje 🔥', 3500);
+  toast(`🔥 ${n} dia${n > 1 ? 's' : ''} seguido${n > 1 ? 's' : ''}. Volta amanhã pra manter!`, 3500);
 };
+document.getElementById('btnMais').onclick = () => irPara('mais');
 document.querySelectorAll('[data-visao]').forEach(b => b.onclick = () => {
   visao = b.dataset.visao; gravarPref('agenda.visao', visao); rolarParaDia = true; render(); window.scrollTo(0, 0);
 });
 window.addEventListener('resize', () => { if (aba === 'semana') render(); });
 document.getElementById('lista').addEventListener('click', (ev) => {
-  const alvo = ev.target.closest('[data-compartilhar], [data-checkin], [data-check], [data-niveis], [data-id], [data-dia], [data-nav], [data-ir]');
+  const alvo = ev.target.closest('[data-falar], [data-fechar-dica], [data-desafio], [data-hab-check], [data-hab], [data-novo-hab], [data-compartilhar], [data-checkin], [data-check], [data-niveis], [data-id], [data-dia], [data-nav], [data-ir]');
   if (!alvo) return;
-  if ('compartilhar' in alvo.dataset) abrirCompartilhar();
+  if ('falar' in alvo.dataset) abrirVoz();
+  else if ('fecharDica' in alvo.dataset) { gravarPref('agenda.dicaFechada', '1'); render(); }
+  else if ('desafio' in alvo.dataset) abrirDesafio();
+  else if (alvo.dataset.habCheck) marcarHabito(alvo);
+  else if (alvo.dataset.hab) abrirHabito(alvo.dataset.hab);
+  else if ('novoHab' in alvo.dataset) abrirHabito(null);
+  else if ('compartilhar' in alvo.dataset) abrirCompartilhar();
   else if ('checkin' in alvo.dataset) fazerCheckin(alvo);
   else if (alvo.dataset.check) marcarFeito(alvo);
   else if ('niveis' in alvo.dataset) abrirNiveis();
@@ -1197,25 +1277,76 @@ function sequencia() {
   return n;
 }
 const fezCheckinHoje = () => xp.checkins.includes(chaveDia(new Date()));
+// Uma frase diferente para cada dia
+const FRASES_DIA = [
+  'Quem aparece todo dia, vence todo dia.', 'Disciplina é fazer mesmo sem vontade. Você veio. 👊',
+  'Bicho-preguiça nenhum chega até aqui.', 'Pequenos passos, todo dia, viram uma escada.',
+  'Hoje é dia de riscar coisa da lista.', 'O fogo tá aceso. Não deixa apagar!',
+  'Você contra você de ontem. E você tá ganhando.', 'Organizado assim, até a agenda fica com inveja.',
+  'Constância vale mais que pressa.', 'Um dia de cada vez. E hoje já começou bem.',
+  'Café, check-in e bora.', 'Quem planeja o dia, manda no dia.',
+  'Tá vendo esse fogo? Foi você que acendeu.', 'Mais um dia, mais um degrau.',
+  'Produtividade não é correr, é não parar.', 'Hoje você escolheu aparecer. Isso já é muito.',
+  'Faz o simples bem feito. Todo dia.', 'Todo Leão já foi Bicho-preguiça um dia.',
+  'Sua versão do futuro agradece esse check-in.', 'Feito é melhor que perfeito.',
+  'Bora fazer acontecer!', 'Foco no que importa. O resto a secretária anota.',
+  'Ninguém segura quem tem constância.', 'Respira, planeja e executa.',
+  'Mais um dia pra conta. Orgulho!', 'Até o caramujo chega, se não parar.',
+  'Sequência é igual planta: rega todo dia.', 'Hoje é um ótimo dia pra ser produtivo.',
+  'Você tá construindo um hábito. Isso muda vidas.', 'Missão de hoje: ser 1% melhor que ontem.',
+];
+function fraseDoDia() {
+  const d = new Date(), inicioAno = new Date(d.getFullYear(), 0, 0);
+  return FRASES_DIA[Math.floor((d - inicioAno) / 86400000) % FRASES_DIA.length];
+}
+function somFogo() {
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const t = audioCtx.currentTime;
+    [392, 523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, i) => {   // arpejo subindo
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain(), ini = t + i * 0.07;
+      o.type = i < 5 ? 'triangle' : 'sine'; o.frequency.value = f;
+      g.gain.setValueAtTime(0, ini); g.gain.linearRampToValueAtTime(0.2, ini + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.001, ini + (i === 5 ? 1.1 : 0.35));
+      o.connect(g); g.connect(audioCtx.destination); o.start(ini); o.stop(ini + 1.2);
+    });
+  } catch {}
+}
 function fazerCheckin(botao) {
   if (fezCheckinHoje()) return;
+  const antes = sequencia();
   xp.checkins = [...xp.checkins.slice(-400), chaveDia(new Date())];
-  const r = botao.getBoundingClientRect();
-  ganhar(PONTOS.checkin, { x: r.left + r.width / 2, y: r.top });
-  tocarSom(false);
-  confete(r.left + r.width / 2, r.top + r.height / 2, false);
   const n = sequencia();
-  toast(n > 1 ? `🔥 ${n} dias seguidos! Não deixa apagar.` : '🔥 Sequência começou! Volta amanhã.', 3500);
-  setTimeout(render, 600);
+  ganhar(PONTOS.checkin);
+  somFogo();
+  const marco = { 3: '3 dias! Tá pegando o ritmo', 7: '🏅 1 semana de fogo!', 14: '🏅 2 semanas sem parar!', 30: '🏆 1 mês de fogo!', 50: '🏆 50 dias!', 100: '👑 100 dias. Lendário.', 365: '💎 1 ano inteiro!' }[n];
+  abrirFolha(`
+    <div class="checkin-show">
+      <div class="cs-fogo">🔥</div>
+      <div class="cs-num" id="csNum">${antes}</div>
+      <div class="cs-rot">dia${n > 1 ? 's' : ''} seguido${n > 1 ? 's' : ''}</div>
+      ${marco ? `<div class="cs-marco">${marco}</div>` : ''}
+      <div class="cs-frase">“${fraseDoDia()}”</div>
+      <div class="cs-pts">+${PONTOS.checkin} ponto · check-in feito</div>
+      <div class="botoes"><button class="primario" id="bOk">Bora!</button></div>
+    </div>`);
+  document.getElementById('bOk').onclick = () => { fecharFolha(); render(); };
+  setTimeout(() => {
+    const el = document.getElementById('csNum');
+    if (el) { el.textContent = n; el.classList.add('pula'); }
+    confete(innerWidth / 2, innerHeight * 0.45, true);
+  }, 650);
+  render();
 }
 function htmlCheckin() {
   if (fezCheckinHoje()) return '';
   const n = sequencia();
   return `
-    <div class="checkin">
+    <div class="checkin compacto">
       <span class="checkin-fogo">🔥</span>
       <span class="checkin-txt"><b>${n ? `${n} dia${n > 1 ? 's' : ''} seguido${n > 1 ? 's' : ''}` : 'Comece sua sequência'}</b>
-        <small>${n ? 'Faça o check-in de hoje pra não perder!' : 'Faça check-in todo dia e não deixe o fogo apagar'}</small></span>
+        <small>${n ? 'Não deixa o fogo apagar!' : 'Um check-in por dia'}</small></span>
       <button class="checkin-btn" data-checkin>Check-in ✓</button>
     </div>`;
 }
@@ -1369,6 +1500,164 @@ function htmlDesafio() {
     </div>`;
 }
 
+function abrirDesafio() {
+  abrirFolha(`${htmlDesafio()}
+    <p style="margin-top:12px">Todo domingo aparece um desafio novo. Completou, ganhou os pontos.</p>
+    <div class="botoes"><button class="primario" id="bOk">Fechar</button></div>`);
+  document.getElementById('bOk').onclick = fecharFolha;
+}
+
+// ---------- Hábitos: coisas pra fazer com frequência, sem horário ----------
+let habitos = lerJSON('agenda.habitos', []);   // [{ id, nome, emoji, dias: [0..6] (vazio = todo dia), feitos: ['AAAA-MM-DD'] }]
+const salvarHabitos = () => gravarJSON('agenda.habitos', habitos);
+const SUGESTOES_HAB = [['💧', 'Beber 2L de água'], ['🏋️', 'Treinar'], ['📖', 'Ler 10 páginas'], ['💊', 'Tomar remédio'],
+  ['🧘', 'Meditar'], ['🚶', 'Caminhar'], ['🥗', 'Comer saudável'], ['😴', 'Dormir antes das 23h'], ['🙏', 'Agradecer'], ['📵', 'Menos celular']];
+const EMOJI_POR_PALAVRA = [[/agua|beber/, '💧'], [/trein|academia|muscula|exercicio/, '🏋️'], [/ler|leitura|livro/, '📖'], [/remedio|vitamina|suplement/, '💊'],
+  [/medit|respira/, '🧘'], [/camin|correr|corrida/, '🚶'], [/comer|aliment|salada|dieta/, '🥗'], [/dormir|sono/, '😴'], [/estud|curso|ingles/, '🎓'],
+  [/agradec|orar|reza/, '🙏'], [/celular|tela/, '📵'], [/alonga|yoga/, '🤸'], [/escrev|diario/, '✍️']];
+const emojiPara = (nome) => (EMOJI_POR_PALAVRA.find(([re]) => re.test(normalizar(nome))) || [, '✅'])[1];
+const habNoDia = (h, d) => !h.dias.length || h.dias.includes(d.getDay());
+function sequenciaHab(h) {
+  let n = 0;
+  for (let i = 0, d = inicioDoDia(new Date()); i < 400; i++, d = maisDias(d, -1)) {
+    if (!habNoDia(h, d)) continue;
+    const feito = h.feitos.includes(chaveDia(d));
+    if (!feito && i === 0) continue;
+    if (!feito) break;
+    n++;
+  }
+  return n;
+}
+function telaHabitos() {
+  const hoje = inicioDoDia(new Date()), hk = chaveDia(hoje);
+  if (!habitos.length) return `
+    <div class="vazio" style="padding-top:24px"><div style="font-size:56px">🌱</div><b>Crie seu primeiro hábito</b><br>
+      Coisas que você quer fazer com frequência, sem horário marcado. Cada check vale +${PONTOS.feito} pontos.</div>
+    <div class="sugestoes" style="justify-content:center">${SUGESTOES_HAB.slice(0, 6).map(([e, n]) => `<button data-novo-hab data-sug="${e}|${n}">${e} ${n}</button>`).join('')}</div>
+    <button class="novo-hab" data-novo-hab>+ Criar hábito</button>
+    <p style="text-align:center;margin-top:12px">Ou toque em <b>Falar</b> e diga: “beber água todo dia”.</p>`;
+  const deHoje = habitos.filter(h => habNoDia(h, hoje)), feitosHoje = deHoje.filter(h => h.feitos.includes(hk)).length;
+  return `
+    <div class="hab-resumo"><b>${deHoje.length ? (feitosHoje === deHoje.length ? 'Todos feitos hoje! 💪' : `${feitosHoje} de ${deHoje.length} hoje`) : 'Folga de hábitos hoje'}</b>
+      <div class="titulo-barra"><i style="width:${deHoje.length ? feitosHoje / deHoje.length * 100 : 0}%"></i></div></div>
+    ${habitos.map(h => {
+      const hoje7 = Array.from({ length: 7 }, (_, i) => maisDias(hoje, i - 6));
+      const feito = h.feitos.includes(hk), seq = sequenciaHab(h);
+      return `
+      <div class="hab ${feito ? 'feito' : ''}">
+        <span class="hab-emoji">${h.emoji}</span>
+        <div class="hab-info" data-hab="${h.id}">
+          <div class="hab-nome">${esc(h.nome)}</div>
+          <div class="hab-sub">${seq >= 2 ? `<span class="seq-habito">🔥 ${seq} seguidas</span> · ` : ''}${h.dias.length ? h.dias.map(d => DIAS_CURTOS[d]).join(', ') : 'todo dia'}</div>
+          <div class="hab-dias">${hoje7.map(d => `<i class="${!habNoDia(h, d) ? 'folga' : h.feitos.includes(chaveDia(d)) ? 'ok' : ''}" title="${DIAS_CURTOS[d.getDay()]}"></i>`).join('')}</div>
+        </div>
+        ${habNoDia(h, hoje) ? `<button class="check ${feito ? 'on' : ''}" data-hab-check="${h.id}" aria-label="Marcar hábito">${ICONE_CHECK}</button>` : '<span class="hab-folga">folga</span>'}
+      </div>`;
+    }).join('')}
+    <button class="novo-hab" data-novo-hab>+ Novo hábito</button>`;
+}
+function marcarHabito(botao) {
+  const h = habitos.find(x => x.id === botao.dataset.habCheck), hk = chaveDia(new Date());
+  if (!h) return;
+  const feito = !h.feitos.includes(hk);
+  h.feitos = feito ? [...h.feitos.slice(-400), hk] : h.feitos.filter(d => d !== hk);
+  salvarHabitos();
+  const r = botao.getBoundingClientRect();
+  ganhar(feito ? PONTOS.feito : -PONTOS.feito, { x: r.left + r.width / 2, y: r.top });
+  botao.classList.toggle('on', feito);
+  botao.closest('.hab').classList.toggle('feito', feito);
+  if (feito) {
+    const deHoje = habitos.filter(x => habNoDia(x, new Date()));
+    const todos = deHoje.length > 1 && deHoje.every(x => x.feitos.includes(hk));
+    tocarSom(todos);
+    confete(r.left + r.width / 2, r.top + r.height / 2, todos);
+    if (todos) toast('💪 Todos os hábitos de hoje feitos!', 3500);
+  }
+  setTimeout(render, 700);
+}
+function abrirHabito(id) {
+  const h = id ? habitos.find(x => x.id === id) : null;
+  let dias = h ? [...h.dias] : [];
+  abrirFolha(`
+    <form class="editar" id="fHab">
+      <h3>${h ? 'Editar hábito' : 'Novo hábito'}</h3>
+      ${h ? '' : `<div class="sugestoes">${SUGESTOES_HAB.map(([e, n]) => `<button type="button" data-s="${e}|${n}">${e} ${n}</button>`).join('')}</div>`}
+      <label>Nome</label>
+      <input name="nome" value="${h ? esc(h.nome) : ''}" placeholder="Ex.: beber 2L de água" required>
+      <label>Quais dias</label>
+      <div class="dias-sel">${['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((l, i) => `<button type="button" data-d="${i}">${l}</button>`).join('')}</div>
+      <div class="botoes">
+        ${h ? '<button type="button" class="perigo" id="bExcluirHab">Excluir</button>' : ''}
+        <button type="submit" class="primario">${h ? 'Salvar' : 'Criar hábito'}</button>
+      </div>
+    </form>`);
+  const f = document.getElementById('fHab');
+  let emoji = h ? h.emoji : null;
+  const pintarDias = () => f.querySelectorAll('[data-d]').forEach(b => b.classList.toggle('ativa', !dias.length || dias.includes(+b.dataset.d)));
+  pintarDias();
+  f.querySelectorAll('[data-d]').forEach(b => b.onclick = () => {
+    const d = +b.dataset.d;
+    if (!dias.length) dias = [0, 1, 2, 3, 4, 5, 6];
+    dias = dias.includes(d) ? dias.filter(x => x !== d) : [...dias, d].sort();
+    if (dias.length === 7 || !dias.length) dias = [];
+    pintarDias();
+  });
+  f.querySelectorAll('[data-s]').forEach(b => b.onclick = () => {
+    const [e, n] = b.dataset.s.split('|'); emoji = e; f.nome.value = n;
+    f.querySelectorAll('[data-s]').forEach(x => x.classList.toggle('ativa', x === b));
+  });
+  f.onsubmit = (e) => {
+    e.preventDefault();
+    const nome = f.nome.value.trim(); if (!nome) return;
+    if (h) { h.nome = nome; h.dias = dias; if (!emoji || emoji === h.emoji) h.emoji = h.emoji || emojiPara(nome); }
+    else habitos.push({ id: novoId(), nome, emoji: emoji || emojiPara(nome), dias, feitos: [] });
+    salvarHabitos(); fecharFolha();
+    if (aba !== 'habitos') irPara('habitos'); else render();
+    toast(h ? 'Hábito salvo' : '🌱 Hábito criado! Marque todo dia pra acender o fogo.');
+  };
+  if (h) document.getElementById('bExcluirHab').onclick = () => {
+    habitos = habitos.filter(x => x !== h); salvarHabitos(); fecharFolha(); render(); toast('Hábito excluído');
+  };
+}
+// sugestão tocada na tela vazia já abre o formulário preenchido
+document.getElementById('lista').addEventListener('click', (ev) => {
+  const b = ev.target.closest('[data-sug]');
+  if (!b) return;
+  setTimeout(() => {
+    const [e, n] = b.dataset.sug.split('|'), f = document.getElementById('fHab');
+    if (!f) return;
+    f.nome.value = n;
+    const s = [...f.querySelectorAll('[data-s]')].find(x => x.dataset.s === `${e}|${n}`);
+    if (s) s.click();
+  }, 0);
+});
+
+// ---------- Primeira vez no app: 3 passos ----------
+function boasVindas(passo = 0) {
+  const instalado = navigator.standalone || matchMedia('(display-mode: standalone)').matches;
+  const passos = [
+    ['🎙️', 'Fale com sua secretária', 'Toque em <b>Falar</b>, lá embaixo, e diga do seu jeito: <i>“dentista quinta às 3, me lembra meia hora antes”</i>. Ela anota, muda, desmarca e responde o que você tem no dia.'],
+    ['🦥', 'Marque o que fez e suba de título', 'Você começa como <b>Bicho-preguiça</b>. Cada compromisso, hábito e foco feito vale pontos até chegar a 💰 <b>Milionário</b>. Faça check-in todo dia e não deixe o 🔥 apagar.'],
+    instalado
+      ? ['📲', 'Abra com 2 toques', 'Dá pra falar com a secretária tocando 2 vezes atrás do iPhone. Veja como configurar em <b>⚙️ Ajustes</b>.']
+      : ['📲', 'Coloque na Tela de Início', 'No Safari, toque em <b>Compartilhar ⬆️</b> e depois em <b>“Adicionar à Tela de Início”</b>. O app abre em tela cheia e seus dados ficam guardados.'],
+  ];
+  const [emoji, tit, txt] = passos[passo], ultimo = passo === passos.length - 1;
+  abrirFolha(`
+    <div class="boas-vindas">
+      <div class="bv-emoji">${emoji}</div>
+      <h3>${tit}</h3>
+      <p style="margin-top:8px">${txt}</p>
+      <div class="bv-pontos">${passos.map((_, i) => `<i class="${i === passo ? 'ativa' : ''}"></i>`).join('')}</div>
+      <div class="botoes">${passo ? '<button id="bVolta">Voltar</button>' : ''}<button class="primario" id="bSegue">${ultimo ? 'Começar' : 'Próximo'}</button></div>
+    </div>`);
+  if (passo) document.getElementById('bVolta').onclick = () => boasVindas(passo - 1);
+  document.getElementById('bSegue').onclick = () => {
+    if (!ultimo) return boasVindas(passo + 1);
+    gravarPref('agenda.boasVindas', '1'); fecharFolha();
+  };
+}
+
 // ---------- Card para compartilhar (Stories) ----------
 const RE_TREINO = /academia|treino|muscula|corrida|correr|pilates|crossfit|yoga|ioga|futebol|natacao|bike|funcional|caminhada|luta|jiu|boxe|danca/;
 const fmtMin = (m) => m >= 60 ? `${Math.floor(m / 60)}h${m % 60 ? pad(m % 60) : ''}` : `${m} min`;
@@ -1386,6 +1675,8 @@ function dadosCard(tipo) {
   if (feitos.length) itens.push(['✅', `${feitos.length}`, `compromisso${feitos.length > 1 ? 's' : ''} feito${feitos.length > 1 ? 's' : ''}`]);
   if (focoMin) itens.push(['⏱️', fmtMin(focoMin), 'de foco']);
   if (treinos.length) itens.push(['🏋️', semana ? `${treinos.length}` : '✓', semana ? `treino${treinos.length > 1 ? 's' : ''}` : 'treino feito']);
+  const habFeitos = habitos.reduce((s, h) => s + h.feitos.filter(d => naSemana(d, ini, fim)).length, 0);
+  if (habFeitos) itens.push(['💪', `${habFeitos}`, `hábito${habFeitos > 1 ? 's' : ''} cumprido${habFeitos > 1 ? 's' : ''}`]);
   if (!itens.length) itens.push(['📅', '✓', 'dia organizado']);
   const periodo = semana
     ? `Semana de ${ini.getDate()}/${pad(ini.getMonth() + 1)} a ${hoje.getDate()}/${pad(hoje.getMonth() + 1)}`
@@ -1530,6 +1821,10 @@ const novoId = () => String(ultimoId = Math.max(Date.now(), ultimoId + 1));
 
 // Aplica uma ação na agenda; devolve o compromisso criado/alterado (ou null)
 function aplicarAcao(a, frase) {
+  if (a.acao === 'habito' && a.titulo) {
+    habitos.push({ id: novoId(), nome: a.titulo, emoji: a.emoji || emojiPara(a.titulo), dias: (a.diasSemana || []).length === 7 ? [] : (a.diasSemana || []), feitos: [] });
+    return null;
+  }
   const alvo = a.eventoId ? eventos.find(e => e.id === a.eventoId) : null;
   if (a.acao === 'criar' && a.data && a.hora) {
     const ev = { id: novoId(), titulo: a.titulo || 'Compromisso', inicio: dataHoraLocal(a.data, a.hora).toISOString(),
@@ -1564,9 +1859,10 @@ function aplicarAcao(a, frase) {
 }
 
 function executar(r, frase) {
-  const antes = JSON.stringify(eventos);
+  const antes = JSON.stringify({ e: eventos, h: habitos });
   const tocados = (r.tipo === 'agir' ? r.acoes : []).map(a => aplicarAcao(a, frase)).filter(Boolean);
-  const mudou = JSON.stringify(eventos) !== antes;
+  const mudou = JSON.stringify({ e: eventos, h: habitos }) !== antes;
+  if (habitos.length !== JSON.parse(antes).h.length) salvarHabitos();
   if (r.tipo === 'agir' && !mudou) r = { ...r, tipo: 'nao_entendi', resposta: r.resposta || 'Não entendi. Pode repetir?' };
   // Só mostra os que continuam na agenda (ex.: criado e depois desmarcado na mesma fala)
   const mostrar = tocados.filter((ev, i) => eventos.includes(ev) && tocados.indexOf(ev) === i);
@@ -1575,13 +1871,6 @@ function executar(r, frase) {
   mostrarResultado(r, frase, mostrar, mudou ? antes : null);
 }
 
-document.getElementById('quick').addEventListener('submit', (e) => {
-  e.preventDefault();
-  const inp = document.getElementById('quickInput');
-  criarDeFrase(inp.value);
-  inp.value = '';
-  inp.blur();
-});
 
 // ---------- Folhas (overlay) ----------
 const overlay = document.getElementById('overlay');
@@ -1636,7 +1925,7 @@ function mostrarResultado(r, frase, evs, antes) {
   if (um) document.getElementById('bEditar').onclick = () => abrirEdicao(um);
   if (r.tipo === 'nao_entendi') document.getElementById('bDeNovo').onclick = abrirVoz;
   if (antes) document.getElementById('bDesfazer').onclick = () => {
-    eventos = JSON.parse(antes); salvar(); render(); fecharFolha(); toast('Desfeito');
+    const a = JSON.parse(antes); eventos = a.e; habitos = a.h; salvar(); salvarHabitos(); render(); fecharFolha(); toast('Desfeito');
   };
 }
 
@@ -1719,9 +2008,27 @@ function abrirVoz() {
       <button class="pulse" id="vMic">${ICONE_MIC}</button>
       <div class="transcricao" id="vTexto"></div>
       <div class="exemplo">Ex.: “médico terça às 4” · “desmarca a academia de amanhã” · “o que tenho amanhã?”</div>
+      <button class="link-digitar" id="vDigitar">⌨️ Prefiro digitar</button>
     </div>`);
+  document.getElementById('vDigitar').onclick = abrirDigitar;
   document.getElementById('vMic').onclick = () => rec ? pararReconhecimento() : iniciarReconhecimento();
   iniciarReconhecimento();
+}
+
+function abrirDigitar() {
+  pararReconhecimento();
+  abrirFolha(`
+    <div class="ouvindo">
+      <h3>Escreva para a secretária</h3>
+      <form class="digitar" id="fDigitar">
+        <input id="dTexto" placeholder="Ex.: dentista quinta às 3" autocomplete="off" enterkeyhint="send">
+        <button type="submit">Enviar</button>
+      </form>
+      <div class="exemplo" style="margin-top:12px">Dá pra criar, mudar, desmarcar e perguntar, igual falando.</div>
+    </div>`);
+  const inp = document.getElementById('dTexto');
+  setTimeout(() => inp.focus(), 50);
+  document.getElementById('fDigitar').onsubmit = (e) => { e.preventDefault(); if (inp.value.trim()) criarDeFrase(inp.value); };
 }
 
 function iniciarReconhecimento() {
@@ -1824,6 +2131,7 @@ checarLembretes();
 const params = new URLSearchParams(location.search);
 if (params.get('texto')) criarDeFrase(params.get('texto'));
 else if (params.has('voz')) abrirVoz();
+else if (!lerPref('agenda.boasVindas', '')) boasVindas();
 if (params.toString()) history.replaceState(null, '', location.pathname);
 </script>
 </body>

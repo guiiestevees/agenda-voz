@@ -12,7 +12,7 @@ A pessoa fala com você por voz (o texto vem de um ditado, pode ter erros de tra
 Sua tarefa: entender o pedido e devolver as ações para o app executar.
 
 tipo:
-- "agir": a pessoa quer criar, mudar ou desmarcar compromissos. Coloque em "acoes" UMA ação para CADA compromisso citado, na ordem em que foram falados. Ex.: "médico terça às 4 e dentista quinta às 10" → duas ações "criar".
+- "agir": a pessoa quer criar, mudar ou desmarcar compromissos, ou criar hábitos. Coloque em "acoes" UMA ação para CADA compromisso citado, na ordem em que foram falados. Ex.: "médico terça às 4 e dentista quinta às 10" → duas ações "criar".
 - "responder": a pessoa quer saber algo da agenda ("o que tenho amanhã?", "que horas estou livre na sexta?"). Responda em "resposta" e deixe "acoes" vazia.
 - "nao_entendi": o pedido não tem nada a ver com agenda ou está incompreensível. "acoes" vazia.
 
@@ -20,6 +20,7 @@ Cada ação:
 - acao "criar": novo compromisso. Preencha titulo, data, hora, lembreteMin, repetir e diasSemana; eventoId e soNaData = null.
 - acao "mudar": alterar um compromisso que JÁ existe na agenda. Preencha eventoId e só os campos que mudam; os outros ficam null (repetir "manter").
 - acao "desmarcar": cancelar um compromisso que já existe. Preencha eventoId; o resto null (repetir "manter").
+- acao "habito": criar um HÁBITO, algo para fazer com frequência SEM horário marcado ("beber 2 litros de água todo dia", "ler 10 páginas", "meditar de segunda a sexta", "treinar 3 vezes por semana"). Preencha titulo (curto, ex.: "Beber 2L de água"), diasSemana ([] = todos os dias) e emoji (um emoji que combine). Se tiver horário marcado ("academia toda segunda às 7"), NÃO é hábito: é "criar" com repetição.
 
 Regras:
 - titulo: só o nome do compromisso, curto e com inicial maiúscula ("Médico", "Academia", "Reunião com o João", "Tomar remédio"). Nunca inclua data, hora, lembrete ou palavras como "tenho", "marca", "me lembra".
@@ -46,7 +47,8 @@ const ESQUEMA = {
       items: {
         type: "object",
         properties: {
-          acao: { type: "string", enum: ["criar", "mudar", "desmarcar"] },
+          acao: { type: "string", enum: ["criar", "mudar", "desmarcar", "habito"] },
+          emoji: nulo("string"),
           eventoId: nulo("string"),
           soNaData: nulo("string"),
           titulo: nulo("string"),
@@ -56,7 +58,7 @@ const ESQUEMA = {
           repetir: { type: "string", enum: ["nenhuma", "diaria", "semanal", "mensal", "anual", "manter"] },
           diasSemana: { type: "array", items: { type: "integer" } },
         },
-        required: ["acao", "eventoId", "soNaData", "titulo", "data", "hora", "lembreteMin", "repetir", "diasSemana"],
+        required: ["acao", "emoji", "eventoId", "soNaData", "titulo", "data", "hora", "lembreteMin", "repetir", "diasSemana"],
         additionalProperties: false,
       },
     },
