@@ -176,9 +176,13 @@
   .tempo-ajuste { display: flex; align-items: center; justify-content: center; gap: 18px; margin-top: 12px; }
   .tempo-ajuste button { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: var(--bg); color: var(--text); font-size: 24px; font-weight: 700; cursor: pointer; }
   .tempo-ajuste button:disabled { opacity: .35; }
-  .tempo-ajuste div { min-width: 96px; display: flex; flex-direction: column; }
-  .tempo-ajuste b { font-size: 20px; }
-  .tempo-ajuste small { color: var(--muted); font-size: 12px; }
+  .tempo-num { min-width: 120px; display: flex; flex-direction: column; align-items: center; cursor: text; }
+  .tempo-num span { font-size: 20px; font-weight: 800; }
+  .tempo-num input { width: 3.2ch; font: inherit; font-weight: 800; text-align: center; border: 0; border-bottom: 2px dashed var(--line); background: none; color: var(--text); padding: 0; -moz-appearance: textfield; }
+  .tempo-num input::-webkit-inner-spin-button, .tempo-num input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  .tempo-num input:focus { outline: none; border-bottom-color: var(--accent); }
+  .tempo-num small { color: var(--muted); font-size: 11px; }
+  .tempo-ajuste button { touch-action: manipulation; user-select: none; -webkit-user-select: none; }
   .sons-rot { margin-top: 14px; font-size: 12px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
   .sons { display: flex; gap: 8px; overflow-x: auto; padding: 8px 2px 4px; margin: 0 -20px; padding-left: 20px; padding-right: 20px; scrollbar-width: none; }
   .sons::-webkit-scrollbar { display: none; }
@@ -354,22 +358,22 @@
   .secreto-dica { margin: 10px 0 0; padding: 10px 12px; border-radius: 12px; background: #d4a0171f; color: var(--text); font-size: 14px; }
   .revelacao .nivel-emoji { filter: drop-shadow(0 0 22px #f7d774); }
   .revelacao .nivel-rot { color: #d4a017; }
-  .hero-titulo { width: 100%; display: flex; align-items: center; gap: 16px; background: none; border: 0; padding: 0; color: #fff; font: inherit; text-align: left; cursor: pointer; }
-  .bicho { font-size: 76px; line-height: 1; flex: none; display: inline-block; filter: drop-shadow(0 6px 14px rgba(0,0,0,.25)); transform-origin: 50% 85%; }
+  .hero-titulo { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 6px; background: none; border: 0; padding: 0; color: #fff; font: inherit; text-align: center; cursor: pointer; }
+  .bicho { font-size: 84px; line-height: 1; flex: none; display: inline-block; filter: drop-shadow(0 6px 14px rgba(0,0,0,.25)); transform-origin: 50% 85%; }
   .bicho.lento { animation: balanca 3.2s ease-in-out infinite; }
   .bicho.animado { animation: pulinho 1.8s ease-in-out infinite; }
   .bicho.turbo { animation: turbo .9s ease-in-out infinite; }
   @keyframes balanca { 0%, 100% { transform: rotate(-7deg); } 50% { transform: rotate(7deg) translateY(2px); } }
   @keyframes pulinho { 0%, 100% { transform: translateY(0) scale(1); } 30% { transform: translateY(-8px) scale(1.04, .97); } 55% { transform: translateY(0) scale(1.05, .95); } 70% { transform: translateY(0) scale(1); } }
   @keyframes turbo { 0%, 100% { transform: translate(0, 0) rotate(-2deg); } 25% { transform: translate(2px, -3px) rotate(2deg); } 50% { transform: translate(-2px, -1px) rotate(-1deg); } 75% { transform: translate(1px, -4px) rotate(3deg); } }
-  .hero-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .hero-info { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 2px; }
   .hero-nome { font-size: 28px; font-weight: 900; letter-spacing: -.02em; line-height: 1.1; }
-  .hero-barra { height: 10px; border-radius: 6px; background: rgba(255,255,255,.28); overflow: hidden; margin: 8px 0 3px; }
+  .hero-barra { width: 100%; max-width: 280px; height: 10px; border-radius: 6px; background: rgba(255,255,255,.28); overflow: hidden; margin: 8px 0 3px; }
   .hero-barra i { display: block; height: 100%; border-radius: 6px; background: #fff; box-shadow: 0 0 10px rgba(255,255,255,.6); }
   .hero-pts { font-size: 12px; font-weight: 600; opacity: .92; }
-  .hero-chips { display: flex; gap: 6px; margin-top: 14px; flex-wrap: wrap; }
+  .hero-chips { display: flex; gap: 6px; margin-top: 14px; flex-wrap: wrap; justify-content: center; }
   .hc { border: 0; border-radius: 999px; padding: 7px 11px; background: rgba(255,255,255,.2); color: #fff; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
-  .hc.compartilhar { background: #fff; color: var(--accent); margin-left: auto; padding: 9px 14px; }
+  .hc.compartilhar { background: #fff; color: var(--accent); padding: 10px 18px; font-size: 14px; }
   .proximo-linha { margin: 12px 2px 0; font-size: 14px; color: var(--muted); cursor: pointer; }
   .proximo-linha b { color: var(--text); }
   .novo-comp { width: 100%; margin-top: 12px; padding: 14px; border-radius: 16px; border: 2px dashed var(--accent); background: var(--accent-soft);
@@ -843,10 +847,7 @@ function linhaDoTempo(dia, agora, comLivres, esconderFeitos) {
   let cursor = new Date(dia); cursor.setHours(8, 0, 0, 0);
   let html = '', agoraPosto = !ehHoje;
   const proxHora = (d) => new Date(Math.ceil(d.getTime() / 1800000) * 1800000);
-  const lacuna = (ate) => {
-    const de = ehHoje && cursor < agora ? proxHora(agora) : cursor;
-    if (comLivres && ate - de >= 3600000) html += livre(de, ate);
-  };
+  const lacuna = () => {};   // horários livres não aparecem na lista (só poluíam)
   for (const o of ocs) {
     if (!agoraPosto && o.inicio > agora) { html += linhaAgora(agora); agoraPosto = true; }
     lacuna(o.inicio);
@@ -879,7 +880,7 @@ function telaHoje() {
       <button class="hero-titulo" data-niveis>
         <span class="bicho ${jeito}">${t.emoji}</span>
         <span class="hero-info">
-          <span class="hero-rot">Seu título <span class="ver-titulos">ver todos ›</span></span>
+          <span class="hero-rot">Seu título · <span class="ver-titulos">ver todos ›</span></span>
           <span class="hero-nome">${t.nome}</span>
           <span class="hero-barra"><i style="width:${pctT}%"></i></span>
           <span class="hero-pts">${proxT ? `${xp.pontos}/${proxT.min} pts · faltam ${proxT.min - xp.pontos} para ${proxT.emoji} ${proxT.nome}` : t.secreto ? `${xp.pontos} pts · título secreto ✨` : `${xp.pontos} pts · falta só o título secreto 🔒`}</span>
@@ -1205,7 +1206,7 @@ function telaFoco() {
       ${foco.modo === 'foco' ? `<input id="focoTarefa" class="foco-tarefa" placeholder="No que você vai focar?" value="${esc(foco.tarefa || '')}" ${rodando ? 'disabled' : ''}>` : ''}
       <div class="tempo-ajuste">
         <button data-ajuste="-1" ${travado ? 'disabled' : ''} aria-label="Menos tempo">−</button>
-        <div><b>${foco.duracao} min</b><small>${foco.modo === 'foco' ? 'de foco' : 'de pausa'}</small></div>
+        <label class="tempo-num"><span><input id="focoMin" type="number" inputmode="numeric" value="${foco.duracao}" ${travado ? 'disabled' : ''} aria-label="Minutos"> min</span><small>${foco.modo === 'foco' ? 'de foco · toque pra digitar' : 'de pausa · toque pra digitar'}</small></label>
         <button data-ajuste="1" ${travado ? 'disabled' : ''} aria-label="Mais tempo">+</button>
       </div>
       <div class="sons-rot">Som de fundo</div>
@@ -1238,12 +1239,40 @@ function iniciarModo(modo) {
   foco.duracao = modo === 'foco' ? (foco.ultimoFoco || 25) : (foco.ultimaPausa || 5);
   pararAmbiente();
 }
-// Foco: de 5 em 5 min (15 a 120). Pausa: de 1 em 1 min (1 a 30).
-function ajustarTempo(sentido) {
-  const [passo, min, max] = foco.modo === 'foco' ? [5, 15, 120] : [1, 1, 30];
-  foco.duracao = Math.min(max, Math.max(min, foco.duracao + sentido * passo));
+// Qualquer minuto. Foco: 15 a 180 (menos que isso não vale tomate). Pausa: 1 a 60.
+function definirTempo(min) {
+  const [lo, hi] = foco.modo === 'foco' ? [15, 180] : [1, 60];
+  foco.duracao = Math.min(hi, Math.max(lo, Math.round(min) || lo));
   if (foco.modo === 'foco') foco.ultimoFoco = foco.duracao; else foco.ultimaPausa = foco.duracao;
 }
+const ajustarTempo = (sentido) => definirTempo(foco.duracao + sentido);
+function mostrarTempoParado() {
+  const t = document.getElementById('focoTempo'), n = document.getElementById('focoMin'), anel = document.getElementById('focoAnel');
+  if (t) t.textContent = fmtMS(foco.duracao * 60000);
+  if (n) n.value = foco.duracao;
+  if (anel) anel.setAttribute('stroke-dashoffset', 0);
+}
+// Segurar o + ou − corre os minutos
+let segurando = null, segurou = false;
+document.getElementById('lista').addEventListener('pointerdown', (ev) => {
+  const b = aba === 'foco' && ev.target.closest('[data-ajuste]');
+  if (!b || b.disabled) return;
+  segurou = false;
+  const sentido = +b.dataset.ajuste;
+  segurando = setTimeout(function repete() {
+    segurou = true; ajustarTempo(sentido); mostrarTempoParado();
+    segurando = setTimeout(repete, 70);
+  }, 400);
+});
+['pointerup', 'pointercancel', 'pointerleave'].forEach(tipo => document.getElementById('lista').addEventListener(tipo, () => {
+  if (!segurando) return;
+  clearTimeout(segurando); segurando = null;
+  if (segurou) salvarFoco();
+}));
+document.getElementById('lista').addEventListener('change', (ev) => {
+  if (ev.target.id !== 'focoMin') return;
+  definirTempo(+ev.target.value); salvarFoco(); render();
+});
 
 // ---------- Sons de fundo (gerados no próprio aparelho, sem baixar nada) ----------
 const SONS = [['nenhum', '🔇', 'Silêncio'], ['branco', '⚪', 'Ruído branco'], ['rosa', '🌸', 'Ruído rosa'], ['marrom', '🟤', 'Ruído marrom'],
@@ -1354,7 +1383,7 @@ document.getElementById('lista').addEventListener('click', (ev) => {
   if (!b) return;
   const tarefa = document.getElementById('focoTarefa');
   if (tarefa) foco.tarefa = tarefa.value.trim();
-  if (b.dataset.ajuste) ajustarTempo(+b.dataset.ajuste);
+  if (b.dataset.ajuste) { if (segurou) { segurou = false; return; } ajustarTempo(+b.dataset.ajuste); }
   else if (b.dataset.som) escolherSom(b.dataset.som);
   else if (b.id === 'focoBotao') {
     clearTimeout(previaTimer);
