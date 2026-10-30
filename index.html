@@ -342,7 +342,7 @@
   .cg-txt { display: flex; flex-direction: column; gap: 2px; }
   .cg-txt b { font-size: 16px; }
   .cg-txt small { color: var(--muted); font-size: 13px; }
-  .checkin-centro { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 14px 12px 12px; margin-bottom: 12px; border-radius: 20px;
+  .checkin-centro { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 14px 12px 16px; margin-bottom: 12px; border-radius: 20px;
     border: 2px dashed var(--fogo-b); background: var(--card); box-shadow: var(--shadow); text-align: center; }
   .checkin-centro .cf-botao { width: 66px; height: 66px; border: 0; cursor: pointer; }
   .checkin-centro .cf-botao svg { width: 36px; height: 36px; }
@@ -1621,8 +1621,8 @@ function htmlCheckin() {
   const n = sequencia();
   return `
     <div class="checkin-centro">
-      <button class="cf-botao" data-checkin aria-label="Fazer check-in de hoje">${ICONE_CHECK}</button>
       <div class="cc-txt"><b>Toque no ✓ para o check-in</b><small>${n ? `🔥 ${n} dia${n > 1 ? 's' : ''} seguido${n > 1 ? 's' : ''} · não deixa apagar` : '🔥 Comece sua sequência · +1 ponto'}</small></div>
+      <button class="cf-botao" data-checkin aria-label="Fazer check-in de hoje">${ICONE_CHECK}</button>
     </div>`;
 }
 
