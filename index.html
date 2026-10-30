@@ -109,6 +109,12 @@
   .entendi .linha span:last-child { font-weight: 600; text-align: right; }
   .entendi .frase { font-style: italic; color: var(--muted); margin: 4px 0 12px; }
   .entendi .resposta { font-size: 19px; font-weight: 600; line-height: 1.35; margin: 4px 0 8px; }
+  .entendi .dia-resp { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; margin: 14px 0 4px; }
+  .entendi .topicos { list-style: none; padding: 0; margin: 4px 0 8px; }
+  .entendi .topicos li { padding: 8px 12px; margin: 4px 0; background: var(--bg); border-radius: 10px; }
+  .entendi .topicos li b { display: inline-block; min-width: 52px; font-variant-numeric: tabular-nums; }
+  .entendi .topicos li.livre { color: var(--muted); font-style: italic; }
+  .sheet { max-height: 85vh; overflow-y: auto; }
   .pensando { text-align: center; padding: 12px 0 20px; }
   .pensando .frase { font-style: italic; color: var(--muted); margin-bottom: 18px; }
   .pontos i { display: inline-block; width: 10px; height: 10px; margin: 0 4px; border-radius: 50%; background: var(--accent); animation: pulo 1s infinite ease-in-out; }
@@ -574,6 +580,22 @@ function abrirFolha(html) { sheet.innerHTML = html; overlay.classList.add('show'
 function fecharFolha() { overlay.classList.remove('show'); pararReconhecimento(); }
 overlay.addEventListener('click', (e) => { if (e.target === overlay) fecharFolha(); });
 
+// 1ª linha = destaque; "Terça, 03/11:" = título do dia; "• ..." = tópico
+function formatarResposta(texto, icone) {
+  const [primeira, ...resto] = texto.split('\n').map(l => l.trim()).filter(Boolean);
+  let html = `<div class="resposta">${icone} ${esc(primeira || '')}</div>`, lista = [];
+  const fecharLista = () => { if (lista.length) html += `<ul class="topicos">${lista.join('')}</ul>`; lista = []; };
+  for (const l of resto) {
+    if (/^[•\-*]\s*/.test(l)) {
+      const item = l.replace(/^[•\-*]\s*/, ''), livre = /^livre/i.test(item);
+      const m = item.match(/^(\d{1,2}h\d{0,2})\s*[–-]\s*(.+)$/);
+      lista.push(`<li class="${livre ? 'livre' : ''}">${m ? `<b>${esc(m[1])}</b> ${esc(m[2])}` : esc(item)}</li>`);
+    } else { fecharLista(); html += `<div class="dia-resp">${esc(l.replace(/:$/, ''))}</div>`; }
+  }
+  fecharLista();
+  return html;
+}
+
 function mostrarResultado(r, frase, evs, antes) {
   const tipos = (r.acoes || []).map(a => a.acao);
   const icone = r.tipo === 'nao_entendi' ? '🤔' : r.tipo === 'responder' ? '💬'
@@ -590,7 +612,7 @@ function mostrarResultado(r, frase, evs, antes) {
       }).join('');
   abrirFolha(`
     <div class="entendi">
-      <div class="resposta">${icone} ${esc(r.resposta || '')}</div>
+      ${formatarResposta(r.resposta || '', icone)}
       <div class="frase">“${esc(frase)}”</div>
       ${detalhes}
       <div class="botoes">
