@@ -1,0 +1,7 @@
+name = "agenda-voz"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+compatibility_flags = ["nodejs_compat"]
+
+# A chave da Anthropic NÃO fica aqui. Ela é guardada com:
+#   npx wrangler secret put ANTHROPIC_API_KEY

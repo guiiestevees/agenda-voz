@@ -108,6 +108,12 @@
   .entendi .linha span:first-child { color: var(--muted); }
   .entendi .linha span:last-child { font-weight: 600; text-align: right; }
   .entendi .frase { font-style: italic; color: var(--muted); margin: 4px 0 12px; }
+  .entendi .resposta { font-size: 19px; font-weight: 600; line-height: 1.35; margin: 4px 0 8px; }
+  .pensando { text-align: center; padding: 12px 0 20px; }
+  .pensando .frase { font-style: italic; color: var(--muted); margin-bottom: 18px; }
+  .pontos i { display: inline-block; width: 10px; height: 10px; margin: 0 4px; border-radius: 50%; background: var(--accent); animation: pulo 1s infinite ease-in-out; }
+  .pontos i:nth-child(2) { animation-delay: .15s; } .pontos i:nth-child(3) { animation-delay: .3s; }
+  @keyframes pulo { 0%, 80%, 100% { opacity: .25; transform: scale(.8); } 40% { opacity: 1; transform: scale(1); } }
   .botoes { display: flex; gap: 8px; margin-top: 18px; }
   .botoes button {
     flex: 1; font: inherit; font-weight: 600; padding: 14px; border-radius: 12px; cursor: pointer;
@@ -189,6 +195,53 @@ function carregar() {
 }
 function salvar() {
   try { localStorage.setItem(CHAVE, JSON.stringify(eventos)); } catch {}
+}
+
+// ---------- Repetição ----------
+// ev.repetir = null | { freq: 'diaria'|'semanal'|'mensal'|'anual', dias: [0..6] }
+// ev.excecoes = ['AAAA-MM-DD', ...] → ocorrências desmarcadas de uma série
+const chaveDia = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const inicioDoDia = (d) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
+const NOMES_DIAS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+function diasDaSerie(ev) {
+  return ev.repetir.dias && ev.repetir.dias.length ? ev.repetir.dias : [new Date(ev.inicio).getDay()];
+}
+function caiNoDia(ev, dia) {
+  const base = new Date(ev.inicio);
+  if (dia < inicioDoDia(base)) return false;
+  switch (ev.repetir.freq) {
+    case 'diaria': return true;
+    case 'semanal': return diasDaSerie(ev).includes(dia.getDay());
+    case 'mensal': return dia.getDate() === base.getDate();
+    case 'anual': return dia.getDate() === base.getDate() && dia.getMonth() === base.getMonth();
+  }
+  return false;
+}
+// Todas as ocorrências entre `de` e `ate`; séries só aparecem até `ate`
+function ocorrencias(de, ate) {
+  const lista = [];
+  for (const ev of eventos) {
+    const base = new Date(ev.inicio);
+    if (!ev.repetir) {
+      if (base >= de && base < ate) lista.push({ ev, inicio: base });
+      continue;
+    }
+    for (let dia = inicioDoDia(de); dia < ate; dia.setDate(dia.getDate() + 1)) {
+      if (!caiNoDia(ev, dia) || (ev.excecoes || []).includes(chaveDia(dia))) continue;
+      const ini = new Date(dia); ini.setHours(base.getHours(), base.getMinutes(), 0, 0);
+      if (ini >= de && ini < ate) lista.push({ ev, inicio: ini });
+    }
+  }
+  return lista.sort((a, b) => a.inicio - b.inicio);
+}
+function fmtRepetir(r) {
+  if (!r) return '';
+  if (r.freq === 'diaria') return 'todo dia';
+  if (r.freq === 'mensal') return 'todo mês';
+  if (r.freq === 'anual') return 'todo ano';
+  const dias = r.dias || [];
+  if (dias.length === 5 && [1, 2, 3, 4, 5].every(d => dias.includes(d))) return 'dias úteis';
+  return 'toda ' + dias.map(d => NOMES_DIAS[d]).join(', ');
 }
 
 // ---------- Interpretação da frase (pt-BR) ----------
@@ -363,30 +416,35 @@ let destacarId = null;
 function render() {
   document.getElementById('hoje').textContent = fmtDataLonga(new Date()).replace(/^./, c => c.toUpperCase());
   const lista = document.getElementById('lista');
-  const corte = new Date(); corte.setHours(0, 0, 0, 0);
-  const visiveis = eventos
-    .filter(e => new Date(e.inicio) >= corte)
-    .sort((a, b) => new Date(a.inicio) - new Date(b.inicio));
+  const corte = inicioDoDia(new Date());
+  // Compromissos únicos: todos os futuros. Séries: as próximas 2 semanas (aniversários e mensais: 2 meses)
+  const curtas = ocorrencias(corte, new Date(corte.getTime() + 14 * 86400000))
+    .filter(o => !o.ev.repetir || ['diaria', 'semanal'].includes(o.ev.repetir.freq));
+  const longas = ocorrencias(corte, new Date(corte.getTime() + 61 * 86400000))
+    .filter(o => o.ev.repetir && ['mensal', 'anual'].includes(o.ev.repetir.freq));
+  const unicas = eventos.filter(e => !e.repetir && new Date(e.inicio) >= new Date(corte.getTime() + 14 * 86400000))
+    .map(ev => ({ ev, inicio: new Date(ev.inicio) }));
+  const visiveis = [...curtas, ...longas, ...unicas].sort((a, b) => a.inicio - b.inicio);
   if (!visiveis.length) {
-    lista.innerHTML = `<div class="vazio">Nada marcado ainda.<br>Toque no microfone e diga algo como<br><b>“dentista quinta às 3, me lembre 30 minutos antes”</b></div>`;
+    lista.innerHTML = `<div class="vazio">Nada marcado ainda.<br>Toque no microfone e fale como se fosse com uma secretária:<br><b>“dentista quinta às 3, me lembre 30 minutos antes”</b><br><b>“academia toda segunda e quarta às 7”</b></div>`;
     return;
   }
   const grupos = new Map();
-  for (const e of visiveis) {
-    const k = rotuloDia(new Date(e.inicio));
+  for (const o of visiveis) {
+    const k = rotuloDia(o.inicio);
     if (!grupos.has(k)) grupos.set(k, []);
-    grupos.get(k).push(e);
+    grupos.get(k).push(o);
   }
   const agora = new Date();
-  lista.innerHTML = [...grupos].map(([dia, evs]) => `
+  lista.innerHTML = [...grupos].map(([dia, ocs]) => `
     <section class="grupo">
       <h2>${esc(dia)}</h2>
-      ${evs.map(e => `
-        <div class="evento ${new Date(e.inicio) < agora ? 'passado' : ''} ${e.id === destacarId ? 'novo' : ''}" data-id="${e.id}">
-          <div class="hora">${fmtHora(new Date(e.inicio))}</div>
+      ${ocs.map(({ ev: e, inicio }) => `
+        <div class="evento ${inicio < agora ? 'passado' : ''} ${e.id === destacarId ? 'novo' : ''}" data-id="${e.id}">
+          <div class="hora">${fmtHora(inicio)}</div>
           <div class="info">
             <div class="titulo">${esc(e.titulo)}</div>
-            <div class="lembrete">${e.lembreteMin !== null ? '🔔 ' : ''}${fmtLembrete(e.lembreteMin)}</div>
+            <div class="lembrete">${e.lembreteMin !== null ? '🔔 ' : ''}${fmtLembrete(e.lembreteMin)}${e.repetir ? ' · 🔁 ' + fmtRepetir(e.repetir) : ''}</div>
           </div>
         </div>`).join('')}
     </section>`).join('');
@@ -397,17 +455,109 @@ document.getElementById('lista').addEventListener('click', (ev) => {
   if (el) abrirEdicao(eventos.find(e => e.id === el.dataset.id));
 });
 
-// ---------- Criar a partir de uma frase ----------
-function criarDeFrase(frase) {
+// ---------- Secretária: entende a frase com IA e executa ----------
+const IA_URL = 'https://agenda-voz.guiiestevees.workers.dev/';
+
+// A agenda resumida que vai junto com a fala, para a IA saber o que existe
+function agendaParaIA() {
+  const de = inicioDoDia(new Date());
+  const linhas = ocorrencias(de, new Date(de.getTime() + 45 * 86400000)).slice(0, 150).map(({ ev, inicio }) =>
+    `${ev.id} | ${inicio.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' })} | ${fmtHora(inicio)} | ${ev.titulo} | ${ev.repetir ? fmtRepetir(ev.repetir) : 'não repete'}`);
+  const longe = eventos.filter(e => !e.repetir && new Date(e.inicio) >= new Date(de.getTime() + 45 * 86400000)).slice(0, 50)
+    .map(ev => `${ev.id} | ${new Date(ev.inicio).toLocaleDateString('pt-BR')} | ${fmtHora(new Date(ev.inicio))} | ${ev.titulo} | não repete`);
+  return [...linhas, ...longe].join('\n') || '(vazia)';
+}
+
+async function perguntarIA(frase) {
+  const agora = new Date();
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 20000);
+  try {
+    const resp = await fetch(IA_URL, {
+      method: 'POST', signal: ctrl.signal,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        texto: frase,
+        agora: `${agora.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })} ${fmtHora(agora)}`,
+        agenda: agendaParaIA(),
+      }),
+    });
+    if (!resp.ok) throw new Error('IA respondeu ' + resp.status);
+    return await resp.json();
+  } finally { clearTimeout(timer); }
+}
+
+const dataHoraLocal = (data, hora) => {
+  const [a, m, d] = data.split('-').map(Number), [h, mi] = hora.split(':').map(Number);
+  return new Date(a, m - 1, d, h, mi);
+};
+const montarRepetir = (freq, dias) => (!freq || freq === 'nenhuma' || freq === 'manter') ? null : { freq, dias: freq === 'semanal' ? (dias || []) : [] };
+
+async function criarDeFrase(frase) {
   frase = frase.trim();
   if (!frase) return;
-  const r = interpretar(frase);
-  const ev = { id: String(Date.now()), titulo: r.titulo, inicio: r.inicio, lembreteMin: r.lembreteMin, frase, avisado: false };
-  eventos.push(ev);
-  salvar();
-  destacarId = ev.id;
-  render();
-  mostrarEntendi(ev);
+  abrirFolha(`<div class="pensando"><div class="frase">“${esc(frase)}”</div><div class="pontos"><i></i><i></i><i></i></div></div>`);
+  let r = null;
+  if (IA_URL) {
+    try { r = await perguntarIA(frase); } catch (e) { console.warn('IA indisponível, usando o modo simples', e); }
+  }
+  if (!r) {
+    // Sem internet/IA: entende só pedidos de criar, pelo jeito antigo
+    const p = interpretar(frase), d = new Date(p.inicio);
+    r = { acao: 'criar', titulo: p.titulo, data: chaveDia(d), hora: `${pad(d.getHours())}:${pad(d.getMinutes())}`, lembreteMin: p.lembreteMin, repetir: 'nenhuma', diasSemana: [], resposta: 'Anotado!' };
+  }
+  executar(r, frase);
+}
+
+function executar(r, frase) {
+  const antes = JSON.stringify(eventos);
+  const alvo = r.eventoId ? eventos.find(e => e.id === r.eventoId) : null;
+  let mostrar = null;
+
+  if (r.acao === 'criar' && r.data && r.hora) {
+    const ev = { id: String(Date.now()), titulo: r.titulo || 'Compromisso', inicio: dataHoraLocal(r.data, r.hora).toISOString(),
+      lembreteMin: r.lembreteMin ?? null, repetir: montarRepetir(r.repetir, r.diasSemana), excecoes: [], avisados: [], frase };
+    eventos.push(ev); mostrar = ev;
+  } else if (r.acao === 'mudar' && alvo) {
+    let ev = alvo;
+    if (r.soNaData && alvo.repetir) {
+      // Muda só um dia da série: tira o dia da série e cria um avulso no lugar
+      alvo.excecoes = [...(alvo.excecoes || []), r.soNaData];
+      const b = new Date(alvo.inicio);
+      ev = { ...alvo, id: String(Date.now()), repetir: null, excecoes: [], avisados: [], inicio: dataHoraLocal(r.soNaData, `${pad(b.getHours())}:${pad(b.getMinutes())}`).toISOString() };
+      eventos.push(ev);
+    }
+    const atual = new Date(ev.inicio);
+    if (r.data || r.hora) {
+      ev.inicio = dataHoraLocal(r.data || chaveDia(atual), r.hora || `${pad(atual.getHours())}:${pad(atual.getMinutes())}`).toISOString();
+    }
+    if (r.titulo) ev.titulo = r.titulo;
+    if (r.lembreteMin !== null && r.lembreteMin !== undefined) ev.lembreteMin = r.lembreteMin < 0 ? null : r.lembreteMin;
+    if (r.repetir && r.repetir !== 'manter') ev.repetir = montarRepetir(r.repetir, r.diasSemana);
+    ev.avisados = []; ev.avisado = false;
+    mostrar = ev;
+  } else if (r.acao === 'desmarcar' && alvo) {
+    if (r.soNaData && alvo.repetir) alvo.excecoes = [...(alvo.excecoes || []), r.soNaData];
+    else eventos = eventos.filter(e => e.id !== alvo.id);
+  } else if (r.acao !== 'perguntar') {
+    r = { ...r, acao: 'nao_entendi', resposta: r.resposta || 'Não entendi. Pode repetir?' };
+  }
+
+  const mudou = JSON.stringify(eventos) !== antes;
+  if (mudou) { salvar(); if (mostrar) destacarId = mostrar.id; render(); }
+  mostrarResultado(r, frase, mostrar, mudou ? antes : null);
+  falar(r.resposta);
+}
+
+// Lê a resposta em voz alta, como uma secretária (se o iPhone permitir)
+function falar(texto) {
+  try {
+    if (!texto || !('speechSynthesis' in window)) return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(texto);
+    u.lang = 'pt-BR';
+    speechSynthesis.speak(u);
+  } catch {}
 }
 
 document.getElementById('quick').addEventListener('submit', (e) => {
@@ -425,25 +575,30 @@ function abrirFolha(html) { sheet.innerHTML = html; overlay.classList.add('show'
 function fecharFolha() { overlay.classList.remove('show'); pararReconhecimento(); }
 overlay.addEventListener('click', (e) => { if (e.target === overlay) fecharFolha(); });
 
-function mostrarEntendi(ev) {
-  const d = new Date(ev.inicio);
+function mostrarResultado(r, frase, ev, antes) {
+  const icone = { criar: '✅', mudar: '✏️', desmarcar: '🗑️', perguntar: '💬', nao_entendi: '🤔' }[r.acao] || '💬';
+  const d = ev && new Date(ev.inicio);
   abrirFolha(`
     <div class="entendi">
-      <h3>✅ Anotado!</h3>
-      <div class="frase">“${esc(ev.frase)}”</div>
-      <div class="linha"><span>O quê</span><span>${esc(ev.titulo)}</span></div>
-      <div class="linha"><span>Quando</span><span>${esc(fmtDataLonga(d))}, ${fmtHora(d)}</span></div>
-      <div class="linha"><span>Lembrete</span><span>${fmtLembrete(ev.lembreteMin)}</span></div>
+      <div class="resposta">${icone} ${esc(r.resposta || '')}</div>
+      <div class="frase">“${esc(frase)}”</div>
+      ${ev ? `
+        <div class="linha"><span>O quê</span><span>${esc(ev.titulo)}</span></div>
+        <div class="linha"><span>Quando</span><span>${esc(fmtDataLonga(d))}, ${fmtHora(d)}</span></div>
+        ${ev.repetir ? `<div class="linha"><span>Repete</span><span>${esc(fmtRepetir(ev.repetir))}</span></div>` : ''}
+        <div class="linha"><span>Lembrete</span><span>${fmtLembrete(ev.lembreteMin)}</span></div>` : ''}
       <div class="botoes">
-        <button class="perigo" id="bDesfazer">Desfazer</button>
-        <button id="bEditar">Editar</button>
+        ${antes ? '<button class="perigo" id="bDesfazer">Desfazer</button>' : ''}
+        ${ev ? '<button id="bEditar">Editar</button>' : ''}
+        ${r.acao === 'nao_entendi' ? '<button id="bDeNovo">Falar de novo</button>' : ''}
         <button class="primario" id="bOk">OK</button>
       </div>
     </div>`);
   document.getElementById('bOk').onclick = fecharFolha;
-  document.getElementById('bEditar').onclick = () => abrirEdicao(ev);
-  document.getElementById('bDesfazer').onclick = () => {
-    eventos = eventos.filter(e => e.id !== ev.id); salvar(); render(); fecharFolha(); toast('Removido');
+  if (ev) document.getElementById('bEditar').onclick = () => abrirEdicao(ev);
+  if (r.acao === 'nao_entendi') document.getElementById('bDeNovo').onclick = abrirVoz;
+  if (antes) document.getElementById('bDesfazer').onclick = () => {
+    eventos = JSON.parse(antes); salvar(); render(); fecharFolha(); toast('Desfeito');
   };
 }
 
@@ -465,6 +620,11 @@ function abrirEdicao(ev) {
       <select name="lembrete">
         ${opcoes.map(o => `<option value="${o === null ? '' : o}" ${o === ev.lembreteMin ? 'selected' : ''}>${o === 0 ? 'Na hora' : fmtLembrete(o)}</option>`).join('')}
       </select>
+      <label>Repetir</label>
+      <select name="repetir">
+        ${[['nenhuma', 'Não repete'], ['diaria', 'Todo dia'], ['semanal', ev.repetir?.freq === 'semanal' ? 'Toda semana (' + fmtRepetir(ev.repetir).replace('toda ', '') + ')' : 'Toda semana'], ['mensal', 'Todo mês'], ['anual', 'Todo ano']]
+          .map(([v, t]) => `<option value="${v}" ${(ev.repetir?.freq || 'nenhuma') === v ? 'selected' : ''}>${esc(t)}</option>`).join('')}
+      </select>
       <div class="botoes">
         <button type="button" class="perigo" id="bExcluir">Excluir</button>
         <button type="submit" class="primario">Salvar</button>
@@ -479,7 +639,11 @@ function abrirEdicao(ev) {
     ev.titulo = f.titulo.value.trim() || 'Compromisso';
     ev.inicio = new Date(a, mes - 1, dia, h, mi).toISOString();
     ev.lembreteMin = f.lembrete.value === '' ? null : +f.lembrete.value;
-    ev.avisado = false;
+    const freq = f.repetir.value;
+    ev.repetir = freq === 'nenhuma' ? null
+      : freq === 'semanal' && ev.repetir?.freq === 'semanal' ? ev.repetir
+      : montarRepetir(freq, freq === 'semanal' ? [new Date(ev.inicio).getDay()] : []);
+    ev.avisado = false; ev.avisados = [];
     salvar(); destacarId = ev.id; render(); fecharFolha(); toast('Salvo');
   };
   document.getElementById('bExcluir').onclick = () => {
@@ -516,7 +680,7 @@ function abrirVoz() {
       <h3 id="vTitulo">Toque para falar</h3>
       <button class="pulse" id="vMic">${ICONE_MIC}</button>
       <div class="transcricao" id="vTexto"></div>
-      <div class="exemplo">Ex.: “médico terça-feira às 4, me lembre 15 minutos antes”</div>
+      <div class="exemplo">Ex.: “médico terça às 4” · “desmarca a academia de amanhã” · “o que tenho amanhã?”</div>
     </div>`);
   document.getElementById('vMic').onclick = () => rec ? pararReconhecimento() : iniciarReconhecimento();
   iniciarReconhecimento();
@@ -587,12 +751,15 @@ atualizarBtnNotif();
 function checarLembretes() {
   const agora = Date.now();
   let mudou = false;
-  for (const e of eventos) {
-    if (e.lembreteMin === null || e.avisado) continue;
-    const quando = new Date(e.inicio).getTime() - e.lembreteMin * 60000;
-    if (agora >= quando && agora < new Date(e.inicio).getTime() + 3600000) {
-      e.avisado = true; mudou = true;
-      const msg = `${e.titulo} às ${fmtHora(new Date(e.inicio))}`;
+  // Olha as ocorrências da última hora até 2 dias à frente (cobre lembretes de "1 dia antes")
+  for (const { ev: e, inicio } of ocorrencias(new Date(agora - 3600000), new Date(agora + 2 * 86400000))) {
+    const chave = chaveDia(inicio);
+    if (e.lembreteMin === null || e.avisado || (e.avisados || []).includes(chave)) continue;
+    const quando = inicio.getTime() - e.lembreteMin * 60000;
+    if (agora >= quando && agora < inicio.getTime() + 3600000) {
+      if (e.repetir) e.avisados = [...(e.avisados || []).slice(-30), chave]; else e.avisado = true;
+      mudou = true;
+      const msg = `${e.titulo} às ${fmtHora(inicio)}`;
       toast('🔔 ' + msg, 8000);
       if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
       if ('Notification' in window && Notification.permission === 'granted') new Notification('Lembrete', { body: msg });
