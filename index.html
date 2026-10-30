@@ -271,6 +271,8 @@
   .chip.destaque { background: var(--accent); color: #fff; border-color: var(--accent); }
   .compartilhar h3 { margin-bottom: 10px; }
   .card-prev { display: block; width: 62%; max-width: 260px; margin: 4px auto 0; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.3); aspect-ratio: 9 / 16; background: var(--bg); }
+  .compartilhar .visoes button { white-space: nowrap; font-size: 14px; padding: 8px 4px; }
+  .card-explica { text-align: center; font-size: 13px; margin: -4px 0 10px !important; min-height: 2.6em; }
   .dica-salvar { font-size: 13px; text-align: center; margin-top: 10px !important; }
   .topo-dir { display: flex; align-items: center; gap: 8px; }
   .engrenagem { border: 1px solid var(--line); background: var(--card); width: 38px; height: 38px; border-radius: 50%; font-size: 17px; cursor: pointer; }
@@ -1888,16 +1890,22 @@ function dadosCard(tipo) {
   const periodo = semana
     ? `Semana de ${ini.getDate()}/${pad(ini.getMonth() + 1)} a ${hoje.getDate()}/${pad(hoje.getMonth() + 1)}`
     : maiuscula(fmtDataLonga(hoje));
-  return { periodo, frase, itens, completo, titulo: tituloAtual(), fogo: sequencia(), semana };
+  // para o card "Dia completo": o que foi feito, com horário (dura até o próximo, no máximo 1h)
+  const atividades = feitos.map((o, i) => {
+    const prox = feitos[i + 1]?.inicio, fimPadrao = new Date(o.inicio.getTime() + 3600000);
+    const fim = prox && prox > o.inicio && prox < fimPadrao ? prox : fimPadrao;
+    return { de: fmtHora(o.inicio), ate: fmtHora(fim), titulo: o.ev.titulo };
+  });
+  const habitosFeitos = habitos.filter(h => h.feitos.some(dk => naSemana(dk, ini, fim))).map(h => `${h.emoji} ${h.nome}`);
+  const focosPeriodo = focos.filter(f => naSemana(f.dia, ini, fim));
+  return { periodo, frase, itens, completo, titulo: tituloAtual(), fogo: sequencia(), semana, atividades, habitosFeitos, focosQtd: focosPeriodo.length, focoMin };
 }
-function desenharCard(tipo) {
+const fonteCard = (peso, tam) => `${peso} ${tam}px -apple-system, "SF Pro Display", system-ui, "Segoe UI", Roboto, sans-serif`;
+// Começa o card: tela 1080×1920 (Stories) com o fundo da cor do dia
+function novoCard(d) {
   const W = 1080, H = 1920, c = document.createElement('canvas');
   c.width = W; c.height = H;
-  const g = c.getContext('2d'), d = dadosCard(tipo);
-  const fonte = (peso, tam) => `${peso} ${tam}px -apple-system, "SF Pro Display", system-ui, "Segoe UI", Roboto, sans-serif`;
-  const caber = (texto, peso, tam, max) => { do { g.font = fonte(peso, tam); tam -= 4; } while (g.measureText(texto).width > max && tam > 20); };
-  const caixa = (x, y, w, h, r) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); };
-  // fundo
+  const g = c.getContext('2d');
   const grad = g.createLinearGradient(0, 0, W, H);
   if (d.titulo.secreto) { grad.addColorStop(0, '#f7d774'); grad.addColorStop(.5, '#d4a017'); grad.addColorStop(1, '#6e5006'); }
   else if (d.completo) { grad.addColorStop(0, '#3fb37a'); grad.addColorStop(.55, '#2f8a5b'); grad.addColorStop(1, '#1f5f40'); }
@@ -1907,6 +1915,17 @@ function desenharCard(tipo) {
   g.beginPath(); g.arc(960, 220, 330, 0, Math.PI * 2); g.fill();
   g.beginPath(); g.arc(80, 1780, 420, 0, Math.PI * 2); g.fill();
   g.textAlign = 'center'; g.textBaseline = 'alphabetic'; g.fillStyle = '#fff';
+  return {
+    c, g, W, H,
+    caber: (texto, peso, tam, max) => { do { g.font = fonteCard(peso, tam); tam -= 4; } while (g.measureText(texto).width > max && tam > 20); },
+    caixa: (x, y, w, h, r) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); },
+    // corta o texto com "…" se não couber
+    cortar: (texto, max) => { if (g.measureText(texto).width <= max) return texto; while (texto.length > 1 && g.measureText(texto + '…').width > max) texto = texto.slice(0, -1); return texto.trimEnd() + '…'; },
+    rodape: () => { g.textAlign = 'center'; g.globalAlpha = .85; g.font = fonteCard(700, 42); g.fillText('feito com Agenda por Voz 🎙️', W / 2, 1830); g.globalAlpha = 1; },
+  };
+}
+function desenharCard(tipo) {
+  const d = dadosCard(tipo), { c, g, W, caber, caixa } = novoCard(d), fonte = fonteCard;
   // topo
   g.globalAlpha = .85; caber(d.periodo.toUpperCase(), 700, 42, 900); g.fillText(d.periodo.toUpperCase(), W / 2, 200); g.globalAlpha = 1;
   caber(d.frase, 900, 112, 960); g.fillText(d.frase, W / 2, 340);
@@ -1936,19 +1955,87 @@ function desenharCard(tipo) {
   g.globalAlpha = .85; g.font = fonte(700, 42); g.fillText('feito com Agenda por Voz 🎙️', W / 2, 1830); g.globalAlpha = 1;
   return c;
 }
+// Card "Dia completo": tudo o que a pessoa fez, com horário
+function desenharCardCompleto() {
+  const d = dadosCard('dia'), { c, g, W, caber, caixa, cortar, rodape } = novoCard(d);
+  // topo
+  g.globalAlpha = .85; caber(d.periodo.toUpperCase(), 700, 40, 900); g.fillText(d.periodo.toUpperCase(), W / 2, 150); g.globalAlpha = 1;
+  caber(d.frase, 900, 96, 960); g.fillText(d.frase, W / 2, 262);
+  const selo = `${d.titulo.emoji} ${d.titulo.nome}${d.fogo ? `  ·  🔥 ${d.fogo} dia${d.fogo > 1 ? 's' : ''}` : ''}`;
+  g.font = fonteCard(800, 44); const ws = Math.min(g.measureText(selo).width + 80, 960);
+  g.fillStyle = 'rgba(255,255,255,.2)'; caixa((W - ws) / 2, 300, ws, 88, 44); g.fill();
+  g.fillStyle = '#fff'; g.fillText(cortar(selo, ws - 60), W / 2, 360);
+  // quanto espaço cada parte vai ocupar
+  const lista = d.atividades.slice(0, 12), sobra = d.atividades.length - lista.length;
+  const hab = d.habitosFeitos.slice(0, 8);
+  const extras = (hab.length ? 90 + Math.ceil(hab.length / 2) * 84 : 0) + (d.focosQtd ? 110 : 0) + (sobra > 0 ? 60 : 0);
+  const topo = 470, base = 1760;
+  const linhaH = lista.length ? Math.max(76, Math.min(124, (base - topo - 70 - extras) / lista.length)) : 0;
+  const esc1 = linhaH / 124;
+  // centraliza o bloco na altura disponível
+  const alturaTotal = (lista.length ? 60 + lista.length * linhaH : 0) + extras + 20;
+  let y = topo + Math.max(0, (base - topo - alturaTotal) / 2);
+  if (lista.length) {
+    g.textAlign = 'left'; g.globalAlpha = .8; g.font = fonteCard(800, 34); g.fillText('O QUE EU FIZ HOJE', 100, y + 30); g.globalAlpha = 1; y += 60;
+    for (const a of lista) {
+      g.fillStyle = 'rgba(255,255,255,.16)'; caixa(90, y, W - 180, linhaH - 14, 26); g.fill();
+      const meio = y + (linhaH - 14) / 2;
+      g.fillStyle = '#fff';
+      // bolinha com ✓
+      g.beginPath(); g.arc(140, meio, 22 * Math.max(esc1, .8), 0, Math.PI * 2); g.fill();
+      g.fillStyle = d.completo ? '#2f8a5b' : '#e0592a'; g.font = fonteCard(900, 30 * Math.max(esc1, .8)); g.textAlign = 'center'; g.fillText('✓', 140, meio + 10 * Math.max(esc1, .8));
+      g.fillStyle = '#fff'; g.textAlign = 'left';
+      g.font = fonteCard(800, Math.round(36 * Math.max(esc1, .75))); const hora = `${a.de}–${a.ate}`;
+      g.fillText(hora, 190, meio + 13 * Math.max(esc1, .75));
+      const xh = 190 + g.measureText(hora).width + 26;
+      g.font = fonteCard(600, Math.round(42 * Math.max(esc1, .75)));
+      g.fillText(cortar(a.titulo, W - 120 - xh), xh, meio + 14 * Math.max(esc1, .75));
+      y += linhaH;
+    }
+    if (sobra > 0) { g.globalAlpha = .85; g.font = fonteCard(700, 36); g.textAlign = 'center'; g.fillText(`+ ${sobra} outra${sobra > 1 ? 's' : ''} coisa${sobra > 1 ? 's' : ''} feita${sobra > 1 ? 's' : ''}`, W / 2, y + 36); g.globalAlpha = 1; y += 60; }
+  }
+  if (hab.length) {
+    g.textAlign = 'left'; g.globalAlpha = .8; g.font = fonteCard(800, 34); g.fillText('HÁBITOS CUMPRIDOS', 100, y + 50); g.globalAlpha = 1; y += 80;
+    hab.forEach((h, i) => {
+      const x = i % 2 ? W / 2 + 10 : 90, yy = y + Math.floor(i / 2) * 84;
+      g.fillStyle = 'rgba(255,255,255,.16)'; caixa(x, yy, W / 2 - 100, 70, 35); g.fill();
+      g.fillStyle = '#fff'; g.font = fonteCard(700, 36); g.fillText(cortar(h, W / 2 - 150), x + 26, yy + 48);
+    });
+    y += Math.ceil(hab.length / 2) * 84 + 10;
+  }
+  if (d.focosQtd) {
+    const txt = `🍅 ${d.focosQtd} Pomodoro${d.focosQtd > 1 ? 's' : ''} · ${fmtMin(d.focoMin)} de foco`;
+    g.font = fonteCard(800, 42); const w = Math.min(g.measureText(txt).width + 80, 960);
+    g.fillStyle = 'rgba(255,255,255,.2)'; caixa((W - w) / 2, y + 20, w, 84, 42); g.fill();
+    g.fillStyle = '#fff'; g.textAlign = 'center'; g.fillText(txt, W / 2, y + 76);
+  }
+  if (!lista.length && !hab.length && !d.focosQtd) {
+    g.textAlign = 'center'; g.globalAlpha = .9; g.font = fonteCard(700, 48);
+    g.fillText('Ainda nada concluído hoje.', W / 2, 900); g.font = fonteCard(500, 40); g.fillText('Marque o que fizer e volte aqui 😉', W / 2, 970); g.globalAlpha = 1;
+  }
+  rodape();
+  return c;
+}
 let arquivoCard = null;
+const EXPLICA_CARD = {
+  dia: 'Só os números do dia. Ninguém vê o que você fez.',
+  completo: 'Cada coisa que você concluiu hoje, com horário, mais hábitos e Pomodoros.',
+  semana: 'Os números da sua semana até hoje.',
+};
 function prepararCard(tipo) {
-  const c = desenharCard(tipo);
+  const c = tipo === 'completo' ? desenharCardCompleto() : desenharCard(tipo);
+  document.getElementById('cardExplica').textContent = EXPLICA_CARD[tipo];
   document.getElementById('cardImg').src = c.toDataURL('image/png');
   document.querySelectorAll('[data-card]').forEach(b => b.classList.toggle('ativa', b.dataset.card === tipo));
   arquivoCard = null;
-  c.toBlob(b => { arquivoCard = new File([b], tipo === 'semana' ? 'minha-semana.png' : 'meu-dia.png', { type: 'image/png' }); }, 'image/png');
+  c.toBlob(b => { arquivoCard = new File([b], { semana: 'minha-semana.png', completo: 'meu-dia-completo.png' }[tipo] || 'meu-dia.png', { type: 'image/png' }); }, 'image/png');
 }
 function abrirCompartilhar() {
   abrirFolha(`
     <div class="compartilhar">
       <h3>Compartilhar</h3>
-      <div class="visoes"><button data-card="dia">Meu dia</button><button data-card="semana">Minha semana</button></div>
+      <div class="visoes"><button data-card="dia">Resumo</button><button data-card="completo">Dia completo</button><button data-card="semana">Semana</button></div>
+      <p class="card-explica" id="cardExplica"></p>
       <img id="cardImg" class="card-prev" alt="Card para compartilhar">
       <div class="botoes"><button id="bFechar">Fechar</button><button class="primario" id="bShare">Compartilhar 📸</button></div>
       <p class="dica-salvar">Dica: no Instagram, escolha “Stories”. Você também pode tocar e segurar na imagem para salvar.</p>
