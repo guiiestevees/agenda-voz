@@ -49,16 +49,6 @@
   }
   .icon-btn.on { border-color: var(--ok); color: var(--ok); }
 
-  .quick { display: flex; gap: 8px; margin-bottom: 20px; }
-  .quick input {
-    flex: 1; min-width: 0; font: inherit; padding: 12px 14px; border-radius: 12px;
-    border: 1px solid var(--line); background: var(--card); color: var(--text);
-  }
-  .quick button {
-    font: inherit; font-weight: 600; padding: 0 16px; border-radius: 12px; border: 0;
-    background: var(--text); color: var(--bg); cursor: pointer;
-  }
-
   .grupo h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 20px 0 8px; font-weight: 600; }
   .evento {
     display: flex; gap: 14px; align-items: center; background: var(--card); border-radius: 14px;
@@ -100,7 +90,6 @@
   .agora { display: flex; align-items: center; gap: 8px; color: var(--accent); font-size: 12px; font-weight: 700; margin: 8px 0; white-space: nowrap; }
   .agora span { flex: 1; height: 2px; background: var(--accent); border-radius: 2px; }
   .agora span:first-child { flex: none; width: 8px; height: 8px; border-radius: 50%; }
-  .livre { color: var(--muted); font-style: italic; font-size: 14px; padding: 4px 0 4px 14px; margin: 0 0 8px 10px; border-left: 2px dashed var(--line); }
   .dia-livre { color: var(--muted); padding: 14px; background: var(--card); border-radius: 14px; text-align: center; margin-bottom: 8px; }
   .vazio a { color: var(--accent); font-weight: 600; text-decoration: none; }
 
@@ -173,16 +162,16 @@
   .relogio .tempo { position: absolute; inset: 0; display: grid; place-items: center; font-size: 50px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
   .foco-tarefa { width: 100%; font: inherit; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); color: var(--text); text-align: center; }
   .foco-tarefa:disabled { opacity: .7; }
-  .tempo-ajuste { display: flex; align-items: center; justify-content: center; gap: 18px; margin-top: 12px; }
-  .tempo-ajuste button { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: var(--bg); color: var(--text); font-size: 24px; font-weight: 700; cursor: pointer; }
-  .tempo-ajuste button:disabled { opacity: .35; }
-  .tempo-num { min-width: 120px; display: flex; flex-direction: column; align-items: center; cursor: text; }
-  .tempo-num span { font-size: 20px; font-weight: 800; }
-  .tempo-num input { width: 3.2ch; font: inherit; font-weight: 800; text-align: center; border: 0; border-bottom: 2px dashed var(--line); background: none; color: var(--text); padding: 0; -moz-appearance: textfield; }
-  .tempo-num input::-webkit-inner-spin-button, .tempo-num input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-  .tempo-num input:focus { outline: none; border-bottom-color: var(--accent); }
-  .tempo-num small { color: var(--muted); font-size: 11px; }
-  .tempo-ajuste button { touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+  .roda-wrap { position: relative; width: 170px; margin: 12px auto 0; }
+  .roda { height: 200px; overflow-y: auto; scroll-snap-type: y mandatory; padding: 80px 0; box-sizing: border-box; scrollbar-width: none; overscroll-behavior: contain;
+    -webkit-mask-image: linear-gradient(transparent, #000 30%, #000 70%, transparent); mask-image: linear-gradient(transparent, #000 30%, #000 70%, transparent); }
+  .roda::-webkit-scrollbar { display: none; }
+  .roda-item { height: 40px; line-height: 40px; scroll-snap-align: center; text-align: center; font-size: 21px; color: var(--muted); font-variant-numeric: tabular-nums; cursor: pointer; transition: color .15s, font-size .15s; }
+  .roda-item.sel { color: var(--text); font-size: 28px; font-weight: 800; }
+  .roda-faixa { position: absolute; left: 0; right: 0; top: 80px; height: 40px; border-radius: 10px; background: var(--bg); pointer-events: none; }
+  .roda-unid { position: absolute; top: 80px; line-height: 40px; left: calc(50% + 30px); font-weight: 700; color: var(--text); pointer-events: none; }
+  .roda-wrap.travada .roda { pointer-events: none; opacity: .4; }
+  .roda-rot { font-size: 12px; color: var(--muted); margin-top: 4px; }
   .sons-rot { margin-top: 14px; font-size: 12px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
   .sons { display: flex; gap: 8px; overflow-x: auto; padding: 8px 2px 4px; margin: 0 -20px; padding-left: 20px; padding-right: 20px; scrollbar-width: none; }
   .sons::-webkit-scrollbar { display: none; }
@@ -301,6 +290,17 @@
   .checkin.compacto { padding: 10px 12px; }
   .checkin.compacto .checkin-fogo { font-size: 26px; }
 
+  .checkin-grande { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 18px 16px 16px; margin-bottom: 12px;
+    border-radius: 22px; background: var(--card); border: 2px dashed var(--accent); box-shadow: var(--shadow); }
+  .cg-fogo { font-weight: 800; color: var(--accent); }
+  .cg-botao { width: 96px; height: 96px; border-radius: 50%; border: 0; cursor: pointer; display: grid; place-items: center;
+    background: linear-gradient(135deg, #f2a03d, #e0592a); box-shadow: 0 8px 22px rgba(224,89,42,.45); animation: chama 1.6s ease-in-out infinite; }
+  .cg-botao svg { width: 52px; height: 52px; fill: none; stroke: #fff; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
+  .cg-botao:active { transform: scale(.92); }
+  @keyframes chama { 0%, 100% { box-shadow: 0 8px 22px rgba(224,89,42,.45), 0 0 0 0 rgba(240,116,68,.55); } 60% { box-shadow: 0 8px 22px rgba(224,89,42,.45), 0 0 0 18px rgba(240,116,68,0); } }
+  .cg-txt { display: flex; flex-direction: column; gap: 2px; }
+  .cg-txt b { font-size: 16px; }
+  .cg-txt small { color: var(--muted); font-size: 13px; }
   .checkin-show { text-align: center; padding: 6px 0 4px; }
   .cs-fogo { font-size: 110px; line-height: 1; animation: fogoEntra .9s cubic-bezier(.2,1.6,.4,1) both; filter: drop-shadow(0 8px 24px rgba(240,116,68,.55)); }
   @keyframes fogoEntra { 0% { transform: scale(.2) rotate(-20deg); opacity: 0; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
@@ -613,6 +613,7 @@ function fmtRepetir(r) {
   if (r.freq === 'mensal') return 'todo mês';
   if (r.freq === 'anual') return 'todo ano';
   const dias = r.dias || [];
+  if (!dias.length) return 'toda semana';
   if (dias.length === 5 && [1, 2, 3, 4, 5].every(d => dias.includes(d))) return 'dias úteis';
   return 'toda ' + dias.map(d => NOMES_DIAS[d]).join(', ');
 }
@@ -827,7 +828,6 @@ function sequenciaHabito(ev) {
   return n;
 }
 const seqHabitoHtml = (ev) => { const n = sequenciaHabito(ev); return n >= 2 ? `<span class="seq-habito">🔥 ${n} seguidas</span> ` : ''; };
-const livre = (de, ate) => `<div class="livre">Livre das ${fmtH(de)} às ${fmtH(ate)}</div>`;
 const linhaAgora = (agora) => `<div class="agora"><span></span>agora · ${fmtHora(agora)}<span></span></div>`;
 
 // Quanto falta: "em 25 min", "em 3h", "amanhã às 16h", "quinta às 10h"
@@ -841,24 +841,16 @@ function quandoFalta(inicio, agora) {
 }
 
 // Os compromissos de um dia, com os horários livres (8h–22h) entre eles
-function linhaDoTempo(dia, agora, comLivres, esconderFeitos) {
+function linhaDoTempo(dia, agora, esconderFeitos) {
   const ocs = ocorrencias(dia, maisDias(dia, 1));
   const ehHoje = chaveDia(dia) === chaveDia(agora);
   if (!ocs.length) return `<div class="dia-livre">Nada marcado. Dia livre ✨</div>${ehHoje ? linhaAgora(agora) : ''}`;
-  const fimDia = new Date(dia); fimDia.setHours(22, 0, 0, 0);
-  let cursor = new Date(dia); cursor.setHours(8, 0, 0, 0);
   let html = '', agoraPosto = !ehHoje;
-  const proxHora = (d) => new Date(Math.ceil(d.getTime() / 1800000) * 1800000);
-  const lacuna = () => {};   // horários livres não aparecem na lista (só poluíam)
   for (const o of ocs) {
     if (!agoraPosto && o.inicio > agora) { html += linhaAgora(agora); agoraPosto = true; }
-    lacuna(o.inicio);
     if (!(esconderFeitos && estaFeito(o.ev, o.inicio))) html += cartao(o, agora);
-    const fim = new Date(Math.ceil((o.inicio.getTime() + 3600000) / 1800000) * 1800000); // +1h, arredondado à meia hora
-    if (fim > cursor) cursor = fim;
   }
   if (!agoraPosto) html += linhaAgora(agora);
-  lacuna(fimDia);
   return html;
 }
 
@@ -900,7 +892,7 @@ function telaHoje() {
       <span>Toque em <b>Falar</b>, lá embaixo, e diga do seu jeito: “dentista quinta às 3, me lembra meia hora antes”.</span>
       <div class="acoes-dica"><button class="falar" data-falar>Experimentar agora</button><button class="fechar" data-fechar-dica>Entendi</button></div>
     </div>`;
-  html += `<section class="grupo"><h2>Hoje</h2>${total && tudo ? '<div class="tudo-feito">Tudo feito por hoje. Merecido! 💪</div>' : linhaDoTempo(hoje, agora, true, true)}</section>`;
+  html += `<section class="grupo"><h2>Hoje</h2>${total && tudo ? '<div class="tudo-feito">Tudo feito por hoje. Merecido! 💪</div>' : linhaDoTempo(hoje, agora, true)}</section>`;
   if (feitos) html += `<details class="feitos"><summary>Feitos (${feitos})</summary>${feitosL.map(o => cartao(o, agora)).join('')}</details>`;
   return html;
 }
@@ -1013,7 +1005,7 @@ function telaMes() {
       <span class="periodo">${maiuscula(ini.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }))}</span>
       <button data-nav="1m" aria-label="Próximo mês">›</button></div>
     <div class="mes-grade">${grade.replace(/<span class="ds">[^<]*<\/span>/g, '')}</div>
-    <section class="grupo"><h2>${esc(maiuscula(rotuloDia(diaSel)))}</h2>${linhaDoTempo(diaSel, agora, false)}</section>
+    <section class="grupo"><h2>${esc(maiuscula(rotuloDia(diaSel)))}</h2>${linhaDoTempo(diaSel, agora)}</section>
     ${anuais.length ? `<section class="grupo"><h2>Datas importantes</h2>${anuais.map(o => {
       const falta = Math.round((inicioDoDia(o.inicio) - inicioDoDia(agora)) / 86400000);
       return `<div class="evento" data-id="${o.ev.id}"><div class="hora">🎂</div><div class="info"><div class="titulo">${esc(o.ev.titulo)}</div>
@@ -1048,7 +1040,7 @@ function render() {
   if (aba === 'hoje') lista.innerHTML = telaHoje();
   else if (aba === 'semana' && visao === 'semana') { lista.innerHTML = telaSemana(); montarGrade(pos); }
   else if (aba === 'semana') lista.innerHTML = telaMes();
-  else if (aba === 'foco') lista.innerHTML = telaFoco();
+  else if (aba === 'foco') { lista.innerHTML = telaFoco(); montarRoda(); }
   else if (aba === 'habitos') lista.innerHTML = telaHabitos();
   destacarId = null;
 }
@@ -1206,11 +1198,7 @@ function telaFoco() {
         <div class="tempo" id="focoTempo">${fmtMS(restanteMs())}</div>
       </div>
       ${foco.modo === 'foco' ? `<input id="focoTarefa" class="foco-tarefa" placeholder="No que você vai focar?" value="${esc(foco.tarefa || '')}" ${rodando ? 'disabled' : ''}>` : ''}
-      <div class="tempo-ajuste">
-        <button data-ajuste="-1" ${travado ? 'disabled' : ''} aria-label="Menos tempo">−</button>
-        <label class="tempo-num"><span><input id="focoMin" type="number" inputmode="numeric" value="${foco.duracao}" ${travado ? 'disabled' : ''} aria-label="Minutos"> min</span><small>${foco.modo === 'foco' ? 'de foco · toque pra digitar' : 'de pausa · toque pra digitar'}</small></label>
-        <button data-ajuste="1" ${travado ? 'disabled' : ''} aria-label="Mais tempo">+</button>
-      </div>
+      ${rodaMinutos(travado)}
       <div class="sons-rot">Som de fundo</div>
       <div class="sons">${SONS.map(([id, ico, nome]) => `<button data-som="${id}" class="${(foco.som || 'nenhum') === id ? 'ativa' : ''}"><span>${ico}</span>${nome}</button>`).join('')}</div>
       <div class="botoes">
@@ -1247,34 +1235,44 @@ function definirTempo(min) {
   foco.duracao = Math.min(hi, Math.max(lo, Math.round(min) || lo));
   if (foco.modo === 'foco') foco.ultimoFoco = foco.duracao; else foco.ultimaPausa = foco.duracao;
 }
-const ajustarTempo = (sentido) => definirTempo(foco.duracao + sentido);
-function mostrarTempoParado() {
-  const t = document.getElementById('focoTempo'), n = document.getElementById('focoMin'), anel = document.getElementById('focoAnel');
-  if (t) t.textContent = fmtMS(foco.duracao * 60000);
-  if (n) n.value = foco.duracao;
-  if (anel) anel.setAttribute('stroke-dashoffset', 0);
+// Roleta de minutos, igual à do relógio do iPhone
+const ITEM_RODA = 40;
+function rodaMinutos(travado) {
+  const [lo, hi] = foco.modo === 'foco' ? [15, 180] : [1, 60];
+  return `
+    <div class="roda-wrap ${travado ? 'travada' : ''}">
+      <div class="roda-faixa"></div>
+      <div class="roda" id="roda" data-lo="${lo}">${Array.from({ length: hi - lo + 1 }, (_, i) => `<div class="roda-item">${lo + i}</div>`).join('')}</div>
+      <span class="roda-unid">min</span>
+    </div>
+    <div class="roda-rot">${travado ? 'Pare o relógio para mudar o tempo' : foco.modo === 'foco' ? 'Role para escolher o tempo de foco' : 'Role para escolher o tempo de pausa'}</div>`;
 }
-// Segurar o + ou − corre os minutos
-let segurando = null, segurou = false;
-document.getElementById('lista').addEventListener('pointerdown', (ev) => {
-  const b = aba === 'foco' && ev.target.closest('[data-ajuste]');
-  if (!b || b.disabled) return;
-  segurou = false;
-  const sentido = +b.dataset.ajuste;
-  segurando = setTimeout(function repete() {
-    segurou = true; ajustarTempo(sentido); mostrarTempoParado();
-    segurando = setTimeout(repete, 70);
-  }, 400);
-});
-['pointerup', 'pointercancel', 'pointerleave'].forEach(tipo => document.getElementById('lista').addEventListener(tipo, () => {
-  if (!segurando) return;
-  clearTimeout(segurando); segurando = null;
-  if (segurou) salvarFoco();
-}));
-document.getElementById('lista').addEventListener('change', (ev) => {
-  if (ev.target.id !== 'focoMin') return;
-  definirTempo(+ev.target.value); salvarFoco(); render();
-});
+function montarRoda() {
+  const roda = document.getElementById('roda');
+  if (!roda) return;
+  const lo = +roda.dataset.lo, itens = roda.children;
+  let sel = foco.duracao - lo, parada;
+  const marcar = (i) => { itens[sel]?.classList.remove('sel'); sel = i; itens[sel]?.classList.add('sel'); };
+  roda.scrollTop = sel * ITEM_RODA;
+  marcar(sel);
+  roda.addEventListener('scroll', () => {
+    const i = Math.max(0, Math.min(itens.length - 1, Math.round(roda.scrollTop / ITEM_RODA)));
+    if (i !== sel) {
+      marcar(i);
+      definirTempo(lo + i);
+      const t = document.getElementById('focoTempo'), anel = document.getElementById('focoAnel');
+      if (t) t.textContent = fmtMS(foco.duracao * 60000);
+      if (anel) anel.setAttribute('stroke-dashoffset', 0);
+    }
+    clearTimeout(parada);
+    parada = setTimeout(salvarFoco, 150);
+  }, { passive: true });
+  // tocar num número também escolhe
+  roda.addEventListener('click', (e) => {
+    const item = e.target.closest('.roda-item');
+    if (item) roda.scrollTo({ top: [...itens].indexOf(item) * ITEM_RODA, behavior: 'smooth' });
+  });
+}
 
 // ---------- Sons de fundo (gerados no próprio aparelho, sem baixar nada) ----------
 const SONS = [['nenhum', '🔇', 'Silêncio'], ['branco', '⚪', 'Ruído branco'], ['rosa', '🌸', 'Ruído rosa'], ['marrom', '🟤', 'Ruído marrom'],
@@ -1362,7 +1360,7 @@ function escolherSom(id) {
 function avisarFoco(msg) {
   toast(msg, 6000);
   if (navigator.vibrate) navigator.vibrate([300, 120, 300]);
-  if ('Notification' in window && Notification.permission === 'granted') new Notification('Foco', { body: msg });
+  notificar('Pomodoro', msg);
 }
 function terminarCiclo() {
   const eraFoco = foco.modo === 'foco';
@@ -1385,8 +1383,7 @@ document.getElementById('lista').addEventListener('click', (ev) => {
   if (!b) return;
   const tarefa = document.getElementById('focoTarefa');
   if (tarefa) foco.tarefa = tarefa.value.trim();
-  if (b.dataset.ajuste) { if (segurou) { segurou = false; return; } ajustarTempo(+b.dataset.ajuste); }
-  else if (b.dataset.som) escolherSom(b.dataset.som);
+  if (b.dataset.som) escolherSom(b.dataset.som);
   else if (b.id === 'focoBotao') {
     clearTimeout(previaTimer);
     if (foco.fim) { foco.restante = foco.fim - Date.now(); foco.fim = null; pararAmbiente(); }
@@ -1528,13 +1525,13 @@ function htmlCheckin() {
   if (fezCheckinHoje()) return '';
   const n = sequencia();
   return `
-    <div class="checkin compacto">
-      <span class="checkin-fogo">🔥</span>
-      <span class="checkin-txt"><b>${n ? `${n} dia${n > 1 ? 's' : ''} seguido${n > 1 ? 's' : ''}` : 'Comece sua sequência'}</b>
-        <small>${n ? 'Não deixa o fogo apagar!' : 'Um check-in por dia'}</small></span>
-      <button class="checkin-btn" data-checkin>Check-in ✓</button>
+    <div class="checkin-grande">
+      <div class="cg-fogo">${n ? `🔥 ${n} dia${n > 1 ? 's' : ''} seguido${n > 1 ? 's' : ''}` : '🔥 Comece sua sequência hoje'}</div>
+      <button class="cg-botao" data-checkin aria-label="Fazer check-in de hoje">${ICONE_CHECK}</button>
+      <div class="cg-txt"><b>Toque no ✓ para fazer o check-in de hoje</b><small>+${PONTOS.checkin} ponto e o fogo continua aceso</small></div>
     </div>`;
 }
+
 const salvarXp = () => gravarJSON('agenda.xp', xp);
 const tituloDe = (pts) => TITULOS.filter(t => pts >= t.min).at(-1);
 const tituloAtual = () => xp.secreto ? SECRETO : tituloDe(xp.pontos);
@@ -1738,7 +1735,7 @@ function telaHabitos() {
       const feito = h.feitos.includes(hk), seq = sequenciaHab(h);
       return `
       <div class="hab ${feito ? 'feito' : ''}">
-        <span class="hab-emoji">${h.emoji}</span>
+        <span class="hab-emoji">${esc(h.emoji)}</span>
         <div class="hab-info" data-hab="${h.id}">
           <div class="hab-nome">${esc(h.nome)}</div>
           <div class="hab-sub">${seq >= 2 ? `<span class="seq-habito">🔥 ${seq} seguidas</span> · ` : ''}${h.dias.length ? h.dias.map(d => DIAS_CURTOS[d]).join(', ') : 'todo dia'}</div>
@@ -2124,6 +2121,7 @@ function aplicarAcao(a, frase) {
   if (a.acao === 'criar' && a.data && a.hora) {
     const ev = { id: novoId(), titulo: a.titulo || 'Compromisso', inicio: dataHoraLocal(a.data, a.hora).toISOString(),
       lembreteMin: a.lembreteMin ?? null, repetir: montarRepetir(a.repetir, a.diasSemana), excecoes: [], avisados: [], frase };
+    if (ev.repetir?.freq === 'semanal' && !ev.repetir.dias.length) ev.repetir.dias = [new Date(ev.inicio).getDay()];
     eventos.push(ev);
     return ev;
   }
@@ -2393,6 +2391,10 @@ btnNotif.onclick = async () => {
 };
 atualizarBtnNotif();
 
+// No iPhone, "new Notification" lança erro; sem o try ele parava os lembretes e as penalidades
+function notificar(titulo, corpo) {
+  try { if ('Notification' in window && Notification.permission === 'granted') new Notification(titulo, { body: corpo }); } catch {}
+}
 function checarLembretes() {
   const agora = Date.now();
   let mudou = false;
@@ -2407,12 +2409,14 @@ function checarLembretes() {
       const msg = `${e.titulo} às ${fmtHora(inicio)}`;
       toast('🔔 ' + msg, 8000);
       if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-      if ('Notification' in window && Notification.permission === 'granted') new Notification('Lembrete', { body: msg });
+      notificar('Lembrete', msg);
     }
   }
   if (mudou) salvar();
 }
-setInterval(() => { checarLembretes(); aplicarPenalidades(); if (aba !== 'foco') render(); }, 30000);
+setInterval(() => { checarLembretes(); aplicarPenalidades(); if (aba === 'hoje' && !overlay.classList.contains('show')) render(); }, 30000);
+// voltando para o app depois de um tempo: atualiza tudo (dia pode ter virado)
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { aplicarPenalidades(); render(); } });
 
 // ---------- Toast ----------
 let toastTimer;
