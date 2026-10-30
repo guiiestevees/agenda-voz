@@ -224,6 +224,18 @@
   .hero-prox { font-size: 14px; opacity: .95; cursor: pointer; overflow-wrap: anywhere; }
   .chips { display: flex; gap: 8px; margin: 12px 0 4px; flex-wrap: wrap; }
   .chip { font: inherit; font-size: 13px; font-weight: 600; padding: 7px 12px; border-radius: 999px; background: var(--card); color: var(--text); border: 1px solid var(--line); box-shadow: var(--shadow); cursor: pointer; }
+  .fogo { border: 0; background: var(--accent-soft); color: var(--accent); font: inherit; font-weight: 800; font-size: 18px; padding: 6px 12px; border-radius: 999px; cursor: pointer; }
+  .fogo.apagado { filter: grayscale(1); opacity: .55; }
+  .checkin {
+    display: flex; align-items: center; gap: 12px; padding: 12px 14px; margin-bottom: 12px; border-radius: 18px;
+    background: var(--card); border: 2px dashed var(--accent); box-shadow: var(--shadow);
+  }
+  .checkin-fogo { font-size: 34px; animation: tremula 1.4s ease-in-out infinite; }
+  @keyframes tremula { 0%, 100% { transform: scale(1) rotate(-3deg); } 50% { transform: scale(1.12) rotate(3deg); } }
+  .checkin-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .checkin-txt b { font-size: 16px; }
+  .checkin-txt small { color: var(--muted); font-size: 13px; }
+  .checkin-btn { flex: none; border: 0; border-radius: 12px; padding: 12px 14px; background: var(--accent); color: #fff; font: inherit; font-weight: 800; cursor: pointer; box-shadow: 0 4px 14px rgba(224,89,42,.35); }
   .titulo-card {
     width: 100%; display: flex; align-items: center; gap: 14px; margin-top: 10px; padding: 14px 16px; border-radius: 18px;
     background: var(--card); border: 1px solid var(--line); box-shadow: var(--shadow); color: var(--text); font: inherit; text-align: left; cursor: pointer;
@@ -343,6 +355,7 @@
     <div class="hoje" id="hoje"></div>
   </div>
   <button class="icon-btn" id="btnHoje" hidden>Hoje</button>
+  <button class="fogo" id="fogo" hidden aria-label="Sequência de dias"></button>
 </header>
 
 <form class="quick" id="quick">
@@ -702,7 +715,7 @@ function telaHoje() {
   const semanaIni = maisDias(hoje, -hoje.getDay());
   const feitosSemana = ocorrencias(semanaIni, maisDias(hoje, 1)).filter(o => estaFeito(o.ev, o.inicio)).length;
   const focosHoje = focos.filter(f => f.dia === chaveDia(hoje)).length;
-  let html = `
+  let html = htmlCheckin() + `
     <div class="hero ${tudo ? 'completo' : ''}">
       <div class="anel">
         <svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="34" class="trilha"/><circle cx="40" cy="40" r="34" class="prog" pathLength="100" stroke-dasharray="100" stroke-dashoffset="${total ? 100 - feitos / total * 100 : 100}"/></svg>
@@ -885,6 +898,10 @@ function render() {
   rolarParaDia = false;
   document.body.classList.toggle('cheia', aba === 'semana' && visao === 'semana');
   document.getElementById('btnHoje').hidden = aba !== 'semana';
+  const fogo = document.getElementById('fogo');
+  fogo.hidden = aba === 'semana';
+  fogo.textContent = `🔥 ${sequencia()}`;
+  fogo.classList.toggle('apagado', !fezCheckinHoje());
   document.getElementById('visoes').hidden = aba !== 'semana';
   document.querySelectorAll('[data-visao]').forEach(b => b.classList.toggle('ativa', b.dataset.visao === visao));
   document.querySelectorAll('.aba').forEach(b => b.classList.toggle('ativa', b.dataset.aba === aba));
@@ -915,14 +932,19 @@ function navegar(passo) {
 }
 document.querySelectorAll('.aba').forEach(b => b.onclick = () => irPara(b.dataset.aba));
 document.getElementById('btnHoje').onclick = () => navegar('hoje');
+document.getElementById('fogo').onclick = () => {
+  const n = sequencia();
+  toast(fezCheckinHoje() ? `🔥 ${n} dia${n > 1 ? 's' : ''} seguido${n > 1 ? 's' : ''}. Volta amanhã pra manter!` : 'Faça o check-in de hoje na tela Hoje 🔥', 3500);
+};
 document.querySelectorAll('[data-visao]').forEach(b => b.onclick = () => {
   visao = b.dataset.visao; gravarPref('agenda.visao', visao); rolarParaDia = true; render(); window.scrollTo(0, 0);
 });
 window.addEventListener('resize', () => { if (aba === 'semana') render(); });
 document.getElementById('lista').addEventListener('click', (ev) => {
-  const alvo = ev.target.closest('[data-check], [data-niveis], [data-id], [data-dia], [data-nav], [data-ir]');
+  const alvo = ev.target.closest('[data-checkin], [data-check], [data-niveis], [data-id], [data-dia], [data-nav], [data-ir]');
   if (!alvo) return;
-  if (alvo.dataset.check) marcarFeito(alvo);
+  if ('checkin' in alvo.dataset) fazerCheckin(alvo);
+  else if (alvo.dataset.check) marcarFeito(alvo);
   else if ('niveis' in alvo.dataset) abrirNiveis();
   else if (alvo.dataset.ir) { ev.preventDefault(); irPara(alvo.dataset.ir); }
   else if (alvo.dataset.nav) navegar(alvo.dataset.nav);
@@ -1048,10 +1070,10 @@ function telaFoco() {
       <div class="painel">
         <div class="rot">Meta de hoje</div>
         <div class="tomates">${Array.from({ length: Math.max(META_DIA, st.hoje.length) }, (_, i) => `<span class="${i < st.hoje.length ? 'feito' : ''}">🍅</span>`).join('')}</div>
-        <div class="sub">${st.hoje.length >= META_DIA ? 'Meta batida! 🎉' : `${st.hoje.length} de ${META_DIA} focos`} · ${minHoje} min focado</div>
+        <div class="sub">${st.hoje.length >= META_DIA ? `Meta batida! 🎉 +${PONTOS.quatroFocos} de bônus` : `${st.hoje.length} de ${META_DIA} focos · bata a meta e ganhe +${PONTOS.quatroFocos}`} · ${minHoje} min focado</div>
       </div>
       <div class="duo">
-        <div class="painel"><div class="num">🔥 ${st.seq}</div><div class="sub">dia${st.seq === 1 ? '' : 's'} seguido${st.seq === 1 ? '' : 's'}</div></div>
+        <div class="painel"><div class="num">🎯 ${st.seq}</div><div class="sub">dia${st.seq === 1 ? '' : 's'} seguido${st.seq === 1 ? '' : 's'} focando</div></div>
         <div class="painel"><div class="num">🍅 ${focos.length}</div><div class="sub">focos no total</div></div>
       </div>
       <div class="painel">
@@ -1076,9 +1098,13 @@ function terminarCiclo() {
   const qtd = focosDoDia(new Date()).length;
   iniciarModo(eraFoco ? 'pausa' : 'foco');
   salvarFoco();
-  if (eraFoco) { tocarSom(qtd === META_DIA); ganhar(focos.at(-1).min >= 50 ? PONTOS.foco50 : PONTOS.foco25, { x: innerWidth / 2, y: innerHeight / 3 }); }
+  if (eraFoco) {
+    tocarSom(qtd === META_DIA);
+    ganhar(PONTOS.foco, { x: innerWidth / 2, y: innerHeight / 3 });
+    if (qtd === META_DIA) setTimeout(() => { ganhar(PONTOS.quatroFocos, { x: innerWidth / 2, y: innerHeight / 2.5 }); confete(innerWidth / 2, innerHeight / 3, true); }, 700);
+  }
   avisarFoco(!eraFoco ? 'Pausa acabou. Bora focar de novo?'
-    : qtd === META_DIA ? '🎉 Meta do dia batida! Hora de uma pausa.' : `+1 🍅 Foco concluído! Hora de uma pausa.`);
+    : qtd === META_DIA ? `🎉 4 focos! +${PONTOS.quatroFocos} de bônus. Hora de uma pausa.` : `+1 🍅 Foco concluído! Hora de uma pausa.`);
   if (aba === 'foco') render();
 }
 document.getElementById('lista').addEventListener('click', (ev) => {
@@ -1112,17 +1138,55 @@ setInterval(() => {
 // Todo mundo começa como Bicho-preguiça. Ninguém quer continuar sendo.
 const TITULOS = [
   { min: 0, emoji: '🦥', nome: 'Bicho-preguiça' },
-  { min: 50, emoji: '🐌', nome: 'Lesma Lerda' },
-  { min: 150, emoji: '🐢', nome: 'Tartaruga' },
-  { min: 350, emoji: '🐜', nome: 'Formiguinha' },
-  { min: 700, emoji: '🐝', nome: 'Abelha Operária' },
-  { min: 1200, emoji: '🚀', nome: 'Foguete' },
-  { min: 2000, emoji: '🤖', nome: 'Máquina' },
-  { min: 3500, emoji: '👑', nome: 'Lenda Viva' },
+  { min: 50, emoji: '🐌', nome: 'Caramujo' },
+  { min: 120, emoji: '🐢', nome: 'Tartaruga' },
+  { min: 220, emoji: '🐜', nome: 'Formiguinha' },
+  { min: 350, emoji: '🐝', nome: 'Abelha Operária' },
+  { min: 520, emoji: '🐎', nome: 'Cavalo' },
+  { min: 750, emoji: '🐆', nome: 'Pantera' },
+  { min: 1050, emoji: '🦈', nome: 'Tubarão' },
+  { min: 1450, emoji: '🦁', nome: 'Leão' },
+  { min: 2000, emoji: '🏎️', nome: 'Ferrari' },
+  { min: 2700, emoji: '🚀', nome: 'Foguete' },
+  { min: 3600, emoji: '🤖', nome: 'Máquina' },
+  { min: 5000, emoji: '👑', nome: 'Lenda Viva' },
+  { min: 7500, emoji: '💰', nome: 'Milionário' },
 ];
-const PONTOS = { feito: 10, diaCompleto: 25, foco25: 15, foco50: 30, esquecido: -15 };
+// Subir é difícil de propósito: um dia cheio rende mais ou menos um título
+const PONTOS = { checkin: 1, feito: 5, diaCompleto: 10, foco: 5, quatroFocos: 20, esquecido: -5 };
 // pontos: total; desde: só penaliza o que vier depois disso; penalizados/bonus: o que já foi contado
 let xp = lerJSON('agenda.xp', null) || { pontos: 0, desde: chaveDia(new Date()), penalizados: [], bonus: [] };
+xp.checkins = xp.checkins || [];   // dias em que a pessoa fez o check-in
+
+// 🔥 Sequência: dias seguidos de check-in (conta até ontem se hoje ainda não fez)
+function sequencia() {
+  let n = 0, d = xp.checkins.includes(chaveDia(new Date())) ? new Date() : maisDias(new Date(), -1);
+  while (xp.checkins.includes(chaveDia(d))) { n++; d = maisDias(d, -1); }
+  return n;
+}
+const fezCheckinHoje = () => xp.checkins.includes(chaveDia(new Date()));
+function fazerCheckin(botao) {
+  if (fezCheckinHoje()) return;
+  xp.checkins = [...xp.checkins.slice(-400), chaveDia(new Date())];
+  const r = botao.getBoundingClientRect();
+  ganhar(PONTOS.checkin, { x: r.left + r.width / 2, y: r.top });
+  tocarSom(false);
+  confete(r.left + r.width / 2, r.top + r.height / 2, false);
+  const n = sequencia();
+  toast(n > 1 ? `🔥 ${n} dias seguidos! Não deixa apagar.` : '🔥 Sequência começou! Volta amanhã.', 3500);
+  setTimeout(render, 600);
+}
+function htmlCheckin() {
+  if (fezCheckinHoje()) return '';
+  const n = sequencia();
+  return `
+    <div class="checkin">
+      <span class="checkin-fogo">🔥</span>
+      <span class="checkin-txt"><b>${n ? `${n} dia${n > 1 ? 's' : ''} seguido${n > 1 ? 's' : ''}` : 'Comece sua sequência'}</b>
+        <small>${n ? 'Faça o check-in de hoje pra não perder!' : 'Faça check-in todo dia e não deixe o fogo apagar'}</small></span>
+      <button class="checkin-btn" data-checkin>Check-in ✓</button>
+    </div>`;
+}
 const salvarXp = () => gravarJSON('agenda.xp', xp);
 const tituloDe = (pts) => TITULOS.filter(t => pts >= t.min).at(-1);
 const proximoTitulo = (pts) => TITULOS.find(t => t.min > pts);
@@ -1226,7 +1290,7 @@ function abrirNiveis() {
         <li class="${t === atual ? 'atual' : t.min > xp.pontos ? 'bloq' : 'passou'}">
           <span>${t.emoji}</span><b>${t.nome}</b><small>${t.min} pts</small></li>`).join('')}</ol>
       <div class="regras">
-        <div><b>Ganha</b> ✓ compromisso feito +${PONTOS.feito} · dia completo +${PONTOS.diaCompleto} · foco de 25 min +${PONTOS.foco25} · foco de 50 min +${PONTOS.foco50}</div>
+        <div><b>Ganha</b> check-in do dia +${PONTOS.checkin} · compromisso feito +${PONTOS.feito} · dia completo +${PONTOS.diaCompleto} · cada foco +${PONTOS.foco} · 4 focos no dia +${PONTOS.quatroFocos} de bônus</div>
         <div><b>Perde</b> compromisso que passou do dia sem check ${PONTOS.esquecido}. Dá pra cair de título!</div>
       </div>
       <div class="botoes"><button class="primario" id="bOk">Fechar</button></div>
