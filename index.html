@@ -323,6 +323,16 @@
   .digitar button, .link-digitar { font: inherit; font-weight: 700; border: 0; cursor: pointer; }
   .digitar button { padding: 0 16px; border-radius: 12px; background: var(--accent); color: #fff; }
   .link-digitar { background: none; color: var(--accent); margin-top: 14px; padding: 6px; }
+  .ver-titulos { margin-left: 6px; padding: 1px 7px; border-radius: 999px; background: rgba(255,255,255,.22); text-transform: none; letter-spacing: 0; font-size: 11px; }
+  .hero.dourado { background: linear-gradient(135deg, #f7d774 0%, #d4a017 45%, #8a6508 100%); box-shadow: 0 10px 30px rgba(212,160,23,.45); }
+  .niveis .escada li.secreto { background: linear-gradient(135deg, #f7d77433, #d4a01733); outline: 2px solid #d4a017; position: relative; overflow: hidden; }
+  .niveis .escada li.secreto::after { content: ''; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,.35) 50%, transparent 70%); animation: brilho 2.4s ease-in-out infinite; }
+  @keyframes brilho { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+  .niveis .escada li.secreto b { color: #d4a017; }
+  .niveis .escada li.secreto em { font-style: normal; font-weight: 600; font-size: 13px; color: var(--muted); margin-left: 4px; }
+  .secreto-dica { margin: 10px 0 0; padding: 10px 12px; border-radius: 12px; background: #d4a0171f; color: var(--text); font-size: 14px; }
+  .revelacao .nivel-emoji { filter: drop-shadow(0 0 22px #f7d774); }
+  .revelacao .nivel-rot { color: #d4a017; }
   .hero-titulo { width: 100%; display: flex; align-items: center; gap: 16px; background: none; border: 0; padding: 0; color: #fff; font: inherit; text-align: left; cursor: pointer; }
   .bicho { font-size: 76px; line-height: 1; flex: none; display: inline-block; filter: drop-shadow(0 6px 14px rgba(0,0,0,.25)); transform-origin: 50% 85%; }
   .bicho.lento { animation: balanca 3.2s ease-in-out infinite; }
@@ -827,25 +837,25 @@ function telaHoje() {
   const deHoje = ocorrencias(hoje, maisDias(hoje, 1));
   const feitosL = deHoje.filter(o => estaFeito(o.ev, o.inicio)), total = deHoje.length, feitos = feitosL.length;
   const tudo = total > 0 && feitos === total;
-  const t = tituloDe(xp.pontos), proxT = proximoTitulo(xp.pontos);
-  const pctT = proxT ? Math.round((xp.pontos - t.min) / (proxT.min - t.min) * 100) : 100;
+  const t = tituloAtual(), proxT = xp.secreto ? null : proximoTitulo(xp.pontos);
+  const pctT = proxT ? Math.round((xp.pontos - t.min) / (proxT.min - t.min) * 100) : 100;   // no topo, barra cheia
   const d = desafioDaSemana();
   const nivel = TITULOS.indexOf(t);
   const jeito = nivel <= 2 ? 'lento' : nivel <= 8 ? 'animado' : 'turbo';   // bicho preguiçoso balança devagar; os do topo vibram
   let html = htmlCheckin() + `
-    <div class="hero">
+    <div class="hero ${t.secreto ? 'dourado' : ''}">
       <button class="hero-titulo" data-niveis>
         <span class="bicho ${jeito}">${t.emoji}</span>
         <span class="hero-info">
-          <span class="hero-rot">Seu título</span>
+          <span class="hero-rot">Seu título <span class="ver-titulos">ver todos ›</span></span>
           <span class="hero-nome">${t.nome}</span>
           <span class="hero-barra"><i style="width:${pctT}%"></i></span>
-          <span class="hero-pts">${proxT ? `${xp.pontos}/${proxT.min} pts · faltam ${proxT.min - xp.pontos} para ${proxT.emoji} ${proxT.nome}` : `${xp.pontos} pts · topo alcançado 👑`}</span>
+          <span class="hero-pts">${proxT ? `${xp.pontos}/${proxT.min} pts · faltam ${proxT.min - xp.pontos} para ${proxT.emoji} ${proxT.nome}` : t.secreto ? `${xp.pontos} pts · título secreto ✨` : `${xp.pontos} pts · falta só o título secreto 🔒`}</span>
         </span>
       </button>
       <div class="hero-chips">
-        <span class="hc">${tudo ? '🎉' : '✓'} ${feitos}/${total} hoje</span>
-        <button class="hc" data-desafio>🎯 ${d.feito}/${d.meta}</button>
+        <span class="hc">${tudo ? '🎉' : '✅'} Tarefas ${feitos}/${total}</span>
+        <button class="hc" data-desafio>🎯 Desafio ${d.feito}/${d.meta}</button>
         <button class="hc compartilhar" data-compartilhar>📸 Compartilhar meu dia</button>
       </div>
     </div>
@@ -1271,18 +1281,22 @@ const TITULOS = [
   { min: 0, emoji: '🦥', nome: 'Bicho-preguiça' },
   { min: 50, emoji: '🐌', nome: 'Caramujo' },
   { min: 120, emoji: '🐢', nome: 'Tartaruga' },
-  { min: 220, emoji: '🐜', nome: 'Formiguinha' },
-  { min: 350, emoji: '🐝', nome: 'Abelha Operária' },
-  { min: 520, emoji: '🐎', nome: 'Cavalo' },
-  { min: 750, emoji: '🐆', nome: 'Pantera' },
-  { min: 1050, emoji: '🦈', nome: 'Tubarão' },
-  { min: 1450, emoji: '🦁', nome: 'Leão' },
-  { min: 2000, emoji: '🏎️', nome: 'Ferrari' },
-  { min: 2700, emoji: '🚀', nome: 'Foguete' },
-  { min: 3600, emoji: '🤖', nome: 'Máquina' },
+  { min: 220, emoji: '🧸', nome: 'Trabalha Fofo' },
+  { min: 320, emoji: '🐜', nome: 'Formiguinha' },
+  { min: 450, emoji: '🐝', nome: 'Abelha Operária' },
+  { min: 620, emoji: '🐎', nome: 'Cavalo' },
+  { min: 850, emoji: '🐆', nome: 'Pantera' },
+  { min: 1150, emoji: '🦈', nome: 'Tubarão' },
+  { min: 1550, emoji: '🦁', nome: 'Leão' },
+  { min: 2100, emoji: '🏎️', nome: 'Ferrari' },
+  { min: 2800, emoji: '🚀', nome: 'Foguete' },
+  { min: 3700, emoji: '🤖', nome: 'Máquina' },
   { min: 5000, emoji: '👑', nome: 'Lenda Viva' },
   { min: 7500, emoji: '💰', nome: 'Milionário' },
 ];
+// O título secreto: ninguém vê o nome até conquistar. Só com 180 dias seguidos de check-in.
+const DIAS_SECRETO = 180;
+const SECRETO = { min: Infinity, emoji: '🏆', nome: 'Imortal', secreto: true };
 // Subir é difícil de propósito: um dia cheio rende mais ou menos um título
 const PONTOS = { checkin: 1, feito: 5, diaCompleto: 10, foco: 5, quatroFocos: 20, esquecido: -5 };
 // pontos: total; desde: só penaliza o que vier depois disso; penalizados/bonus: o que já foi contado
@@ -1339,6 +1353,7 @@ function fazerCheckin(botao) {
   const n = sequencia();
   ganhar(PONTOS.checkin);
   somFogo();
+  if (n >= DIAS_SECRETO && !xp.secreto) { xp.secreto = true; salvarXp(); return revelarSecreto(); }
   const marco = { 3: '3 dias! Tá pegando o ritmo', 7: '🏅 1 semana de fogo!', 14: '🏅 2 semanas sem parar!', 30: '🏆 1 mês de fogo!', 50: '🏆 50 dias!', 100: '👑 100 dias. Lendário.', 365: '💎 1 ano inteiro!' }[n];
   abrirFolha(`
     <div class="checkin-show">
@@ -1358,6 +1373,20 @@ function fazerCheckin(botao) {
   }, 650);
   render();
 }
+function revelarSecreto() {
+  abrirFolha(`
+    <div class="nivel-up revelacao">
+      <div class="nivel-emoji">${SECRETO.emoji}</div>
+      <div class="nivel-rot">Título secreto desbloqueado</div>
+      <h3>Você é ${SECRETO.nome}</h3>
+      <p>${DIAS_SECRETO} dias seguidos. Pouquíssima gente chega aqui. Esse título é seu pra sempre.</p>
+      <div class="botoes"><button class="primario" id="bOk">Sou ${SECRETO.nome} ✨</button></div>
+    </div>`);
+  document.getElementById('bOk').onclick = () => { fecharFolha(); render(); };
+  tocarSom(true); setTimeout(() => tocarSom(true), 450);
+  confete(innerWidth / 2, innerHeight / 3, true); setTimeout(() => confete(innerWidth / 2, innerHeight / 2, true), 600);
+  render();
+}
 function htmlCheckin() {
   if (fezCheckinHoje()) return '';
   const n = sequencia();
@@ -1371,6 +1400,7 @@ function htmlCheckin() {
 }
 const salvarXp = () => gravarJSON('agenda.xp', xp);
 const tituloDe = (pts) => TITULOS.filter(t => pts >= t.min).at(-1);
+const tituloAtual = () => xp.secreto ? SECRETO : tituloDe(xp.pontos);
 const proximoTitulo = (pts) => TITULOS.find(t => t.min > pts);
 
 // Soma (ou tira) pontos e avisa se subiu ou caiu de título
@@ -1380,6 +1410,7 @@ function ganhar(delta, perto, semAvisoDeQueda) {
   salvarXp();
   if (perto) pontosVoando(delta, perto.x, perto.y);
   const depois = tituloDe(xp.pontos);
+  if (xp.secreto) return null;
   if (depois.min > antes.min) setTimeout(() => subiuDeTitulo(depois), 900);
   else if (depois.min < antes.min && !semAvisoDeQueda) setTimeout(() => caiuDeTitulo(depois), 600);
   return depois.min < antes.min ? depois : null;   // título novo, se caiu
@@ -1447,7 +1478,7 @@ function aplicarPenalidades() {
 }
 
 function htmlTitulo() {
-  const t = tituloDe(xp.pontos), prox = proximoTitulo(xp.pontos);
+  const t = tituloAtual(), prox = xp.secreto ? null : proximoTitulo(xp.pontos);
   const pct = prox ? Math.round((xp.pontos - t.min) / (prox.min - t.min) * 100) : 100;
   return `
     <button class="titulo-card" data-niveis>
@@ -1463,12 +1494,16 @@ function htmlTitulo() {
 }
 
 function abrirNiveis() {
-  const atual = tituloDe(xp.pontos);
+  const atual = tituloAtual(), seq = sequencia();
+  const secreto = xp.secreto
+    ? `<li class="secreto revelado atual"><span>${SECRETO.emoji}</span><b>${SECRETO.nome}</b><small>conquistado ✨</small></li>`
+    : `<li class="secreto"><span>🔒</span><b>??? <em>Título secreto</em></b><small>${seq}/${DIAS_SECRETO} 🔥</small></li>`;
   abrirFolha(`
     <div class="niveis">
       <h3>Seus títulos</h3>
-      <p>Você tem <b>${xp.pontos} pontos</b>.</p>
-      <ol class="escada">${[...TITULOS].reverse().map(t => `
+      <p>Você tem <b>${xp.pontos} pontos</b>. Toque em compromissos, hábitos e Pomodoros pra subir.</p>
+      ${xp.secreto ? '' : `<div class="secreto-dica">✨ Existe um título secreto. Só quem faz check-in <b>${DIAS_SECRETO} dias seguidos</b> descobre qual é.</div>`}
+      <ol class="escada">${secreto}${[...TITULOS].reverse().map(t => `
         <li class="${t === atual ? 'atual' : t.min > xp.pontos ? 'bloq' : 'passou'}">
           <span>${t.emoji}</span><b>${t.nome}</b><small>${t.min} pts</small></li>`).join('')}</ol>
       <div class="regras">
@@ -1700,7 +1735,7 @@ function dadosCard(tipo) {
   const periodo = semana
     ? `Semana de ${ini.getDate()}/${pad(ini.getMonth() + 1)} a ${hoje.getDate()}/${pad(hoje.getMonth() + 1)}`
     : maiuscula(fmtDataLonga(hoje));
-  return { periodo, frase, itens, completo, titulo: tituloDe(xp.pontos), fogo: sequencia(), semana };
+  return { periodo, frase, itens, completo, titulo: tituloAtual(), fogo: sequencia(), semana };
 }
 function desenharCard(tipo) {
   const W = 1080, H = 1920, c = document.createElement('canvas');
@@ -1711,7 +1746,8 @@ function desenharCard(tipo) {
   const caixa = (x, y, w, h, r) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); };
   // fundo
   const grad = g.createLinearGradient(0, 0, W, H);
-  if (d.completo) { grad.addColorStop(0, '#3fb37a'); grad.addColorStop(.55, '#2f8a5b'); grad.addColorStop(1, '#1f5f40'); }
+  if (d.titulo.secreto) { grad.addColorStop(0, '#f7d774'); grad.addColorStop(.5, '#d4a017'); grad.addColorStop(1, '#6e5006'); }
+  else if (d.completo) { grad.addColorStop(0, '#3fb37a'); grad.addColorStop(.55, '#2f8a5b'); grad.addColorStop(1, '#1f5f40'); }
   else { grad.addColorStop(0, '#f2a03d'); grad.addColorStop(.45, '#e0592a'); grad.addColorStop(1, '#b23a14'); }
   g.fillStyle = grad; g.fillRect(0, 0, W, H);
   g.fillStyle = 'rgba(255,255,255,.08)';
