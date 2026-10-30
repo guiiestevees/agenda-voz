@@ -123,8 +123,8 @@
   .mes-grade .dia-btn.sel { background: var(--accent); }
   body.cheia { padding-bottom: 0; }
   .grade3 {
-    margin: 0 -16px; overflow: auto; scroll-snap-type: x mandatory; scroll-padding-left: 44px;
-    overscroll-behavior: contain; background: var(--card); border-top: 1px solid var(--line);
+    margin: 0 -16px; overflow-x: hidden; overflow-y: auto; touch-action: pan-y;
+    overscroll-behavior: contain; -webkit-overflow-scrolling: touch; background: var(--card); border-top: 1px solid var(--line);
   }
   .g-in { display: grid; position: relative; width: max-content; }
   .g-canto { grid-column: 1; grid-row: 1; position: sticky; left: 0; top: 0; z-index: 4; background: var(--card); border-bottom: 1px solid var(--line); }
@@ -139,7 +139,7 @@
   .g-horas { grid-column: 1; grid-row: 2; position: sticky; left: 0; z-index: 2; background: var(--card); }
   .g-horas div { position: absolute; right: 6px; transform: translateY(-50%); font-size: 11px; color: var(--muted); }
   .g-col {
-    grid-row: 2; position: relative; scroll-snap-align: start; border-left: 1px solid var(--line);
+    grid-row: 2; position: relative; border-left: 1px solid var(--line);
     background: repeating-linear-gradient(to bottom, var(--line) 0 1px, transparent 1px 52px);
   }
   .g-ev {
@@ -186,6 +186,44 @@
   .barra b { font-size: 10px; color: var(--muted); font-weight: 600; }
   .barra i { width: 100%; background: var(--accent); border-radius: 6px 6px 2px 2px; min-height: 3px; }
   .barra span { font-size: 11px; color: var(--muted); }
+  .check {
+    flex: none; width: 28px; height: 28px; padding: 0; border-radius: 50%; border: 2px solid var(--muted); background: none;
+    display: grid; place-items: center; cursor: pointer; transition: background .2s, border-color .2s; margin-right: -4px;
+  }
+  .check svg { width: 16px; height: 16px; fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 24; stroke-dashoffset: 24; transition: stroke-dashoffset .3s .08s ease; }
+  .check.on { background: var(--ok); border-color: var(--ok); animation: checkpop .35s ease; }
+  .check.on svg { stroke-dashoffset: 0; }
+  @keyframes checkpop { 0% { transform: scale(.7); } 60% { transform: scale(1.2); } 100% { transform: scale(1); } }
+  .evento .titulo { transition: color .3s; }
+  .evento.feito .titulo { text-decoration: line-through; text-decoration-thickness: 2px; color: var(--muted); }
+  .evento.feito .hora { color: var(--muted); }
+  .evento.pulo { animation: cardpop .4s ease; }
+  @keyframes cardpop { 0% { transform: scale(1); } 40% { transform: scale(1.03); } 100% { transform: scale(1); } }
+  .confete { position: fixed; z-index: 30; width: 8px; height: 12px; border-radius: 2px; pointer-events: none; animation: voa 1s cubic-bezier(.15,.7,.3,1) forwards; }
+  @keyframes voa {
+    0% { transform: translate(-50%, -50%) rotate(0); opacity: 1; }
+    100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy) + 160px)) rotate(var(--r)); opacity: 0; }
+  }
+  .g-ev.feito { text-decoration: line-through; }
+
+  .hero {
+    display: flex; gap: 16px; align-items: center; padding: 18px; border-radius: 22px; color: #fff;
+    background: linear-gradient(135deg, #f07444 0%, #e0592a 45%, #f2a03d 100%); box-shadow: 0 10px 30px rgba(224,89,42,.35);
+  }
+  .hero.completo { background: linear-gradient(135deg, #3fb37a 0%, #2f8a5b 55%, #8bd17c 100%); box-shadow: 0 10px 30px rgba(47,138,91,.35); }
+  .anel { position: relative; width: 78px; height: 78px; flex: none; }
+  .anel svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .anel circle { fill: none; stroke-width: 8; }
+  .anel .trilha { stroke: rgba(255,255,255,.28); }
+  .anel .prog { stroke: #fff; stroke-linecap: round; transition: stroke-dashoffset .8s ease; }
+  .anel-txt { position: absolute; inset: 0; display: flex; align-items: baseline; justify-content: center; padding-top: 24px; font-size: 15px; opacity: .95; }
+  .anel-txt b { font-size: 24px; }
+  .hero-txt { min-width: 0; }
+  .hero-rot { font-size: 13px; font-weight: 600; opacity: .85; text-transform: uppercase; letter-spacing: .06em; }
+  .hero-tit { font-size: 22px; font-weight: 800; letter-spacing: -.01em; margin: 1px 0 4px; }
+  .hero-prox { font-size: 14px; opacity: .95; cursor: pointer; overflow-wrap: anywhere; }
+  .chips { display: flex; gap: 8px; margin: 12px 0 4px; flex-wrap: wrap; }
+  .chip { font: inherit; font-size: 13px; font-weight: 600; padding: 7px 12px; border-radius: 999px; background: var(--card); color: var(--text); border: 1px solid var(--line); box-shadow: var(--shadow); cursor: pointer; }
   .resumo { text-align: center; color: var(--muted); font-size: 14px; margin-top: 12px; }
 
   #mais .icon-btn { width: 100%; padding: 14px; font-size: 16px; font-weight: 600; }
@@ -566,9 +604,14 @@ let diaSel = inicioDoDia(new Date());   // dia escolhido em Semana e Mês
 let mesVisto = new Date(diaSel.getFullYear(), diaSel.getMonth(), 1);
 let destacarId = null;
 
+const estaFeito = (ev, inicio) => (ev.feitos || []).includes(chaveDia(inicio));
+const ICONE_CHECK = '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+
 function cartao({ ev: e, inicio }, agora) {
+  const feito = estaFeito(e, inicio);
   return `
-    <div class="evento ${inicio < agora ? 'passado' : ''} ${[].concat(destacarId).includes(e.id) ? 'novo' : ''}" data-id="${e.id}">
+    <div class="evento ${inicio < agora && !feito ? 'passado' : ''} ${feito ? 'feito' : ''} ${[].concat(destacarId).includes(e.id) ? 'novo' : ''}" data-id="${e.id}">
+      <button class="check ${feito ? 'on' : ''}" data-check="${e.id}|${chaveDia(inicio)}" aria-label="${feito ? 'Desmarcar como feito' : 'Marcar como feito'}">${ICONE_CHECK}</button>
       <div class="hora">${fmtHora(inicio)}</div>
       <div class="info">
         <div class="titulo">${esc(e.titulo)}</div>
@@ -614,14 +657,38 @@ function linhaDoTempo(dia, agora, comLivres) {
   return html;
 }
 
+function saudacao() {
+  const h = new Date().getHours();
+  return h < 5 ? 'Boa noite' : h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
+}
+
 function telaHoje() {
   const agora = new Date(), hoje = inicioDoDia(agora);
-  const prox = ocorrencias(agora, maisDias(hoje, 8))[0];
-  let html = '';
-  if (prox) html += `
-    <div class="proximo" data-id="${prox.ev.id}">
-      <div class="rot">Próximo · ${quandoFalta(prox.inicio, agora)}</div>
-      <div class="tit">${esc(prox.ev.titulo)}</div>
+  const prox = ocorrencias(agora, maisDias(hoje, 8)).find(o => !estaFeito(o.ev, o.inicio));
+  const deHoje = ocorrencias(hoje, maisDias(hoje, 1));
+  const feitos = deHoje.filter(o => estaFeito(o.ev, o.inicio)).length, total = deHoje.length;
+  const tudo = total > 0 && feitos === total;
+  const frase = !total ? 'Dia livre ✨' : tudo ? 'Tudo concluído! 🎉'
+    : `Falta${total - feitos > 1 ? 'm' : ''} ${total - feitos} de ${total}`;
+  // conquistas da semana (domingo até hoje)
+  const semanaIni = maisDias(hoje, -hoje.getDay());
+  const feitosSemana = ocorrencias(semanaIni, maisDias(hoje, 1)).filter(o => estaFeito(o.ev, o.inicio)).length;
+  const focosHoje = focos.filter(f => f.dia === chaveDia(hoje)).length;
+  let html = `
+    <div class="hero ${tudo ? 'completo' : ''}">
+      <div class="anel">
+        <svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="34" class="trilha"/><circle cx="40" cy="40" r="34" class="prog" pathLength="100" stroke-dasharray="100" stroke-dashoffset="${total ? 100 - feitos / total * 100 : 100}"/></svg>
+        <div class="anel-txt">${total ? `<b>${feitos}</b>/${total}` : '☀️'}</div>
+      </div>
+      <div class="hero-txt">
+        <div class="hero-rot">Seu dia</div>
+        <div class="hero-tit">${frase}</div>
+        ${prox ? `<div class="hero-prox" data-id="${prox.ev.id}">Próximo: <b>${esc(prox.ev.titulo)}</b> · ${quandoFalta(prox.inicio, agora)}</div>` : ''}
+      </div>
+    </div>
+    <div class="chips">
+      <span class="chip">✓ ${feitosSemana} feito${feitosSemana === 1 ? '' : 's'} na semana</span>
+      <button class="chip" data-ir="foco">🍅 ${focosHoje} foco${focosHoje === 1 ? '' : 's'} hoje</button>
     </div>`;
   html += `<section class="grupo"><h2>Hoje</h2>${linhaDoTempo(hoje, agora, true)}</section>`;
   for (let i = 1; i <= 7; i++) {
@@ -658,7 +725,7 @@ function blocosDoDia(lista, agora) {
   }
   return grupos.flatMap(g => g.itens.map(({ o, ini, f }) => {
     const n = g.faixas.length;
-    return `<div class="g-ev ${o.inicio < agora ? 'passado' : ''} ${[].concat(destacarId).includes(o.ev.id) ? 'novo' : ''}" data-id="${o.ev.id}"
+    return `<div class="g-ev ${o.inicio < agora || estaFeito(o.ev, o.inicio) ? 'passado' : ''} ${estaFeito(o.ev, o.inicio) ? 'feito' : ''} ${[].concat(destacarId).includes(o.ev.id) ? 'novo' : ''}" data-id="${o.ev.id}"
       style="top:${ini * HORA_PX / 60 + 1}px;height:${HORA_PX - 3}px;left:calc(${f * 100 / n}% + 2px);width:calc(${100 / n}% - 4px)">
       ${esc(o.ev.titulo)}<small>${fmtH(o.inicio)}${o.ev.repetir ? ' · 🔁' : ''}</small></div>`;
   })).join('');
@@ -703,6 +770,58 @@ function montarGrade(pos) {
     const agora = new Date();
     g.scrollTop = (chaveDia(diaSel) === chaveDia(agora) ? Math.max(agora.getHours() - 2, 0) : 7) * HORA_PX;
   }
+  ativarArrasto(g);
+}
+
+// Arrastar para o lado: trava na direção do gesto e encaixa no dia mais próximo
+// (arrasto rápido pula 3 dias, como no Google Agenda)
+function ativarArrasto(g) {
+  const colW = (g.clientWidth - COL_HORAS) / 3, ultima = DIAS_GRADE - 3;
+  const limitar = (i) => Math.min(Math.max(i, 0), ultima);
+  let anim = null, t0 = null, rodaTimer;
+  const animarPara = (idx) => {
+    cancelAnimationFrame(anim);
+    const de = g.scrollLeft, ate = limitar(idx) * colW, ini = performance.now();
+    const passo = (agora) => {
+      const p = Math.min((agora - ini) / 280, 1), e = 1 - Math.pow(1 - p, 3);
+      g.scrollLeft = de + (ate - de) * e;
+      if (p < 1) anim = requestAnimationFrame(passo);
+    };
+    anim = requestAnimationFrame(passo);
+  };
+  g.addEventListener('touchstart', (e) => {
+    cancelAnimationFrame(anim);
+    const p = e.touches[0];
+    t0 = { x: p.clientX, y: p.clientY, l: g.scrollLeft, t: performance.now(), eixo: null, vx: 0, ux: p.clientX, ut: performance.now() };
+  }, { passive: true });
+  g.addEventListener('touchmove', (e) => {
+    if (!t0) return;
+    const p = e.touches[0], dx = p.clientX - t0.x, dy = p.clientY - t0.y;
+    if (!t0.eixo && Math.hypot(dx, dy) > 8) t0.eixo = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+    if (t0.eixo !== 'x') return;
+    e.preventDefault();
+    g.scrollLeft = Math.min(Math.max(t0.l - dx, 0), ultima * colW);
+    const agora = performance.now();
+    if (agora > t0.ut) { t0.vx = (p.clientX - t0.ux) / (agora - t0.ut); t0.ux = p.clientX; t0.ut = agora; }
+  }, { passive: false });
+  g.addEventListener('touchend', (e) => {
+    if (!t0 || t0.eixo !== 'x') { t0 = null; return; }
+    const dx = e.changedTouches[0].clientX - t0.x, inicio = Math.round(t0.l / colW);
+    let idx = Math.round((t0.l - dx) / colW);
+    if (Math.abs(t0.vx) > 0.5) idx = t0.vx < 0 ? Math.max(idx, inicio + 3) : Math.min(idx, inicio - 3);
+    else if (idx === inicio && Math.abs(dx) > colW * 0.2) idx = inicio + (dx < 0 ? 1 : -1);
+    t0 = null;
+    animarPara(idx);
+  });
+  // Trackpad/mouse no computador
+  g.addEventListener('wheel', (e) => {
+    if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+    e.preventDefault();
+    cancelAnimationFrame(anim);
+    g.scrollLeft += e.deltaX;
+    clearTimeout(rodaTimer);
+    rodaTimer = setTimeout(() => animarPara(Math.round(g.scrollLeft / colW)), 120);
+  }, { passive: false });
 }
 
 function telaMes() {
@@ -740,7 +859,7 @@ function render() {
   document.getElementById('visoes').hidden = aba !== 'semana';
   document.querySelectorAll('[data-visao]').forEach(b => b.classList.toggle('ativa', b.dataset.visao === visao));
   document.querySelectorAll('.aba').forEach(b => b.classList.toggle('ativa', b.dataset.aba === aba));
-  document.getElementById('titulo').textContent = { hoje: 'Hoje', semana: 'Agenda', foco: 'Foco', mais: 'Mais' }[aba];
+  document.getElementById('titulo').textContent = { hoje: saudacao(), semana: 'Agenda', foco: 'Foco', mais: 'Mais' }[aba];
   document.getElementById('quick').hidden = aba !== 'hoje';
   document.getElementById('mais').hidden = aba !== 'mais';
   lista.hidden = aba === 'mais';
@@ -772,9 +891,10 @@ document.querySelectorAll('[data-visao]').forEach(b => b.onclick = () => {
 });
 window.addEventListener('resize', () => { if (aba === 'semana') render(); });
 document.getElementById('lista').addEventListener('click', (ev) => {
-  const alvo = ev.target.closest('[data-id], [data-dia], [data-nav], [data-ir]');
+  const alvo = ev.target.closest('[data-check], [data-id], [data-dia], [data-nav], [data-ir]');
   if (!alvo) return;
-  if (alvo.dataset.ir) { ev.preventDefault(); irPara(alvo.dataset.ir); }
+  if (alvo.dataset.check) marcarFeito(alvo);
+  else if (alvo.dataset.ir) { ev.preventDefault(); irPara(alvo.dataset.ir); }
   else if (alvo.dataset.nav) navegar(alvo.dataset.nav);
   else if (alvo.dataset.dia) { const [a, m, d] = alvo.dataset.dia.split('-').map(Number); diaSel = new Date(a, m - 1, d); render(); }
   else abrirEdicao(eventos.find(e => e.id === alvo.dataset.id));
@@ -787,6 +907,62 @@ document.getElementById('lista').addEventListener('touchend', (e) => {
   const dx = e.changedTouches[0].clientX - toqueX; toqueX = null;
   if (Math.abs(dx) > 60) navegar(dx < 0 ? '1m' : '-1m');
 });
+
+// ---------- Concluir compromissos: check, confete e som ----------
+let audioCtx = null;
+function tocarSom(grande) {
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const t = audioCtx.currentTime;
+    const notas = grande ? [523.25, 659.25, 783.99, 1046.5] : [783.99, 1174.66];   // dó-mi-sol-dó / sol-ré
+    notas.forEach((f, i) => {
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain(), ini = t + i * (grande ? 0.1 : 0.08);
+      o.type = 'sine'; o.frequency.value = f;
+      g.gain.setValueAtTime(0, ini);
+      g.gain.linearRampToValueAtTime(0.22, ini + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.001, ini + (grande ? 0.9 : 0.55));
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(ini); o.stop(ini + 1);
+    });
+  } catch {}
+}
+function confete(x, y, grande) {
+  const cores = ['#f07444', '#ffc94d', '#5cc28d', '#5aa9f0', '#e86fa8', '#b07cf0'];
+  const n = grande ? 70 : 18;
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement('i');
+    c.className = 'confete';
+    const ang = Math.random() * Math.PI * 2, dist = (grande ? 140 : 50) + Math.random() * (grande ? 220 : 60);
+    c.style.cssText = `left:${x}px;top:${y}px;background:${cores[i % cores.length]};--dx:${Math.cos(ang) * dist}px;--dy:${Math.sin(ang) * dist - (grande ? 120 : 30)}px;--r:${Math.random() * 720 - 360}deg;animation-duration:${(grande ? 1.3 : 0.8) + Math.random() * 0.5}s`;
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 2000);
+  }
+}
+function marcarFeito(botao) {
+  const [id, dia] = botao.dataset.check.split('|');
+  const ev = eventos.find(e => e.id === id);
+  if (!ev) return;
+  ev.feitos = ev.feitos || [];
+  const feito = !ev.feitos.includes(dia);
+  ev.feitos = feito ? [...ev.feitos.slice(-200), dia] : ev.feitos.filter(d => d !== dia);
+  salvar();
+  // anima no lugar e só depois redesenha a tela
+  const cartaoEl = botao.closest('.evento');
+  botao.classList.toggle('on', feito);
+  cartaoEl.classList.toggle('feito', feito);
+  if (feito) {
+    cartaoEl.classList.remove('pulo'); void cartaoEl.offsetWidth; cartaoEl.classList.add('pulo');
+    const r = botao.getBoundingClientRect();
+    const hoje = chaveDia(new Date());
+    const deHoje = ocorrencias(inicioDoDia(new Date()), maisDias(inicioDoDia(new Date()), 1));
+    const diaCompleto = dia === hoje && deHoje.length > 1 && deHoje.every(o => estaFeito(o.ev, o.inicio));
+    tocarSom(diaCompleto);
+    confete(r.left + r.width / 2, r.top + r.height / 2, false);
+    if (diaCompleto) setTimeout(() => { confete(innerWidth / 2, innerHeight / 3, true); toast('🎉 Dia concluído! Mandou bem.', 4000); }, 250);
+  }
+  setTimeout(render, 700);
+}
 
 // ---------- Foco (Pomodoro) ----------
 const lerJSON = (k, padrao) => { try { return JSON.parse(localStorage.getItem(k)) ?? padrao; } catch { return padrao; } };
@@ -866,6 +1042,7 @@ function terminarCiclo() {
   const qtd = focosDoDia(new Date()).length;
   iniciarModo(eraFoco ? 'pausa' : 'foco');
   salvarFoco();
+  if (eraFoco) tocarSom(qtd === META_DIA);
   avisarFoco(!eraFoco ? 'Pausa acabou. Bora focar de novo?'
     : qtd === META_DIA ? '🎉 Meta do dia batida! Hora de uma pausa.' : `+1 🍅 Foco concluído! Hora de uma pausa.`);
   if (aba === 'foco') render();
