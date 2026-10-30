@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Agenda">
+<title>Agenda por Voz</title>
+<style>
+  :root {
+    --bg: #f6f5f2;
+    --card: #ffffff;
+    --text: #1d1c1a;
+    --muted: #77736b;
+    --line: #e6e3dc;
+    --accent: #e0592a;
+    --accent-soft: #fbe8df;
+    --ok: #2f8a5b;
+    --shadow: 0 1px 2px rgba(0,0,0,.05), 0 4px 16px rgba(0,0,0,.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141413;
+      --card: #1f1e1c;
+      --text: #f2f0eb;
+      --muted: #9a958c;
+      --line: #2f2d2a;
+      --accent: #f07444;
+      --accent-soft: #3a2419;
+      --ok: #5cc28d;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.3);
+    }
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); }
+  body {
+    font: 16px/1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    padding: env(safe-area-inset-top) 16px calc(130px + env(safe-area-inset-bottom));
+    max-width: 560px; margin: 0 auto;
+  }
+  header { display: flex; align-items: flex-end; justify-content: space-between; padding: 24px 0 16px; }
+  header h1 { margin: 0; font-size: 32px; letter-spacing: -.02em; }
+  header .hoje { color: var(--muted); font-size: 15px; margin-top: 2px; }
+  .icon-btn {
+    border: 1px solid var(--line); background: var(--card); color: var(--text);
+    border-radius: 999px; padding: 8px 12px; font-size: 14px; cursor: pointer;
+  }
+  .icon-btn.on { border-color: var(--ok); color: var(--ok); }
+
+  .quick { display: flex; gap: 8px; margin-bottom: 20px; }
+  .quick input {
+    flex: 1; min-width: 0; font: inherit; padding: 12px 14px; border-radius: 12px;
+    border: 1px solid var(--line); background: var(--card); color: var(--text);
+  }
+  .quick button {
+    font: inherit; font-weight: 600; padding: 0 16px; border-radius: 12px; border: 0;
+    background: var(--text); color: var(--bg); cursor: pointer;
+  }
+
+  .grupo h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 20px 0 8px; font-weight: 600; }
+  .evento {
+    display: flex; gap: 14px; align-items: center; background: var(--card); border-radius: 14px;
+    padding: 14px; margin-bottom: 8px; box-shadow: var(--shadow); cursor: pointer;
+  }
+  .evento.passado { opacity: .45; }
+  .evento.novo { animation: flash 1.6s ease; }
+  @keyframes flash { 0%, 30% { box-shadow: 0 0 0 3px var(--accent); } 100% { box-shadow: var(--shadow); } }
+  .evento .hora { font-weight: 700; font-variant-numeric: tabular-nums; min-width: 48px; }
+  .evento .info { flex: 1; min-width: 0; }
+  .evento .titulo { font-weight: 600; overflow-wrap: anywhere; }
+  .evento .lembrete { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .vazio { text-align: center; color: var(--muted); padding: 48px 16px; }
+  .vazio b { color: var(--text); }
+
+  .mic-wrap { position: fixed; left: 0; right: 0; bottom: calc(24px + env(safe-area-inset-bottom)); display: flex; justify-content: center; pointer-events: none; }
+  .mic {
+    pointer-events: auto; width: 76px; height: 76px; border-radius: 50%; border: 0; cursor: pointer;
+    background: var(--accent); color: #fff; box-shadow: 0 8px 24px rgba(224,89,42,.4);
+    display: grid; place-items: center;
+  }
+  .mic svg { width: 32px; height: 32px; }
+
+  .overlay {
+    position: fixed; inset: 0; background: rgba(10,10,10,.55); backdrop-filter: blur(6px);
+    display: none; align-items: flex-end; justify-content: center; z-index: 10;
+  }
+  .overlay.show { display: flex; }
+  .sheet {
+    width: 100%; max-width: 560px; background: var(--card); border-radius: 22px 22px 0 0;
+    padding: 24px 20px calc(24px + env(safe-area-inset-bottom));
+  }
+  .sheet h3 { margin: 0 0 4px; font-size: 20px; }
+  .sheet p { margin: 0; color: var(--muted); }
+
+  .ouvindo { text-align: center; }
+  .pulse {
+    width: 96px; height: 96px; margin: 8px auto 20px; border-radius: 50%; background: var(--accent);
+    display: grid; place-items: center; color: #fff; border: 0; cursor: pointer;
+  }
+  .pulse.ativo { animation: pulse 1.4s infinite; }
+  .pulse svg { width: 40px; height: 40px; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(224,89,42,.5); } 100% { box-shadow: 0 0 0 28px rgba(224,89,42,0); } }
+  .transcricao { min-height: 56px; font-size: 20px; font-weight: 500; margin: 8px 0 16px; color: var(--text); }
+  .exemplo { font-size: 14px; color: var(--muted); }
+
+  .entendi .linha { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--line); gap: 12px; }
+  .entendi .linha span:first-child { color: var(--muted); }
+  .entendi .linha span:last-child { font-weight: 600; text-align: right; }
+  .entendi .frase { font-style: italic; color: var(--muted); margin: 4px 0 12px; }
+  .botoes { display: flex; gap: 8px; margin-top: 18px; }
+  .botoes button {
+    flex: 1; font: inherit; font-weight: 600; padding: 14px; border-radius: 12px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--card); color: var(--text);
+  }
+  .botoes button.primario { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .botoes button.perigo { color: #c0392b; }
+
+  form.editar label { display: block; font-size: 13px; color: var(--muted); margin: 12px 0 4px; }
+  form.editar input, form.editar select {
+    width: 100%; font: inherit; padding: 12px; border-radius: 10px;
+    border: 1px solid var(--line); background: var(--bg); color: var(--text);
+  }
+  form.editar .dupla { display: flex; gap: 8px; }
+  form.editar .dupla > div { flex: 1; min-width: 0; }
+  .ics { display: block; text-align: center; margin-top: 14px; color: var(--accent); font-weight: 600; text-decoration: none; }
+
+  .toast {
+    position: fixed; left: 50%; top: calc(16px + env(safe-area-inset-top)); transform: translate(-50%, -150%);
+    background: var(--text); color: var(--bg); padding: 12px 18px; border-radius: 12px; z-index: 20;
+    transition: transform .3s ease; max-width: calc(100% - 32px); font-weight: 500;
+  }
+  .toast.show { transform: translate(-50%, 0); }
+
+  details.ajuda { margin-top: 32px; background: var(--card); border-radius: 14px; padding: 14px 16px; box-shadow: var(--shadow); }
+  details.ajuda summary { font-weight: 600; cursor: pointer; }
+  details.ajuda ol { padding-left: 20px; color: var(--muted); }
+  details.ajuda code { background: var(--bg); padding: 2px 6px; border-radius: 6px; font-size: 13px; word-break: break-all; color: var(--text); }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Agenda</h1>
+    <div class="hoje" id="hoje"></div>
+  </div>
+  <button class="icon-btn" id="btnNotif">🔔 Ativar avisos</button>
+</header>
+
+<form class="quick" id="quick">
+  <input id="quickInput" placeholder="Ex.: médico terça às 4, me lembre 15 min antes" autocomplete="off">
+  <button type="submit">Criar</button>
+</form>
+
+<main id="lista"></main>
+
+<details class="ajuda">
+  <summary>Como abrir com 2 toques atrás do iPhone</summary>
+  <ol>
+    <li>Abra o app <b>Atalhos</b> e crie um atalho novo chamado “Agenda por voz”.</li>
+    <li>Adicione a ação <b>Ditar Texto</b> (idioma: Português).</li>
+    <li>Adicione a ação <b>Codificar URL</b> (ela recebe o texto ditado).</li>
+    <li>Adicione <b>Abrir URLs</b> com: <code><span id="urlAtalho"></span>?texto=</code> + a variável “Texto Codificado”.</li>
+    <li>Vá em <b>Ajustes → Acessibilidade → Toque → Toque Traseiro → Toque Duplo</b> e escolha o atalho.</li>
+  </ol>
+  <p style="color:var(--muted);margin:0">Pronto: 2 toques atrás → fale → o compromisso aparece aqui já salvo.</p>
+</details>
+
+<div class="mic-wrap">
+  <button class="mic" id="btnMic" aria-label="Falar compromisso">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2Z"/></svg>
+  </button>
+</div>
+
+<div class="overlay" id="overlay"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ---------- Armazenamento ----------
+const CHAVE = 'agenda.eventos';
+let eventos = carregar();
+function carregar() {
+  try { return JSON.parse(localStorage.getItem(CHAVE)) || []; } catch { return []; }
+}
+function salvar() {
+  try { localStorage.setItem(CHAVE, JSON.stringify(eventos)); } catch {}
+}
+
+// ---------- Interpretação da frase (pt-BR) ----------
+const NUMEROS = { um: 1, uma: 1, dois: 2, duas: 2, tres: 3, quatro: 4, cinco: 5, seis: 6, sete: 7, oito: 8, nove: 9, dez: 10, onze: 11, doze: 12, quinze: 15, vinte: 20, trinta: 30, quarenta: 40, cinquenta: 50 };
+const PAL_NUM = Object.keys(NUMEROS).join('|');
+const NUM = `(?:\\d+|${PAL_NUM})(?:\\s+e\\s+(?:\\d+|${PAL_NUM}))?`;
+const HORA = `\\d{1,2}|${PAL_NUM}`;
+const MESES = ['janeiro','fevereiro','marco','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const DIAS_SEMANA = { domingo: 0, segunda: 1, terca: 2, quarta: 3, quinta: 4, sexta: 5, sabado: 6 };
+
+function num(txt) {
+  if (!txt) return null;
+  return txt.split(/\s+e\s+/).reduce((s, p) => s + (/^\d+$/.test(p) ? +p : (NUMEROS[p] || 0)), 0);
+}
+// Remove acentos mantendo o mesmo comprimento, para os índices baterem com o texto original
+function normalizar(s) {
+  return Array.from(s).map(c => c.normalize('NFD')[0]).join('').toLowerCase();
+}
+
+function interpretar(fraseOriginal, agora = new Date()) {
+  let original = fraseOriginal.normalize('NFC').replace(/\s+/g, ' ').trim();
+  let n = normalizar(original);
+  const remover = (m) => {
+    const ini = m.index, fim = m.index + m[0].length;
+    original = original.slice(0, ini) + ' '.repeat(fim - ini) + original.slice(fim);
+    n = n.slice(0, ini) + ' '.repeat(fim - ini) + n.slice(fim);
+  };
+
+  let lembreteMin = null, data = null, hora = null, minuto = 0, periodo = null, m;
+
+  // Lembrete: "me lembre 15 minutos antes", "me avisa uma hora antes", "com 1 dia de antecedência"
+  const reLembrete = new RegExp(`(?:,?\\s*(?:\\be\\s+)?(?:me\\s+)?(?:lembr\\w*|avis\\w*|alert\\w*|notifi\\w*)(?:\\s+me)?(?:\\s+(?:com|de))?\\s+)?(?:com\\s+)?(meia\\s+hora|${NUM})\\s*(minutos?|min|horas?|hrs?|h|dias?)?\\s+(?:antes|de\\s+antecedencia)\\b`);
+  if ((m = reLembrete.exec(n))) {
+    if (m[1].startsWith('meia')) lembreteMin = 30;
+    else {
+      const qtd = num(m[1]), un = m[2] || 'min';
+      lembreteMin = un.startsWith('h') ? qtd * 60 : un.startsWith('d') ? qtd * 1440 : qtd;
+    }
+    remover(m);
+  }
+  // "me lembre" sem quantidade → lembrete padrão de 15 min
+  if ((m = /,?\s*(?:\be\s+)?me\s+(?:lembr|avis)\w*/.exec(n))) {
+    if (lembreteMin === null) lembreteMin = 15;
+    remover(m);
+  }
+
+  // Relativo: "daqui a 2 horas", "daqui 30 minutos", "daqui a 3 dias"
+  const reDaqui = new RegExp(`\\bdaqui\\s+(?:a\\s+)?(${NUM})\\s+(minutos?|min|horas?|dias?|semanas?)\\b`);
+  if ((m = reDaqui.exec(n))) {
+    const qtd = num(m[1]), un = m[2];
+    const alvo = new Date(agora);
+    if (un.startsWith('m')) alvo.setMinutes(alvo.getMinutes() + qtd);
+    else if (un.startsWith('h')) alvo.setHours(alvo.getHours() + qtd);
+    else if (un.startsWith('d')) alvo.setDate(alvo.getDate() + qtd);
+    else alvo.setDate(alvo.getDate() + qtd * 7);
+    data = new Date(alvo.getFullYear(), alvo.getMonth(), alvo.getDate());
+    if (un.startsWith('m') || un.startsWith('h')) { hora = alvo.getHours(); minuto = alvo.getMinutes(); }
+    remover(m);
+  }
+
+  const hoje = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
+  const maisDias = (d) => { const x = new Date(hoje); x.setDate(x.getDate() + d); return x; };
+
+  // Data
+  if (!data && (m = /\bdepois\s+de\s+amanha\b/.exec(n))) { data = maisDias(2); remover(m); }
+  if (!data && (m = /\bamanha\b/.exec(n))) { data = maisDias(1); remover(m); }
+  if (!data && (m = /\bhoje\b/.exec(n))) { data = maisDias(0); remover(m); }
+  if (!data && (m = /\b(?:(?:na|no|nesta|neste|nessa|nesse|esta|este|essa|esse)\s+)?(?:(?:proxima|proximo)\s+)?(segunda|terca|quarta|quinta|sexta|sabado|domingo)(?:[\s-]feira)?(?:\s+que\s+vem)?\b/.exec(n))) {
+    let dif = (DIAS_SEMANA[m[1]] - hoje.getDay() + 7) % 7;
+    if (dif === 0) dif = 7;
+    data = maisDias(dif); remover(m);
+  }
+  const reDiaMes = new RegExp(`\\b(?:(?:no\\s+)?dia\\s+)?(\\d{1,2})\\s+de\\s+(${MESES.join('|')})\\b`);
+  if (!data && (m = reDiaMes.exec(n))) {
+    data = new Date(hoje.getFullYear(), MESES.indexOf(m[2]), +m[1]);
+    if (data < hoje) data.setFullYear(data.getFullYear() + 1);
+    remover(m);
+  }
+  if (!data && (m = /\b(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?\b/.exec(n))) {
+    let ano = m[3] ? +m[3] : hoje.getFullYear();
+    if (ano < 100) ano += 2000;
+    data = new Date(ano, +m[2] - 1, +m[1]);
+    if (!m[3] && data < hoje) data.setFullYear(data.getFullYear() + 1);
+    remover(m);
+  }
+  if (!data && (m = /\b(?:no\s+)?dia\s+(\d{1,2})\b/.exec(n))) {
+    data = new Date(hoje.getFullYear(), hoje.getMonth(), +m[1]);
+    if (data < hoje) data.setMonth(data.getMonth() + 1);
+    remover(m);
+  }
+  if (!data && (m = /\b(?:na\s+)?(?:semana\s+que\s+vem|proxima\s+semana)\b/.exec(n))) { data = maisDias(7); remover(m); }
+
+  // Hora
+  const PER = `(?:\\s+(?:da|de|a)\\s+(manha|tarde|noite|madrugada))?`;
+  const reHoraMin = new RegExp(`(?:\\b(?:as|a|ate\\s+as|pras?)\\s+)?\\b(\\d{1,2})\\s*(?::|h)\\s*(\\d{2})\\b${PER}`);
+  const reHoraAs = new RegExp(`\\b(?:as|ate\\s+as|pras?\\s+as?)\\s+(${HORA})(?:\\s*(?:h|horas?)\\b)?(?:\\s+e\\s+(meia|${NUM}))?${PER}`);
+  const reHoraH = new RegExp(`\\b(${HORA})\\s*(?:h|horas?)\\b(?:\\s+e\\s+(meia|${NUM}))?${PER}`);
+  if (hora === null && (m = /\b(?:ao?\s+|as\s+)?(meio[\s-]dia|meia[\s-]noite)(?:\s+e\s+meia)?\b/.exec(n))) {
+    hora = m[1].startsWith('meio') ? 12 : 0; minuto = /e\s+meia/.test(m[0]) ? 30 : 0; periodo = 'fixo'; remover(m);
+  }
+  if (hora === null && (m = reHoraMin.exec(n))) { hora = +m[1]; minuto = +m[2]; periodo = m[3] || null; remover(m); }
+  if (hora === null && ((m = reHoraAs.exec(n)) || (m = reHoraH.exec(n)))) {
+    hora = num(m[1]);
+    minuto = m[2] ? (m[2] === 'meia' ? 30 : num(m[2])) : 0;
+    periodo = m[3] || null; remover(m);
+  }
+  if ((m = /\b(?:da|de|pela|a)\s+(manha|tarde|noite|madrugada)\b/.exec(n))) {
+    periodo = periodo || m[1]; remover(m);
+  }
+  if (hora !== null && periodo !== 'fixo') {
+    if ((periodo === 'tarde' || periodo === 'noite') && hora < 12) hora += 12;
+    else if (!periodo && hora >= 1 && hora <= 7) hora += 12; // "às 4" quase sempre é 16h
+  }
+  if (hora === null && periodo) hora = { manha: 9, tarde: 15, noite: 20, madrugada: 2 }[periodo];
+
+  // Sem hora → 9h. Sem data → hoje (ou amanhã se o horário já passou)
+  const semHora = hora === null;
+  if (semHora) { hora = 9; minuto = 0; }
+  if (!data) {
+    data = maisDias(0);
+    const t = new Date(data); t.setHours(hora, minuto);
+    if (t < agora) data = maisDias(1);
+  }
+  const inicio = new Date(data); inicio.setHours(hora, minuto, 0, 0);
+
+  // Título: o que sobrou, sem palavras de enchimento
+  const ENCHIMENTO_INICIO = new Set(['eu','tenho','tem','vou','ter','marca','marcar','marque','agenda','agendar','agende','anota','anotar','anote','coloca','colocar','coloque','cria','criar','crie','adiciona','adicionar','adicione','lembrete','compromisso','evento','um','uma','de','que','preciso','por','favor','ai','e','o','a','os','as','para','pra','no','na']);
+  const ENCHIMENTO_FIM = new Set(['e','as','a','o','no','na','de','do','da','para','pra','com','me','por','favor','feira','em']);
+  let palavras = original.replace(/[,.;!?]+/g, ' ').split(/\s+/).filter(Boolean);
+  while (palavras.length && ENCHIMENTO_INICIO.has(normalizar(palavras[0]))) palavras.shift();
+  while (palavras.length && ENCHIMENTO_FIM.has(normalizar(palavras.at(-1)))) palavras.pop();
+  let titulo = palavras.join(' ') || 'Compromisso';
+  titulo = titulo[0].toUpperCase() + titulo.slice(1);
+
+  return { titulo, inicio: inicio.toISOString(), lembreteMin, semHora };
+}
+window.interpretar = interpretar; // facilita testar pelo console
+
+// ---------- Formatação ----------
+const fmtHora = (d) => d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+const fmtDataLonga = (d) => d.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+function fmtLembrete(min) {
+  if (min === null || min === undefined) return 'Sem lembrete';
+  if (min % 1440 === 0) return `${min / 1440} dia${min > 1440 ? 's' : ''} antes`;
+  if (min % 60 === 0) return `${min / 60} hora${min > 60 ? 's' : ''} antes`;
+  return `${min} min antes`;
+}
+function rotuloDia(d) {
+  const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+  const dia = new Date(d); dia.setHours(0, 0, 0, 0);
+  const dif = Math.round((dia - hoje) / 86400000);
+  if (dif === 0) return 'Hoje';
+  if (dif === 1) return 'Amanhã';
+  if (dif === -1) return 'Ontem';
+  return d.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' });
+}
+const esc = (s) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+// ---------- Lista ----------
+let destacarId = null;
+function render() {
+  document.getElementById('hoje').textContent = fmtDataLonga(new Date()).replace(/^./, c => c.toUpperCase());
+  const lista = document.getElementById('lista');
+  const corte = new Date(); corte.setHours(0, 0, 0, 0);
+  const visiveis = eventos
+    .filter(e => new Date(e.inicio) >= corte)
+    .sort((a, b) => new Date(a.inicio) - new Date(b.inicio));
+  if (!visiveis.length) {
+    lista.innerHTML = `<div class="vazio">Nada marcado ainda.<br>Toque no microfone e diga algo como<br><b>“dentista quinta às 3, me lembre 30 minutos antes”</b></div>`;
+    return;
+  }
+  const grupos = new Map();
+  for (const e of visiveis) {
+    const k = rotuloDia(new Date(e.inicio));
+    if (!grupos.has(k)) grupos.set(k, []);
+    grupos.get(k).push(e);
+  }
+  const agora = new Date();
+  lista.innerHTML = [...grupos].map(([dia, evs]) => `
+    <section class="grupo">
+      <h2>${esc(dia)}</h2>
+      ${evs.map(e => `
+        <div class="evento ${new Date(e.inicio) < agora ? 'passado' : ''} ${e.id === destacarId ? 'novo' : ''}" data-id="${e.id}">
+          <div class="hora">${fmtHora(new Date(e.inicio))}</div>
+          <div class="info">
+            <div class="titulo">${esc(e.titulo)}</div>
+            <div class="lembrete">${e.lembreteMin !== null ? '🔔 ' : ''}${fmtLembrete(e.lembreteMin)}</div>
+          </div>
+        </div>`).join('')}
+    </section>`).join('');
+  destacarId = null;
+}
+document.getElementById('lista').addEventListener('click', (ev) => {
+  const el = ev.target.closest('.evento');
+  if (el) abrirEdicao(eventos.find(e => e.id === el.dataset.id));
+});
+
+// ---------- Criar a partir de uma frase ----------
+function criarDeFrase(frase) {
+  frase = frase.trim();
+  if (!frase) return;
+  const r = interpretar(frase);
+  const ev = { id: String(Date.now()), titulo: r.titulo, inicio: r.inicio, lembreteMin: r.lembreteMin, frase, avisado: false };
+  eventos.push(ev);
+  salvar();
+  destacarId = ev.id;
+  render();
+  mostrarEntendi(ev);
+}
+
+document.getElementById('quick').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const inp = document.getElementById('quickInput');
+  criarDeFrase(inp.value);
+  inp.value = '';
+  inp.blur();
+});
+
+// ---------- Folhas (overlay) ----------
+const overlay = document.getElementById('overlay');
+const sheet = document.getElementById('sheet');
+function abrirFolha(html) { sheet.innerHTML = html; overlay.classList.add('show'); }
+function fecharFolha() { overlay.classList.remove('show'); pararReconhecimento(); }
+overlay.addEventListener('click', (e) => { if (e.target === overlay) fecharFolha(); });
+
+function mostrarEntendi(ev) {
+  const d = new Date(ev.inicio);
+  abrirFolha(`
+    <div class="entendi">
+      <h3>✅ Anotado!</h3>
+      <div class="frase">“${esc(ev.frase)}”</div>
+      <div class="linha"><span>O quê</span><span>${esc(ev.titulo)}</span></div>
+      <div class="linha"><span>Quando</span><span>${esc(fmtDataLonga(d))}, ${fmtHora(d)}</span></div>
+      <div class="linha"><span>Lembrete</span><span>${fmtLembrete(ev.lembreteMin)}</span></div>
+      <div class="botoes">
+        <button class="perigo" id="bDesfazer">Desfazer</button>
+        <button id="bEditar">Editar</button>
+        <button class="primario" id="bOk">OK</button>
+      </div>
+    </div>`);
+  document.getElementById('bOk').onclick = fecharFolha;
+  document.getElementById('bEditar').onclick = () => abrirEdicao(ev);
+  document.getElementById('bDesfazer').onclick = () => {
+    eventos = eventos.filter(e => e.id !== ev.id); salvar(); render(); fecharFolha(); toast('Removido');
+  };
+}
+
+function pad(x) { return String(x).padStart(2, '0'); }
+function abrirEdicao(ev) {
+  const d = new Date(ev.inicio);
+  const opcoes = [null, 0, 5, 10, 15, 30, 60, 120, 1440];
+  if (!opcoes.includes(ev.lembreteMin)) opcoes.push(ev.lembreteMin);
+  abrirFolha(`
+    <form class="editar" id="fEditar">
+      <h3>Editar compromisso</h3>
+      <label>O quê</label>
+      <input name="titulo" value="${esc(ev.titulo)}" required>
+      <div class="dupla">
+        <div><label>Dia</label><input type="date" name="dia" value="${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}" required></div>
+        <div><label>Hora</label><input type="time" name="hora" value="${pad(d.getHours())}:${pad(d.getMinutes())}" required></div>
+      </div>
+      <label>Lembrete</label>
+      <select name="lembrete">
+        ${opcoes.map(o => `<option value="${o === null ? '' : o}" ${o === ev.lembreteMin ? 'selected' : ''}>${o === 0 ? 'Na hora' : fmtLembrete(o)}</option>`).join('')}
+      </select>
+      <div class="botoes">
+        <button type="button" class="perigo" id="bExcluir">Excluir</button>
+        <button type="submit" class="primario">Salvar</button>
+      </div>
+      <a class="ics" id="bIcs" href="#">📅 Adicionar ao Calendário do iPhone</a>
+    </form>`);
+  const f = document.getElementById('fEditar');
+  f.onsubmit = (e) => {
+    e.preventDefault();
+    const [a, mes, dia] = f.dia.value.split('-').map(Number);
+    const [h, mi] = f.hora.value.split(':').map(Number);
+    ev.titulo = f.titulo.value.trim() || 'Compromisso';
+    ev.inicio = new Date(a, mes - 1, dia, h, mi).toISOString();
+    ev.lembreteMin = f.lembrete.value === '' ? null : +f.lembrete.value;
+    ev.avisado = false;
+    salvar(); destacarId = ev.id; render(); fecharFolha(); toast('Salvo');
+  };
+  document.getElementById('bExcluir').onclick = () => {
+    eventos = eventos.filter(e => e.id !== ev.id); salvar(); render(); fecharFolha(); toast('Excluído');
+  };
+  document.getElementById('bIcs').onclick = (e) => { e.preventDefault(); baixarIcs(ev); };
+}
+
+// ---------- .ics (lembrete real pelo Calendário do iPhone) ----------
+function baixarIcs(ev) {
+  const fmt = (d) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  const ini = new Date(ev.inicio), fim = new Date(ini.getTime() + 3600000);
+  const linhas = [
+    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Agenda por Voz//PT-BR', 'BEGIN:VEVENT',
+    `UID:${ev.id}@agenda-voz`, `DTSTAMP:${fmt(new Date())}`, `DTSTART:${fmt(ini)}`, `DTEND:${fmt(fim)}`,
+    `SUMMARY:${ev.titulo.replace(/[,;\\]/g, m => '\\' + m)}`,
+  ];
+  if (ev.lembreteMin !== null) linhas.push('BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${ev.titulo}`, `TRIGGER:-PT${ev.lembreteMin}M`, 'END:VALARM');
+  linhas.push('END:VEVENT', 'END:VCALENDAR');
+  const a = document.createElement('a');
+  a.href = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(linhas.join('\r\n'));
+  a.download = 'compromisso.ics';
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+// ---------- Voz ----------
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null, textoFinal = '';
+const ICONE_MIC = document.querySelector('#btnMic svg').outerHTML;
+
+function abrirVoz() {
+  abrirFolha(`
+    <div class="ouvindo">
+      <h3 id="vTitulo">Toque para falar</h3>
+      <button class="pulse" id="vMic">${ICONE_MIC}</button>
+      <div class="transcricao" id="vTexto"></div>
+      <div class="exemplo">Ex.: “médico terça-feira às 4, me lembre 15 minutos antes”</div>
+    </div>`);
+  document.getElementById('vMic').onclick = () => rec ? pararReconhecimento() : iniciarReconhecimento();
+  iniciarReconhecimento();
+}
+
+function iniciarReconhecimento() {
+  const titulo = document.getElementById('vTitulo');
+  if (!SR) {
+    titulo.textContent = 'Voz não suportada neste navegador';
+    document.getElementById('vTexto').innerHTML = '<span style="font-size:15px;color:var(--muted)">Use o campo de texto com o microfone do teclado, ou o atalho do toque duplo.</span>';
+    return;
+  }
+  textoFinal = '';
+  rec = new SR();
+  rec.lang = 'pt-BR';
+  rec.interimResults = true;
+  rec.continuous = false;
+  rec.onstart = () => { titulo.textContent = 'Ouvindo…'; document.getElementById('vMic').classList.add('ativo'); };
+  rec.onresult = (e) => {
+    let parcial = '';
+    for (const r of e.results) { if (r.isFinal) textoFinal = r[0].transcript; else parcial += r[0].transcript; }
+    const el = document.getElementById('vTexto');
+    if (el) el.textContent = textoFinal || parcial;
+  };
+  rec.onerror = (e) => {
+    const t = document.getElementById('vTitulo');
+    if (t) t.textContent = e.error === 'not-allowed' ? 'Permita o microfone e toque de novo' : 'Não entendi, toque para tentar de novo';
+  };
+  rec.onend = () => {
+    rec = null;
+    const mic = document.getElementById('vMic');
+    if (mic) mic.classList.remove('ativo');
+    if (textoFinal) criarDeFrase(textoFinal);
+    else { const t = document.getElementById('vTitulo'); if (t && t.textContent === 'Ouvindo…') t.textContent = 'Toque para falar'; }
+  };
+  try { rec.start(); } catch { titulo.textContent = 'Toque para falar'; rec = null; }
+}
+function pararReconhecimento() { if (rec) rec.stop(); }
+
+document.getElementById('btnMic').onclick = abrirVoz;
+
+// ---------- Avisos (enquanto o app está aberto) ----------
+const btnNotif = document.getElementById('btnNotif');
+function atualizarBtnNotif() {
+  const ok = 'Notification' in window && Notification.permission === 'granted';
+  btnNotif.classList.toggle('on', ok);
+  btnNotif.textContent = ok ? '🔔 Avisos ativos' : '🔔 Ativar avisos';
+}
+btnNotif.onclick = async () => {
+  if (!('Notification' in window)) { toast('Avisos: instale o app na tela de início (Compartilhar → Adicionar à Tela de Início)'); return; }
+  await Notification.requestPermission();
+  atualizarBtnNotif();
+};
+atualizarBtnNotif();
+
+function checarLembretes() {
+  const agora = Date.now();
+  let mudou = false;
+  for (const e of eventos) {
+    if (e.lembreteMin === null || e.avisado) continue;
+    const quando = new Date(e.inicio).getTime() - e.lembreteMin * 60000;
+    if (agora >= quando && agora < new Date(e.inicio).getTime() + 3600000) {
+      e.avisado = true; mudou = true;
+      const msg = `${e.titulo} às ${fmtHora(new Date(e.inicio))}`;
+      toast('🔔 ' + msg, 8000);
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      if ('Notification' in window && Notification.permission === 'granted') new Notification('Lembrete', { body: msg });
+    }
+  }
+  if (mudou) salvar();
+}
+setInterval(() => { checarLembretes(); render(); }, 30000);
+
+// ---------- Toast ----------
+let toastTimer;
+function toast(msg, ms = 2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), ms);
+}
+
+// ---------- Entrada vinda do atalho do iPhone ----------
+// ?texto=...  → cria o compromisso direto (Atalho "Ditar Texto")
+// ?voz=1      → abre a tela de ouvir
+document.getElementById('urlAtalho').textContent = location.origin + location.pathname;
+render();
+checarLembretes();
+const params = new URLSearchParams(location.search);
+if (params.get('texto')) criarDeFrase(params.get('texto'));
+else if (params.has('voz')) abrirVoz();
+if (params.toString()) history.replaceState(null, '', location.pathname);
+</script>
+</body>
+</html>
