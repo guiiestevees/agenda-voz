@@ -440,7 +440,7 @@ function render() {
     <section class="grupo">
       <h2>${esc(dia)}</h2>
       ${ocs.map(({ ev: e, inicio }) => `
-        <div class="evento ${inicio < agora ? 'passado' : ''} ${e.id === destacarId ? 'novo' : ''}" data-id="${e.id}">
+        <div class="evento ${inicio < agora ? 'passado' : ''} ${[].concat(destacarId).includes(e.id) ? 'novo' : ''}" data-id="${e.id}">
           <div class="hora">${fmtHora(inicio)}</div>
           <div class="info">
             <div class="titulo">${esc(e.titulo)}</div>
@@ -479,6 +479,7 @@ async function perguntarIA(frase) {
       body: JSON.stringify({
         texto: frase,
         agora: `${agora.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })} ${fmtHora(agora)}`,
+        hoje: chaveDia(agora),
         agenda: agendaParaIA(),
       }),
     });
@@ -501,53 +502,62 @@ async function criarDeFrase(frase) {
   if (IA_URL) {
     try { r = await perguntarIA(frase); } catch (e) { console.warn('IA indisponível, usando o modo simples', e); }
   }
-  if (!r) {
+  if (!r || !Array.isArray(r.acoes)) {
     // Sem internet/IA: entende só pedidos de criar, pelo jeito antigo
     const p = interpretar(frase), d = new Date(p.inicio);
-    r = { acao: 'criar', titulo: p.titulo, data: chaveDia(d), hora: `${pad(d.getHours())}:${pad(d.getMinutes())}`, lembreteMin: p.lembreteMin, repetir: 'nenhuma', diasSemana: [], resposta: 'Anotado!' };
+    r = { tipo: 'agir', resposta: 'Anotado!', acoes: [{ acao: 'criar', titulo: p.titulo, data: chaveDia(d), hora: `${pad(d.getHours())}:${pad(d.getMinutes())}`, lembreteMin: p.lembreteMin, repetir: 'nenhuma', diasSemana: [] }] };
   }
   executar(r, frase);
 }
 
-function executar(r, frase) {
-  const antes = JSON.stringify(eventos);
-  const alvo = r.eventoId ? eventos.find(e => e.id === r.eventoId) : null;
-  let mostrar = null;
+let ultimoId = 0;
+const novoId = () => String(ultimoId = Math.max(Date.now(), ultimoId + 1));
 
-  if (r.acao === 'criar' && r.data && r.hora) {
-    const ev = { id: String(Date.now()), titulo: r.titulo || 'Compromisso', inicio: dataHoraLocal(r.data, r.hora).toISOString(),
-      lembreteMin: r.lembreteMin ?? null, repetir: montarRepetir(r.repetir, r.diasSemana), excecoes: [], avisados: [], frase };
-    eventos.push(ev); mostrar = ev;
-  } else if (r.acao === 'mudar' && alvo) {
+// Aplica uma ação na agenda; devolve o compromisso criado/alterado (ou null)
+function aplicarAcao(a, frase) {
+  const alvo = a.eventoId ? eventos.find(e => e.id === a.eventoId) : null;
+  if (a.acao === 'criar' && a.data && a.hora) {
+    const ev = { id: novoId(), titulo: a.titulo || 'Compromisso', inicio: dataHoraLocal(a.data, a.hora).toISOString(),
+      lembreteMin: a.lembreteMin ?? null, repetir: montarRepetir(a.repetir, a.diasSemana), excecoes: [], avisados: [], frase };
+    eventos.push(ev);
+    return ev;
+  }
+  if (a.acao === 'mudar' && alvo) {
     let ev = alvo;
-    if (r.soNaData && alvo.repetir) {
+    if (a.soNaData && alvo.repetir) {
       // Muda só um dia da série: tira o dia da série e cria um avulso no lugar
-      alvo.excecoes = [...(alvo.excecoes || []), r.soNaData];
+      alvo.excecoes = [...(alvo.excecoes || []), a.soNaData];
       const b = new Date(alvo.inicio);
-      ev = { ...alvo, id: String(Date.now()), repetir: null, excecoes: [], avisados: [], inicio: dataHoraLocal(r.soNaData, `${pad(b.getHours())}:${pad(b.getMinutes())}`).toISOString() };
+      ev = { ...alvo, id: novoId(), repetir: null, excecoes: [], avisados: [], inicio: dataHoraLocal(a.soNaData, `${pad(b.getHours())}:${pad(b.getMinutes())}`).toISOString() };
       eventos.push(ev);
     }
     const atual = new Date(ev.inicio);
-    if (r.data || r.hora) {
-      ev.inicio = dataHoraLocal(r.data || chaveDia(atual), r.hora || `${pad(atual.getHours())}:${pad(atual.getMinutes())}`).toISOString();
+    if (a.data || a.hora) {
+      ev.inicio = dataHoraLocal(a.data || chaveDia(atual), a.hora || `${pad(atual.getHours())}:${pad(atual.getMinutes())}`).toISOString();
     }
-    if (r.titulo) ev.titulo = r.titulo;
-    if (r.lembreteMin !== null && r.lembreteMin !== undefined) ev.lembreteMin = r.lembreteMin < 0 ? null : r.lembreteMin;
-    if (r.repetir && r.repetir !== 'manter') ev.repetir = montarRepetir(r.repetir, r.diasSemana);
+    if (a.titulo) ev.titulo = a.titulo;
+    if (a.lembreteMin !== null && a.lembreteMin !== undefined) ev.lembreteMin = a.lembreteMin < 0 ? null : a.lembreteMin;
+    if (a.repetir && a.repetir !== 'manter') ev.repetir = montarRepetir(a.repetir, a.diasSemana);
     ev.avisados = []; ev.avisado = false;
-    mostrar = ev;
-  } else if (r.acao === 'desmarcar' && alvo) {
-    if (r.soNaData && alvo.repetir) alvo.excecoes = [...(alvo.excecoes || []), r.soNaData];
-    else eventos = eventos.filter(e => e.id !== alvo.id);
-  } else if (r.acao !== 'perguntar') {
-    r = { ...r, acao: 'nao_entendi', resposta: r.resposta || 'Não entendi. Pode repetir?' };
+    return ev;
   }
-
-  const mudou = JSON.stringify(eventos) !== antes;
-  if (mudou) { salvar(); if (mostrar) destacarId = mostrar.id; render(); }
-  mostrarResultado(r, frase, mostrar, mudou ? antes : null);
+  if (a.acao === 'desmarcar' && alvo) {
+    if (a.soNaData && alvo.repetir) alvo.excecoes = [...(alvo.excecoes || []), a.soNaData];
+    else eventos = eventos.filter(e => e.id !== alvo.id);
+  }
+  return null;
 }
 
+function executar(r, frase) {
+  const antes = JSON.stringify(eventos);
+  const tocados = (r.tipo === 'agir' ? r.acoes : []).map(a => aplicarAcao(a, frase)).filter(Boolean);
+  const mudou = JSON.stringify(eventos) !== antes;
+  if (r.tipo === 'agir' && !mudou) r = { ...r, tipo: 'nao_entendi', resposta: r.resposta || 'Não entendi. Pode repetir?' };
+  // Só mostra os que continuam na agenda (ex.: criado e depois desmarcado na mesma fala)
+  const mostrar = tocados.filter((ev, i) => eventos.includes(ev) && tocados.indexOf(ev) === i);
+  if (mudou) { salvar(); destacarId = mostrar.map(e => e.id); render(); }
+  mostrarResultado(r, frase, mostrar, mudou ? antes : null);
+}
 
 document.getElementById('quick').addEventListener('submit', (e) => {
   e.preventDefault();
@@ -564,28 +574,35 @@ function abrirFolha(html) { sheet.innerHTML = html; overlay.classList.add('show'
 function fecharFolha() { overlay.classList.remove('show'); pararReconhecimento(); }
 overlay.addEventListener('click', (e) => { if (e.target === overlay) fecharFolha(); });
 
-function mostrarResultado(r, frase, ev, antes) {
-  const icone = { criar: '✅', mudar: '✏️', desmarcar: '🗑️', perguntar: '💬', nao_entendi: '🤔' }[r.acao] || '💬';
-  const d = ev && new Date(ev.inicio);
+function mostrarResultado(r, frase, evs, antes) {
+  const tipos = (r.acoes || []).map(a => a.acao);
+  const icone = r.tipo === 'nao_entendi' ? '🤔' : r.tipo === 'responder' ? '💬'
+    : tipos.every(t => t === 'desmarcar') ? '🗑️' : tipos.every(t => t === 'mudar') ? '✏️' : '✅';
+  const um = evs.length === 1 ? evs[0] : null;
+  const detalhes = um ? `
+        <div class="linha"><span>O quê</span><span>${esc(um.titulo)}</span></div>
+        <div class="linha"><span>Quando</span><span>${esc(fmtDataLonga(new Date(um.inicio)))}, ${fmtHora(new Date(um.inicio))}</span></div>
+        ${um.repetir ? `<div class="linha"><span>Repete</span><span>${esc(fmtRepetir(um.repetir))}</span></div>` : ''}
+        <div class="linha"><span>Lembrete</span><span>${fmtLembrete(um.lembreteMin)}</span></div>`
+    : evs.map(ev => {
+        const d = new Date(ev.inicio);
+        return `<div class="linha"><span>${esc(ev.titulo)}</span><span>${esc(rotuloDia(d))}, ${fmtHora(d)}${ev.repetir ? ' · 🔁' : ''}</span></div>`;
+      }).join('');
   abrirFolha(`
     <div class="entendi">
       <div class="resposta">${icone} ${esc(r.resposta || '')}</div>
       <div class="frase">“${esc(frase)}”</div>
-      ${ev ? `
-        <div class="linha"><span>O quê</span><span>${esc(ev.titulo)}</span></div>
-        <div class="linha"><span>Quando</span><span>${esc(fmtDataLonga(d))}, ${fmtHora(d)}</span></div>
-        ${ev.repetir ? `<div class="linha"><span>Repete</span><span>${esc(fmtRepetir(ev.repetir))}</span></div>` : ''}
-        <div class="linha"><span>Lembrete</span><span>${fmtLembrete(ev.lembreteMin)}</span></div>` : ''}
+      ${detalhes}
       <div class="botoes">
         ${antes ? '<button class="perigo" id="bDesfazer">Desfazer</button>' : ''}
-        ${ev ? '<button id="bEditar">Editar</button>' : ''}
-        ${r.acao === 'nao_entendi' ? '<button id="bDeNovo">Falar de novo</button>' : ''}
+        ${um ? '<button id="bEditar">Editar</button>' : ''}
+        ${r.tipo === 'nao_entendi' ? '<button id="bDeNovo">Falar de novo</button>' : ''}
         <button class="primario" id="bOk">OK</button>
       </div>
     </div>`);
   document.getElementById('bOk').onclick = fecharFolha;
-  if (ev) document.getElementById('bEditar').onclick = () => abrirEdicao(ev);
-  if (r.acao === 'nao_entendi') document.getElementById('bDeNovo').onclick = abrirVoz;
+  if (um) document.getElementById('bEditar').onclick = () => abrirEdicao(um);
+  if (r.tipo === 'nao_entendi') document.getElementById('bDeNovo').onclick = abrirVoz;
   if (antes) document.getElementById('bDesfazer').onclick = () => {
     eventos = JSON.parse(antes); salvar(); render(); fecharFolha(); toast('Desfeito');
   };
