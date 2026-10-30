@@ -121,6 +121,36 @@
   .mes-grade .dia-btn { box-shadow: none; background: none; padding: 7px 0 5px; border-radius: 10px; }
   .mes-grade .dia-btn .dn { font-size: 15px; font-weight: 600; }
   .mes-grade .dia-btn.sel { background: var(--accent); }
+  body.cheia { padding-bottom: 0; }
+  .grade3 {
+    margin: 0 -16px; overflow: auto; scroll-snap-type: x mandatory; scroll-padding-left: 44px;
+    overscroll-behavior: contain; background: var(--card); border-top: 1px solid var(--line);
+  }
+  .g-in { display: grid; position: relative; width: max-content; }
+  .g-canto { grid-column: 1; grid-row: 1; position: sticky; left: 0; top: 0; z-index: 4; background: var(--card); border-bottom: 1px solid var(--line); }
+  .g-cab {
+    grid-row: 1; position: sticky; top: 0; z-index: 3; background: var(--card); border-bottom: 1px solid var(--line);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+  }
+  .g-cab span { font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 600; }
+  .g-cab b { font-size: 19px; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; }
+  .g-cab.hoje span { color: var(--accent); }
+  .g-cab.hoje b { background: var(--accent); color: #fff; }
+  .g-horas { grid-column: 1; grid-row: 2; position: sticky; left: 0; z-index: 2; background: var(--card); }
+  .g-horas div { position: absolute; right: 6px; transform: translateY(-50%); font-size: 11px; color: var(--muted); }
+  .g-col {
+    grid-row: 2; position: relative; scroll-snap-align: start; border-left: 1px solid var(--line);
+    background: repeating-linear-gradient(to bottom, var(--line) 0 1px, transparent 1px 52px);
+  }
+  .g-ev {
+    position: absolute; border-radius: 6px; background: var(--accent); color: #fff; padding: 3px 5px;
+    font-size: 12px; font-weight: 600; line-height: 1.2; overflow: hidden; cursor: pointer; z-index: 1; overflow-wrap: break-word; hyphens: auto;
+  }
+  .g-ev small { display: block; font-weight: 400; opacity: .9; font-size: 11px; }
+  .g-ev.passado { opacity: .45; }
+  .g-ev.novo { animation: flash 1.6s ease; }
+  .g-agora { position: absolute; left: 0; right: 0; height: 2px; background: #e53935; z-index: 2; }
+  .g-agora::before { content: ''; position: absolute; left: -5px; top: -4px; width: 10px; height: 10px; border-radius: 50%; background: #e53935; }
   .resumo { text-align: center; color: var(--muted); font-size: 14px; margin-top: 12px; }
 
   #mais .icon-btn { width: 100%; padding: 14px; font-size: 16px; font-weight: 600; }
@@ -211,6 +241,7 @@
     <h1 id="titulo">Hoje</h1>
     <div class="hoje" id="hoje"></div>
   </div>
+  <button class="icon-btn" id="btnHoje" hidden>Hoje</button>
 </header>
 
 <form class="quick" id="quick">
@@ -570,21 +601,72 @@ function faixaDia(dia, ocs, extra = '') {
     <span class="pts">${'<i></i>'.repeat(Math.min(qtd, 3))}</span></button>`;
 }
 
+// Semana: grade de horários, 3 dias por tela, arrastando para o lado (estilo Google Agenda)
+const HORA_PX = 52, COL_HORAS = 44, DIAS_GRADE = 120;
+let rolarParaDia = true;   // na próxima renderização, leva a grade até o diaSel
+
+function blocosDoDia(lista, agora) {
+  // Compromissos que se sobrepõem ficam lado a lado
+  const ord = [...lista].sort((a, b) => a.inicio - b.inicio);
+  const grupos = []; let atual = null;
+  for (const o of ord) {
+    const ini = o.inicio.getHours() * 60 + o.inicio.getMinutes(), fim = ini + 60;
+    if (!atual || ini >= atual.fim) { atual = { fim, faixas: [], itens: [] }; grupos.push(atual); }
+    let f = atual.faixas.findIndex(fimFaixa => fimFaixa <= ini);
+    if (f < 0) { f = atual.faixas.length; atual.faixas.push(fim); } else atual.faixas[f] = fim;
+    atual.fim = Math.max(atual.fim, fim);
+    atual.itens.push({ o, ini, f });
+  }
+  return grupos.flatMap(g => g.itens.map(({ o, ini, f }) => {
+    const n = g.faixas.length;
+    return `<div class="g-ev ${o.inicio < agora ? 'passado' : ''} ${[].concat(destacarId).includes(o.ev.id) ? 'novo' : ''}" data-id="${o.ev.id}"
+      style="top:${ini * HORA_PX / 60 + 1}px;height:${HORA_PX - 3}px;left:calc(${f * 100 / n}% + 2px);width:calc(${100 / n}% - 4px)">
+      ${esc(o.ev.titulo)}<small>${fmtH(o.inicio)}${o.ev.repetir ? ' · 🔁' : ''}</small></div>`;
+  })).join('');
+}
+
 function telaSemana() {
-  const agora = new Date(), ini = maisDias(diaSel, -diaSel.getDay());
-  const ocs = ocorrencias(ini, maisDias(ini, 7));
-  const fim = maisDias(ini, 6);
-  const faixa = ini.getMonth() === fim.getMonth()
-    ? `${ini.getDate()} a ${fim.getDate()} de ${fim.toLocaleDateString('pt-BR', { month: 'long' })}`
-    : `${ini.getDate()}/${pad(ini.getMonth() + 1)} a ${fim.getDate()}/${pad(fim.getMonth() + 1)}`;
-  document.getElementById('hoje').textContent = maiuscula(faixa);
-  return `
-    <div class="navega"><button data-nav="-7" aria-label="Semana anterior">‹</button>
-      <button class="volta" data-nav="hoje">Hoje</button>
-      <button data-nav="7" aria-label="Próxima semana">›</button></div>
-    <div class="faixa">${Array.from({ length: 7 }, (_, i) => faixaDia(maisDias(ini, i), ocs)).join('')}</div>
-    <section class="grupo"><h2>${esc(maiuscula(rotuloDia(diaSel)))}</h2>${linhaDoTempo(diaSel, agora, true)}</section>
-    <div class="resumo">${ocs.length ? `${ocs.length} compromisso${ocs.length > 1 ? 's' : ''} nesta semana` : 'Semana livre'}</div>`;
+  const agora = new Date(), hojeK = chaveDia(agora);
+  const ini = maisDias(diaSel, -30);
+  const porDia = new Map();
+  for (const o of ocorrencias(ini, maisDias(ini, DIAS_GRADE))) {
+    const k = chaveDia(o.inicio);
+    if (!porDia.has(k)) porDia.set(k, []);
+    porDia.get(k).push(o);
+  }
+  let cab = '', cols = '';
+  for (let i = 0; i < DIAS_GRADE; i++) {
+    const d = maisDias(ini, i), k = chaveDia(d);
+    cab += `<div class="g-cab ${k === hojeK ? 'hoje' : ''}" style="grid-column:${i + 2}"><span>${DIAS_CURTOS[d.getDay()]}</span><b>${d.getDate()}</b></div>`;
+    const linha = k === hojeK ? `<div class="g-agora" style="top:${(agora.getHours() * 60 + agora.getMinutes()) * HORA_PX / 60}px"></div>` : '';
+    cols += `<div class="g-col" style="grid-column:${i + 2}" data-col="${k}">${blocosDoDia(porDia.get(k) || [], agora)}${linha}</div>`;
+  }
+  const horas = Array.from({ length: 23 }, (_, h) => `<div style="top:${(h + 1) * HORA_PX}px">${h + 1}h</div>`).join('');
+  return `<div class="grade3" id="grade3"><div class="g-in" style="grid-template-columns:${COL_HORAS}px repeat(${DIAS_GRADE}, var(--col));grid-template-rows:56px ${24 * HORA_PX}px">
+    <div class="g-canto"></div>${cab}<div class="g-horas">${horas}</div>${cols}</div></div>`;
+}
+
+// Ajusta tamanho da grade, posição inicial e o mês mostrado no topo
+function montarGrade(pos) {
+  const g = document.getElementById('grade3');
+  if (!g) return;
+  g.style.setProperty('--col', `${(g.clientWidth - COL_HORAS) / 3}px`);
+  g.style.height = `${window.innerHeight - g.getBoundingClientRect().top - document.querySelector('.abas').offsetHeight}px`;
+  if (pos) { g.scrollLeft = pos.l; g.scrollTop = pos.t; }
+  else {
+    const col = g.querySelector(`[data-col="${chaveDia(diaSel)}"]`);
+    g.scrollLeft = col.offsetLeft - COL_HORAS;
+    const agora = new Date();
+    g.scrollTop = (chaveDia(diaSel) === chaveDia(agora) ? Math.max(agora.getHours() - 2, 0) : 7) * HORA_PX;
+  }
+  const mostrarMes = () => {
+    const i = Math.round(g.scrollLeft / ((g.clientWidth - COL_HORAS) / 3));
+    const d = new Date(g.querySelectorAll('.g-col')[i]?.dataset.col + 'T12:00:00');
+    if (!isNaN(d)) document.getElementById('hoje').textContent = maiuscula(d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }));
+  };
+  let pendente = false;
+  g.onscroll = () => { if (!pendente) { pendente = true; requestAnimationFrame(() => { pendente = false; mostrarMes(); }); } };
+  mostrarMes();
 }
 
 function telaMes() {
@@ -612,6 +694,11 @@ function telaMes() {
 
 function render() {
   const lista = document.getElementById('lista');
+  const gradeAnt = document.getElementById('grade3');
+  const pos = gradeAnt && !rolarParaDia ? { l: gradeAnt.scrollLeft, t: gradeAnt.scrollTop } : null;
+  rolarParaDia = false;
+  document.body.classList.toggle('cheia', aba === 'semana');
+  document.getElementById('btnHoje').hidden = aba !== 'semana';
   document.querySelectorAll('.aba').forEach(b => b.classList.toggle('ativa', b.dataset.aba === aba));
   document.getElementById('titulo').textContent = { hoje: 'Hoje', semana: 'Semana', mes: 'Mês', mais: 'Mais' }[aba];
   document.getElementById('quick').hidden = aba !== 'hoje';
@@ -619,17 +706,18 @@ function render() {
   lista.hidden = aba === 'mais';
   document.getElementById('hoje').textContent = maiuscula(fmtDataLonga(new Date()));
   if (aba === 'hoje') lista.innerHTML = telaHoje();
-  else if (aba === 'semana') lista.innerHTML = telaSemana();
+  else if (aba === 'semana') { lista.innerHTML = telaSemana(); montarGrade(pos); }
   else if (aba === 'mes') lista.innerHTML = telaMes();
   destacarId = null;
 }
 
 function irPara(novaAba) {
-  aba = novaAba; gravarPref('agenda.aba', aba);
+  aba = novaAba; gravarPref('agenda.aba', aba); rolarParaDia = true;
   if (aba !== 'hoje') { diaSel = inicioDoDia(new Date()); mesVisto = new Date(diaSel.getFullYear(), diaSel.getMonth(), 1); }
   render(); window.scrollTo(0, 0);
 }
 function navegar(passo) {
+  rolarParaDia = true;
   if (passo === 'hoje') diaSel = inicioDoDia(new Date());
   else if (passo.endsWith('m')) { mesVisto = new Date(mesVisto.getFullYear(), mesVisto.getMonth() + parseInt(passo), 1); diaSel = new Date(mesVisto); }
   else diaSel = maisDias(diaSel, +passo);
@@ -637,6 +725,8 @@ function navegar(passo) {
   render();
 }
 document.querySelectorAll('.aba').forEach(b => b.onclick = () => irPara(b.dataset.aba));
+document.getElementById('btnHoje').onclick = () => navegar('hoje');
+window.addEventListener('resize', () => { if (aba === 'semana') render(); });
 document.getElementById('lista').addEventListener('click', (ev) => {
   const alvo = ev.target.closest('[data-id], [data-dia], [data-nav], [data-ir]');
   if (!alvo) return;
@@ -649,9 +739,9 @@ document.getElementById('lista').addEventListener('click', (ev) => {
 let toqueX = null;
 document.getElementById('lista').addEventListener('touchstart', (e) => { toqueX = e.touches[0].clientX; }, { passive: true });
 document.getElementById('lista').addEventListener('touchend', (e) => {
-  if (toqueX === null || (aba !== 'semana' && aba !== 'mes')) return;
+  if (toqueX === null || aba !== 'mes') return;
   const dx = e.changedTouches[0].clientX - toqueX; toqueX = null;
-  if (Math.abs(dx) > 60) navegar(aba === 'semana' ? (dx < 0 ? '7' : '-7') : (dx < 0 ? '1m' : '-1m'));
+  if (Math.abs(dx) > 60) navegar(dx < 0 ? '1m' : '-1m');
 });
 
 // ---------- Secretária: entende a frase com IA e executa ----------
@@ -754,7 +844,7 @@ function executar(r, frase) {
   if (r.tipo === 'agir' && !mudou) r = { ...r, tipo: 'nao_entendi', resposta: r.resposta || 'Não entendi. Pode repetir?' };
   // Só mostra os que continuam na agenda (ex.: criado e depois desmarcado na mesma fala)
   const mostrar = tocados.filter((ev, i) => eventos.includes(ev) && tocados.indexOf(ev) === i);
-  if (mostrar[0]) { diaSel = inicioDoDia(new Date(mostrar[0].inicio)); mesVisto = new Date(diaSel.getFullYear(), diaSel.getMonth(), 1); }
+  if (mostrar[0]) { rolarParaDia = true; diaSel = inicioDoDia(new Date(mostrar[0].inicio)); mesVisto = new Date(diaSel.getFullYear(), diaSel.getMonth(), 1); }
   if (mudou) { salvar(); destacarId = mostrar.map(e => e.id); render(); }
   mostrarResultado(r, frase, mostrar, mudou ? antes : null);
 }
