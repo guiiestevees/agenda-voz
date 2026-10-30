@@ -378,9 +378,29 @@
   .hc.compartilhar { background: #fff; color: var(--accent); padding: 10px 18px; font-size: 14px; }
   .proximo-linha { margin: 12px 2px 0; font-size: 14px; color: var(--muted); cursor: pointer; }
   .proximo-linha b { color: var(--text); }
-  .novo-comp { width: 100%; margin-top: 12px; padding: 14px; border-radius: 16px; border: 2px dashed var(--accent); background: var(--accent-soft);
-    color: var(--accent); font: inherit; font-size: 16px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
-  .novo-comp span { font-size: 22px; line-height: 1; }
+  .inspira {
+    margin-top: 12px; padding: 18px 16px 16px; border-radius: 22px; color: #fff; position: relative; overflow: hidden;
+    background: linear-gradient(135deg, #5b4bd6 0%, #8a4fd8 55%, #c45ab3 100%); box-shadow: 0 10px 28px rgba(108,78,214,.35);
+  }
+  .inspira::before { content: ''; position: absolute; right: -40px; top: -50px; width: 160px; height: 160px; border-radius: 50%; background: rgba(255,255,255,.08); }
+  .insp-topo { display: flex; justify-content: space-between; align-items: center; position: relative; }
+  .insp-rot { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; opacity: .9; }
+  .insp-outra { width: 32px; height: 32px; border-radius: 50%; border: 0; background: rgba(255,255,255,.2); color: #fff; font-size: 17px; cursor: pointer; }
+  .insp-outra:active { transform: rotate(180deg); transition: transform .3s; }
+  .insp-pergunta { position: relative; font-family: Georgia, "Times New Roman", serif; font-style: italic; font-size: 21px; line-height: 1.35; margin: 10px 2px 16px; }
+  .insp-pergunta.troca { animation: trocaPergunta .3s ease; }
+  @keyframes trocaPergunta { 0% { opacity: 1; transform: none; } 50% { opacity: 0; transform: translateY(6px); } 100% { opacity: 1; transform: none; } }
+  .novo-comp {
+    width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 16px; border: 0; cursor: pointer; text-align: left;
+    background: #fff; color: #2a1f5c; font: inherit; box-shadow: 0 6px 16px rgba(30,10,80,.25); position: relative; transition: transform .1s;
+  }
+  .novo-comp:active { transform: scale(.98); }
+  .nc-mais { flex: none; width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; font-size: 26px; font-weight: 700; color: #fff;
+    background: linear-gradient(135deg, #f2a03d, #e0592a); box-shadow: 0 4px 10px rgba(224,89,42,.4); }
+  .nc-txt { flex: 1; display: flex; flex-direction: column; }
+  .nc-txt b { font-size: 17px; font-weight: 800; }
+  .nc-txt small { font-size: 13px; color: #6b5fa0; }
+  .nc-seta { font-size: 26px; color: #8a7fc0; }
   .mais-btn { width: 38px; height: 38px; border-radius: 50%; border: 0; background: var(--accent); color: #fff; font-size: 22px; font-weight: 700; cursor: pointer; line-height: 1; }
   .como-criar p { margin-bottom: 12px !important; }
   .cc-opcao { width: 100%; display: grid; grid-template-columns: 44px 1fr; grid-template-rows: auto auto; column-gap: 10px; align-items: center; text-align: left;
@@ -884,7 +904,15 @@ function telaHoje() {
         <button class="hc compartilhar" data-compartilhar>📸 Compartilhar meu dia</button>
       </div>
     </div>
-    <button class="novo-comp" data-novo-comp><span>＋</span> Novo compromisso</button>
+    <div class="inspira">
+      <div class="insp-topo"><span class="insp-rot">💡 Pergunta do dia</span><button class="insp-outra" data-outra-pergunta aria-label="Outra pergunta">↻</button></div>
+      <div class="insp-pergunta" id="pergunta">${perguntaDoDia()}</div>
+      <button class="novo-comp" data-novo-comp>
+        <span class="nc-mais">＋</span>
+        <span class="nc-txt"><b>Novo compromisso</b><small>Fale, escreva ou preencha</small></span>
+        <span class="nc-seta">›</span>
+      </button>
+    </div>
     ${prox ? `<div class="proximo-linha" data-id="${prox.ev.id}">Próximo: <b>${esc(prox.ev.titulo)}</b> · ${quandoFalta(prox.inicio, agora)}</div>` : ''}`;
   if (eventos.length < 3 && !lerPref('agenda.dicaFechada', '')) html += `
     <div class="dica-criar">
@@ -1072,9 +1100,10 @@ document.querySelectorAll('[data-visao]').forEach(b => b.onclick = () => {
 });
 window.addEventListener('resize', () => { if (aba === 'semana') render(); });
 document.getElementById('lista').addEventListener('click', (ev) => {
-  const alvo = ev.target.closest('[data-novo-comp], [data-falar], [data-fechar-dica], [data-desafio], [data-hab-check], [data-hab], [data-novo-hab], [data-compartilhar], [data-checkin], [data-check], [data-niveis], [data-id], [data-dia], [data-nav], [data-ir]');
+  const alvo = ev.target.closest('[data-outra-pergunta], [data-novo-comp], [data-falar], [data-fechar-dica], [data-desafio], [data-hab-check], [data-hab], [data-novo-hab], [data-compartilhar], [data-checkin], [data-check], [data-niveis], [data-id], [data-dia], [data-nav], [data-ir]');
   if (!alvo) return;
-  if ('novoComp' in alvo.dataset) escolherComoCriar();
+  if ('outraPergunta' in alvo.dataset) outraPergunta();
+  else if ('novoComp' in alvo.dataset) escolherComoCriar();
   else if ('falar' in alvo.dataset) abrirVoz();
   else if ('fecharDica' in alvo.dataset) { gravarPref('agenda.dicaFechada', '1'); render(); }
   else if ('desafio' in alvo.dataset) abrirDesafio();
@@ -1462,6 +1491,51 @@ const FRASES_DIA = [
   'Sequência é igual planta: rega todo dia.', 'Hoje é um ótimo dia pra ser produtivo.',
   'Você tá construindo um hábito. Isso muda vidas.', 'Missão de hoje: ser 1% melhor que ontem.',
 ];
+// Perguntas que ajudam a escolher bons compromissos (uma por dia, dá pra trocar no ↻)
+const PERGUNTAS_DIA = [
+  'Qual tarefa simples pode trazer um resultado desproporcional hoje?',
+  'O que você está adiando que, se feito, te faria prosperar muito mais?',
+  'Qual é a única coisa que, feita hoje, deixaria todo o resto mais fácil?',
+  'Que conversa difícil você vem evitando?',
+  'O que te deixaria orgulhoso de ter feito, quando chegar a noite?',
+  'Qual pequena ação te aproxima do seu maior objetivo do ano?',
+  'Tem alguém que você precisa agradecer, ligar ou visitar?',
+  'Qual hábito do seu “eu do futuro” você pode começar hoje?',
+  'O que você pode tirar da lista pra sobrar energia pro que importa?',
+  'Qual tarefa de 2 minutos você pode resolver agora e esquecer?',
+  'O que valeria a pena estudar por 30 minutos hoje?',
+  'Como você vai cuidar da sua saúde hoje?',
+  'Qual decisão você está empurrando com a barriga?',
+  'Se o seu dia tivesse só 3 horas, o que você faria?',
+  'O que traria mais dinheiro ou oportunidade se você fizesse esta semana?',
+  'Qual projeto parado merece só 25 minutos de foco hoje?',
+  'Que momento com quem você ama dá pra marcar hoje?',
+  'O que você faria hoje se não tivesse medo de errar?',
+  'Qual tarefa chata, se resolvida, te daria um alívio enorme?',
+  'Quem pode te ajudar a chegar mais rápido onde você quer?',
+  'Qual é o próximo passo concreto do seu maior sonho?',
+  'O que você pode deixar pronto hoje pra amanhã começar leve?',
+  'Que tempo só pra você você vai proteger hoje?',
+  'Qual meta grande cabe num primeiro passo de 15 minutos?',
+  'O que o você de um ano atrás adoraria te ver fazendo hoje?',
+  'Que bagunça (gaveta, e-mail, contas) está roubando sua paz?',
+  'Com qual cliente, contato ou amigo você não fala há tempo demais?',
+  'O que você aprendeu ontem que pode colocar em prática hoje?',
+  'Qual tarefa você mais quer evitar? Talvez seja a mais importante.',
+  'Como você vai descansar de verdade hoje?',
+];
+let perguntaExtra = 0;   // quantas vezes tocou no ↻ (só nesta visita)
+function perguntaDoDia() {
+  const d = new Date(), diaDoAno = Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 86400000);
+  return PERGUNTAS_DIA[(diaDoAno * 7 + perguntaExtra) % PERGUNTAS_DIA.length];
+}
+function outraPergunta() {
+  perguntaExtra++;
+  const el = document.getElementById('pergunta');
+  if (!el) return;
+  el.classList.remove('troca'); void el.offsetWidth; el.classList.add('troca');
+  setTimeout(() => { el.textContent = perguntaDoDia(); }, 150);
+}
 function fraseDoDia() {
   const d = new Date(), inicioAno = new Date(d.getFullYear(), 0, 0);
   return FRASES_DIA[Math.floor((d - inicioAno) / 86400000) % FRASES_DIA.length];
