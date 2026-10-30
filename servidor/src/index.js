@@ -32,7 +32,7 @@ Regras:
 - Quando o tipo for "responder", organize a resposta em tópicos para leitura rápida, usando quebras de linha (\\n):
   1ª linha: uma frase curta de abertura (ex.: "Sua semana que vem:").
   Depois, para cada dia, uma linha só com o dia terminando em dois-pontos (ex.: "Terça, 03/11:") e, embaixo, um compromisso por linha começando com "• " no formato "• 16h – Médico".
-  Horários livres no formato "• Livre das 11h às 16h". Dia sem nada: "• Livre o dia todo".
+  Horários livres no formato "• Livre das 11h às 16h", considerando só o horário em que a pessoa está acordada (das 8h às 22h) e contando 1h de duração para cada compromisso. Dia sem nada: "• Livre o dia todo".
   Se a pergunta for sobre um dia só, pule a linha do dia e liste direto os tópicos. Nada de parágrafos longos.`;
 
 const nulo = (tipo) => ({ type: [tipo, "null"] });
