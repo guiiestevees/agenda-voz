@@ -126,26 +126,28 @@
   .mes-grade .dia-btn .dn { font-size: 15px; font-weight: 600; }
   .mes-grade .dia-btn.sel { background: var(--accent); }
   body.cheia { padding-bottom: 0; }
-  .grade3 {
-    margin: 0 -16px; overflow-x: hidden; overflow-y: auto; touch-action: pan-y;
-    overscroll-behavior: contain; -webkit-overflow-scrolling: touch; background: var(--card); border-top: 1px solid var(--line);
-  }
-  .g-in { display: grid; position: relative; width: max-content; }
-  .g-canto { grid-column: 1; grid-row: 1; position: sticky; left: 0; top: 0; z-index: 4; background: var(--card); border-bottom: 1px solid var(--line); }
-  .g-cab {
-    grid-row: 1; position: sticky; top: 0; z-index: 3; background: var(--card); border-bottom: 1px solid var(--line);
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
-  }
+  .grade3 { margin: 0 -16px; display: flex; flex-direction: column; background: var(--card); border-top: 1px solid var(--line); overflow: hidden; }
+  .g-topo { display: flex; flex: none; border-bottom: 1px solid var(--line); background: var(--card); z-index: 2; }
+  .g-canto { flex: none; width: 44px; }
+  .g-cab-janela { flex: 1; overflow: hidden; }
+  .g-cab-trilho { display: flex; will-change: transform; }
+  .g-cab { flex: none; width: var(--col); height: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; }
   .g-cab span { font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 600; }
   .g-cab b { font-size: 19px; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; }
   .g-cab.hoje span { color: var(--accent); }
   .g-cab.hoje b { background: var(--accent); color: #fff; }
-  .g-horas { grid-column: 1; grid-row: 2; position: sticky; left: 0; z-index: 2; background: var(--card); }
+  .g-corpo { flex: 1; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+  .g-linha { display: flex; }
+  .g-horas { flex: none; width: 44px; position: relative; }
   .g-horas div { position: absolute; right: 6px; transform: translateY(-50%); font-size: 11px; color: var(--muted); }
+  .g-dias { flex: 1; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .g-dias::-webkit-scrollbar { display: none; }
+  .g-trilho { display: flex; width: max-content; }
   .g-col {
-    grid-row: 2; position: relative; border-left: 1px solid var(--line);
+    flex: none; width: var(--col); position: relative; border-left: 1px solid var(--line); scroll-snap-align: start; cursor: copy;
     background: repeating-linear-gradient(to bottom, var(--line) 0 1px, transparent 1px 52px);
   }
+  .dica-grade { text-align: center; font-size: 12px; color: var(--muted); margin: -4px 0 8px; }
   .g-ev {
     position: absolute; border-radius: 6px; background: var(--accent); color: #fff; padding: 3px 5px;
     font-size: 12px; font-weight: 600; line-height: 1.2; overflow: hidden; cursor: pointer; z-index: 1; overflow-wrap: break-word; hyphens: auto;
@@ -306,6 +308,12 @@
   .hab .check { width: 40px; height: 40px; }
   .hab .check svg { width: 22px; height: 22px; }
   .hab-folga { font-size: 12px; color: var(--muted); flex: none; }
+  .hab-nome-linha { display: flex; gap: 8px; }
+  .hab-emoji-atual { flex: none; width: 52px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); font-size: 26px; cursor: pointer; }
+  .emoji-grade { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; }
+  .emoji-grade button { aspect-ratio: 1; border: 1px solid transparent; background: var(--bg); border-radius: 10px; font-size: 20px; cursor: pointer; padding: 0; }
+  .emoji-grade button.ativa { border-color: var(--accent); background: var(--accent-soft); }
+  .emoji-outro { grid-column: span 8; text-align: center; font: inherit; padding: 8px !important; }
   .novo-hab { width: 100%; margin-top: 4px; padding: 14px; border-radius: 14px; border: 2px dashed var(--accent); background: none; color: var(--accent); font: inherit; font-weight: 800; cursor: pointer; }
   .sugestoes { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
   .sugestoes button { border: 1px solid var(--line); background: var(--bg); color: var(--text); border-radius: 999px; padding: 8px 12px; font: inherit; font-size: 14px; cursor: pointer; }
@@ -351,6 +359,17 @@
   .hc.compartilhar { background: #fff; color: var(--accent); margin-left: auto; }
   .proximo-linha { margin: 12px 2px 0; font-size: 14px; color: var(--muted); cursor: pointer; }
   .proximo-linha b { color: var(--text); }
+  .novo-comp { width: 100%; margin-top: 12px; padding: 14px; border-radius: 16px; border: 2px dashed var(--accent); background: var(--accent-soft);
+    color: var(--accent); font: inherit; font-size: 16px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .novo-comp span { font-size: 22px; line-height: 1; }
+  .mais-btn { width: 38px; height: 38px; border-radius: 50%; border: 0; background: var(--accent); color: #fff; font-size: 22px; font-weight: 700; cursor: pointer; line-height: 1; }
+  .como-criar p { margin-bottom: 12px !important; }
+  .cc-opcao { width: 100%; display: grid; grid-template-columns: 44px 1fr; grid-template-rows: auto auto; column-gap: 10px; align-items: center; text-align: left;
+    padding: 14px; margin-top: 8px; border-radius: 16px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font: inherit; cursor: pointer; }
+  .cc-opcao span { grid-row: span 2; font-size: 30px; text-align: center; }
+  .cc-opcao small { color: var(--muted); font-size: 13px; }
+  .cc-opcao.principal { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .cc-opcao.principal small { color: rgba(255,255,255,.9); }
   .titulo-card {
     width: 100%; display: flex; align-items: center; gap: 14px; margin-top: 10px; padding: 14px 16px; border-radius: 18px;
     background: var(--card); border: 1px solid var(--line); box-shadow: var(--shadow); color: var(--text); font: inherit; text-align: left; cursor: pointer;
@@ -471,6 +490,7 @@
   </div>
   <div class="topo-dir">
     <button class="icon-btn" id="btnHoje" hidden>Hoje</button>
+    <button class="mais-btn" id="btnNovo" hidden aria-label="Novo compromisso">＋</button>
     <button class="fogo" id="fogo" hidden aria-label="Sequência de dias"></button>
     <button class="engrenagem" id="btnMais" aria-label="Ajustes e ajuda">⚙️</button>
   </div>
@@ -859,6 +879,7 @@ function telaHoje() {
         <button class="hc compartilhar" data-compartilhar>📸 Compartilhar meu dia</button>
       </div>
     </div>
+    <button class="novo-comp" data-novo-comp><span>＋</span> Novo compromisso</button>
     ${prox ? `<div class="proximo-linha" data-id="${prox.ev.id}">Próximo: <b>${esc(prox.ev.titulo)}</b> · ${quandoFalta(prox.inicio, agora)}</div>` : ''}`;
   if (eventos.length < 3 && !lerPref('agenda.dicaFechada', '')) html += `
     <div class="dica-criar">
@@ -915,9 +936,9 @@ function telaSemana() {
   let cab = '', cols = '';
   for (let i = 0; i < DIAS_GRADE; i++) {
     const d = maisDias(ini, i), k = chaveDia(d);
-    cab += `<div class="g-cab ${k === hojeK ? 'hoje' : ''}" style="grid-column:${i + 2}"><span>${DIAS_CURTOS[d.getDay()]}</span><b>${d.getDate()}</b></div>`;
+    cab += `<div class="g-cab ${k === hojeK ? 'hoje' : ''}"><span>${DIAS_CURTOS[d.getDay()]}</span><b>${d.getDate()}</b></div>`;
     const linha = k === hojeK ? `<div class="g-agora" style="top:${(agora.getHours() * 60 + agora.getMinutes()) * HORA_PX / 60}px"></div>` : '';
-    cols += `<div class="g-col" style="grid-column:${i + 2}" data-col="${k}">${blocosDoDia(porDia.get(k) || [], agora)}${linha}</div>`;
+    cols += `<div class="g-col" style="height:${24 * HORA_PX}px" data-col="${k}">${blocosDoDia(porDia.get(k) || [], agora)}${linha}</div>`;
   }
   const horas = Array.from({ length: 23 }, (_, h) => `<div style="top:${(h + 1) * HORA_PX}px">${h + 1}h</div>`).join('');
   const fim = maisDias(ini, 6);
@@ -925,75 +946,44 @@ function telaSemana() {
     ? `${ini.getDate()} a ${fim.getDate()} de ${fim.toLocaleDateString('pt-BR', { month: 'long' })}`
     : `${ini.getDate()} ${ini.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')} a ${fim.getDate()} ${fim.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}`;
   return `<div class="navega"><button data-nav="-7" aria-label="Semana anterior">‹</button><span class="periodo">${faixa}</span><button data-nav="7" aria-label="Próxima semana">›</button></div>
-    <div class="grade3" id="grade3"><div class="g-in" style="grid-template-columns:${COL_HORAS}px repeat(${DIAS_GRADE}, var(--col));grid-template-rows:56px ${24 * HORA_PX}px">
-    <div class="g-canto"></div>${cab}<div class="g-horas">${horas}</div>${cols}</div></div>`;
+    <div class="dica-grade">Toque num horário vazio para marcar um compromisso</div>
+    <div class="grade3" id="grade3">
+      <div class="g-topo"><div class="g-canto"></div><div class="g-cab-janela"><div class="g-cab-trilho" id="gCab">${cab}</div></div></div>
+      <div class="g-corpo" id="gCorpo">
+        <div class="g-linha">
+          <div class="g-horas" style="height:${24 * HORA_PX}px">${horas}</div>
+          <div class="g-dias" id="gDias"><div class="g-trilho">${cols}</div></div>
+        </div>
+      </div>
+    </div>`;
 }
 
 // Ajusta o tamanho da grade e a posição inicial (dia escolhido, perto da hora atual)
 function montarGrade(pos) {
   const g = document.getElementById('grade3');
   if (!g) return;
+  const corpo = document.getElementById('gCorpo'), dias = document.getElementById('gDias'), cab = document.getElementById('gCab');
   g.style.setProperty('--col', `${(g.clientWidth - COL_HORAS) / 3}px`);
   g.style.height = `${window.innerHeight - g.getBoundingClientRect().top - document.querySelector('.abas').offsetHeight}px`;
-  if (pos) { g.scrollLeft = pos.l; g.scrollTop = pos.t; }
+  // o cabeçalho dos dias acompanha a rolagem lateral
+  dias.addEventListener('scroll', () => { cab.style.transform = `translateX(${-dias.scrollLeft}px)`; }, { passive: true });
+  if (pos) { dias.scrollLeft = pos.l; corpo.scrollTop = pos.t; }
   else {
-    const col = g.querySelector(`[data-col="${chaveDia(diaSel)}"]`);
-    if (col) g.scrollLeft = col.offsetLeft - COL_HORAS;
+    const col = dias.querySelector(`[data-col="${chaveDia(diaSel)}"]`);
+    if (col) dias.scrollLeft = col.offsetLeft;
     const agora = new Date();
-    g.scrollTop = (chaveDia(diaSel) === chaveDia(agora) ? Math.max(agora.getHours() - 2, 0) : 7) * HORA_PX;
+    corpo.scrollTop = (chaveDia(diaSel) === chaveDia(agora) ? Math.max(agora.getHours() - 2, 0) : 7) * HORA_PX;
   }
-  ativarArrasto(g);
-}
-
-// Arrastar para o lado: trava na direção do gesto e encaixa no dia mais próximo
-// (arrasto rápido pula 3 dias, como no Google Agenda)
-function ativarArrasto(g) {
-  const colW = (g.clientWidth - COL_HORAS) / 3, ultima = DIAS_GRADE - 3;
-  const limitar = (i) => Math.min(Math.max(i, 0), ultima);
-  let anim = null, t0 = null, rodaTimer;
-  const animarPara = (idx) => {
-    cancelAnimationFrame(anim);
-    const de = g.scrollLeft, ate = limitar(idx) * colW, ini = performance.now();
-    const passo = (agora) => {
-      const p = Math.min((agora - ini) / 280, 1), e = 1 - Math.pow(1 - p, 3);
-      g.scrollLeft = de + (ate - de) * e;
-      if (p < 1) anim = requestAnimationFrame(passo);
-    };
-    anim = requestAnimationFrame(passo);
-  };
-  g.addEventListener('touchstart', (e) => {
-    cancelAnimationFrame(anim);
-    const p = e.touches[0];
-    t0 = { x: p.clientX, y: p.clientY, l: g.scrollLeft, t: performance.now(), eixo: null, vx: 0, ux: p.clientX, ut: performance.now() };
-  }, { passive: true });
-  g.addEventListener('touchmove', (e) => {
-    if (!t0) return;
-    const p = e.touches[0], dx = p.clientX - t0.x, dy = p.clientY - t0.y;
-    if (!t0.eixo && Math.hypot(dx, dy) > 8) t0.eixo = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
-    if (t0.eixo !== 'x') return;
-    e.preventDefault();
-    g.scrollLeft = Math.min(Math.max(t0.l - dx, 0), ultima * colW);
-    const agora = performance.now();
-    if (agora > t0.ut) { t0.vx = (p.clientX - t0.ux) / (agora - t0.ut); t0.ux = p.clientX; t0.ut = agora; }
-  }, { passive: false });
-  g.addEventListener('touchend', (e) => {
-    if (!t0 || t0.eixo !== 'x') { t0 = null; return; }
-    const dx = e.changedTouches[0].clientX - t0.x, inicio = Math.round(t0.l / colW);
-    let idx = Math.round((t0.l - dx) / colW);
-    if (Math.abs(t0.vx) > 0.5) idx = t0.vx < 0 ? Math.max(idx, inicio + 3) : Math.min(idx, inicio - 3);
-    else if (idx === inicio && Math.abs(dx) > colW * 0.2) idx = inicio + (dx < 0 ? 1 : -1);
-    t0 = null;
-    animarPara(idx);
+  cab.style.transform = `translateX(${-dias.scrollLeft}px)`;
+  // tocar num espaço vazio cria um compromisso naquele dia e hora
+  dias.addEventListener('click', (e) => {
+    if (e.target.closest('.g-ev')) return;
+    const col = e.target.closest('.g-col');
+    if (!col) return;
+    const y = e.clientY - col.getBoundingClientRect().top;
+    const meiaHora = Math.max(0, Math.min(47, Math.floor(y / (HORA_PX / 2))));
+    novoCompromisso(col.dataset.col, `${pad(Math.floor(meiaHora / 2))}:${meiaHora % 2 ? '30' : '00'}`);
   });
-  // Trackpad/mouse no computador
-  g.addEventListener('wheel', (e) => {
-    if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
-    e.preventDefault();
-    cancelAnimationFrame(anim);
-    g.scrollLeft += e.deltaX;
-    clearTimeout(rodaTimer);
-    rodaTimer = setTimeout(() => animarPara(Math.round(g.scrollLeft / colW)), 120);
-  }, { passive: false });
 }
 
 function telaMes() {
@@ -1025,10 +1015,11 @@ function render() {
   verificarDesafio();
   const lista = document.getElementById('lista');
   const gradeAnt = document.getElementById('grade3');
-  const pos = gradeAnt && !rolarParaDia ? { l: gradeAnt.scrollLeft, t: gradeAnt.scrollTop } : null;
+  const pos = gradeAnt && !rolarParaDia ? { l: document.getElementById('gDias').scrollLeft, t: document.getElementById('gCorpo').scrollTop } : null;
   rolarParaDia = false;
   document.body.classList.toggle('cheia', aba === 'semana' && visao === 'semana');
   document.getElementById('btnHoje').hidden = aba !== 'semana';
+  document.getElementById('btnNovo').hidden = aba !== 'semana';
   const fogo = document.getElementById('fogo');
   fogo.hidden = aba === 'semana' || aba === 'mais';
   fogo.textContent = `🔥 ${sequencia()}`;
@@ -1070,14 +1061,16 @@ document.getElementById('fogo').onclick = (e) => {
   toast(`🔥 ${n} dia${n > 1 ? 's' : ''} seguido${n > 1 ? 's' : ''}. Volta amanhã pra manter!`, 3500);
 };
 document.getElementById('btnMais').onclick = () => irPara('mais');
+document.getElementById('btnNovo').onclick = escolherComoCriar;
 document.querySelectorAll('[data-visao]').forEach(b => b.onclick = () => {
   visao = b.dataset.visao; gravarPref('agenda.visao', visao); rolarParaDia = true; render(); window.scrollTo(0, 0);
 });
 window.addEventListener('resize', () => { if (aba === 'semana') render(); });
 document.getElementById('lista').addEventListener('click', (ev) => {
-  const alvo = ev.target.closest('[data-falar], [data-fechar-dica], [data-desafio], [data-hab-check], [data-hab], [data-novo-hab], [data-compartilhar], [data-checkin], [data-check], [data-niveis], [data-id], [data-dia], [data-nav], [data-ir]');
+  const alvo = ev.target.closest('[data-novo-comp], [data-falar], [data-fechar-dica], [data-desafio], [data-hab-check], [data-hab], [data-novo-hab], [data-compartilhar], [data-checkin], [data-check], [data-niveis], [data-id], [data-dia], [data-nav], [data-ir]');
   if (!alvo) return;
-  if ('falar' in alvo.dataset) abrirVoz();
+  if ('novoComp' in alvo.dataset) escolherComoCriar();
+  else if ('falar' in alvo.dataset) abrirVoz();
   else if ('fecharDica' in alvo.dataset) { gravarPref('agenda.dicaFechada', '1'); render(); }
   else if ('desafio' in alvo.dataset) abrirDesafio();
   else if (alvo.dataset.habCheck) marcarHabito(alvo);
@@ -1566,6 +1559,7 @@ let habitos = lerJSON('agenda.habitos', []);   // [{ id, nome, emoji, dias: [0..
 const salvarHabitos = () => gravarJSON('agenda.habitos', habitos);
 const SUGESTOES_HAB = [['💧', 'Beber 2L de água'], ['🏋️', 'Treinar'], ['📖', 'Ler 10 páginas'], ['💊', 'Tomar remédio'],
   ['🧘', 'Meditar'], ['🚶', 'Caminhar'], ['🥗', 'Comer saudável'], ['😴', 'Dormir antes das 23h'], ['🙏', 'Agradecer'], ['📵', 'Menos celular']];
+const EMOJIS_HAB = ['💧', '🏋️', '🏃', '🚶', '🧘', '📖', '✍️', '🎓', '💊', '🥗', '🍎', '😴', '🙏', '📵', '🧹', '💰', '🎸', '🎨', '🐶', '🌱', '☀️', '🦷', '🚭', '❤️'];
 const EMOJI_POR_PALAVRA = [[/agua|beber/, '💧'], [/trein|academia|muscula|exercicio/, '🏋️'], [/ler|leitura|livro/, '📖'], [/remedio|vitamina|suplement/, '💊'],
   [/medit|respira/, '🧘'], [/camin|correr|corrida/, '🚶'], [/comer|aliment|salada|dieta/, '🥗'], [/dormir|sono/, '😴'], [/estud|curso|ingles/, '🎓'],
   [/agradec|orar|reza/, '🙏'], [/celular|tela/, '📵'], [/alonga|yoga/, '🤸'], [/escrev|diario/, '✍️']];
@@ -1637,7 +1631,13 @@ function abrirHabito(id) {
       <h3>${h ? 'Editar hábito' : 'Novo hábito'}</h3>
       ${h ? '' : `<div class="sugestoes">${SUGESTOES_HAB.map(([e, n]) => `<button type="button" data-s="${e}|${n}">${e} ${n}</button>`).join('')}</div>`}
       <label>Nome</label>
-      <input name="nome" value="${h ? esc(h.nome) : ''}" placeholder="Ex.: beber 2L de água" required>
+      <div class="hab-nome-linha">
+        <button type="button" class="hab-emoji-atual" id="hEmojiAtual">${h ? h.emoji : '✅'}</button>
+        <input name="nome" value="${h ? esc(h.nome) : ''}" placeholder="Ex.: beber 2L de água" required>
+      </div>
+      <label>Emoji</label>
+      <div class="emoji-grade">${EMOJIS_HAB.map(e => `<button type="button" data-e="${e}">${e}</button>`).join('')}
+        <input class="emoji-outro" id="hEmojiOutro" maxlength="4" placeholder="ou digite outro emoji" aria-label="Digite outro emoji"></div>
       <label>Quais dias</label>
       <div class="dias-sel">${['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((l, i) => `<button type="button" data-d="${i}">${l}</button>`).join('')}</div>
       <div class="botoes">
@@ -1646,7 +1646,17 @@ function abrirHabito(id) {
       </div>
     </form>`);
   const f = document.getElementById('fHab');
-  let emoji = h ? h.emoji : null;
+  let emoji = h ? h.emoji : null, emojiEscolhido = !!h;
+  const mostrarEmoji = () => {
+    document.getElementById('hEmojiAtual').textContent = emoji || emojiPara(f.nome.value || '');
+    f.querySelectorAll('[data-e]').forEach(b => b.classList.toggle('ativa', b.dataset.e === emoji));
+  };
+  const escolherEmoji = (e) => { emoji = e; emojiEscolhido = true; mostrarEmoji(); };
+  f.querySelectorAll('[data-e]').forEach(b => b.onclick = () => escolherEmoji(b.dataset.e));
+  document.getElementById('hEmojiOutro').oninput = (ev) => { const v = ev.target.value.trim(); if (v) escolherEmoji(v); };
+  document.getElementById('hEmojiAtual').onclick = () => document.getElementById('hEmojiOutro').focus();
+  f.nome.oninput = () => { if (!emojiEscolhido) { emoji = null; mostrarEmoji(); } };
+  mostrarEmoji();
   const pintarDias = () => f.querySelectorAll('[data-d]').forEach(b => b.classList.toggle('ativa', !dias.length || dias.includes(+b.dataset.d)));
   pintarDias();
   f.querySelectorAll('[data-d]').forEach(b => b.onclick = () => {
@@ -1657,13 +1667,13 @@ function abrirHabito(id) {
     pintarDias();
   });
   f.querySelectorAll('[data-s]').forEach(b => b.onclick = () => {
-    const [e, n] = b.dataset.s.split('|'); emoji = e; f.nome.value = n;
+    const [e, n] = b.dataset.s.split('|'); f.nome.value = n; escolherEmoji(e);
     f.querySelectorAll('[data-s]').forEach(x => x.classList.toggle('ativa', x === b));
   });
   f.onsubmit = (e) => {
     e.preventDefault();
     const nome = f.nome.value.trim(); if (!nome) return;
-    if (h) { h.nome = nome; h.dias = dias; if (!emoji || emoji === h.emoji) h.emoji = h.emoji || emojiPara(nome); }
+    if (h) { h.nome = nome; h.dias = dias; h.emoji = emoji || h.emoji || emojiPara(nome); }
     else habitos.push({ id: novoId(), nome, emoji: emoji || emojiPara(nome), dias, feitos: [] });
     salvarHabitos(); fecharFolha();
     if (aba !== 'habitos') irPara('habitos'); else render();
@@ -1985,15 +1995,35 @@ function mostrarResultado(r, frase, evs, antes) {
 }
 
 function pad(x) { return String(x).padStart(2, '0'); }
-function abrirEdicao(ev) {
+function novoCompromisso(data, hora) {
+  const agora = new Date();
+  const d = data ? dataHoraLocal(data, hora || '09:00') : new Date(Math.ceil(agora.getTime() / 1800000) * 1800000 + 1800000);
+  abrirEdicao({ id: novoId(), titulo: '', inicio: d.toISOString(), lembreteMin: 15, repetir: null, excecoes: [], avisados: [], frase: '' }, true);
+}
+// "＋ Novo compromisso": falar, escrever uma frase ou preencher campos
+function escolherComoCriar() {
+  abrirFolha(`
+    <div class="como-criar">
+      <h3>Novo compromisso</h3>
+      <p>Como você prefere?</p>
+      <button class="cc-opcao principal" id="ccFalar"><span>🎙️</span><b>Falar</b><small>O jeito mais rápido. Diga “dentista quinta às 3”.</small></button>
+      <button class="cc-opcao" id="ccEscrever"><span>💬</span><b>Escrever uma frase</b><small>Igual falar, só que digitando.</small></button>
+      <button class="cc-opcao" id="ccPreencher"><span>📝</span><b>Preencher os campos</b><small>Nome, dia e hora, do jeito clássico.</small></button>
+    </div>`);
+  document.getElementById('ccFalar').onclick = abrirVoz;
+  document.getElementById('ccEscrever').onclick = abrirDigitar;
+  document.getElementById('ccPreencher').onclick = () => novoCompromisso();
+}
+
+function abrirEdicao(ev, novo = false) {
   const d = new Date(ev.inicio);
   const opcoes = [null, 0, 5, 10, 15, 30, 60, 120, 1440];
   if (!opcoes.includes(ev.lembreteMin)) opcoes.push(ev.lembreteMin);
   abrirFolha(`
     <form class="editar" id="fEditar">
-      <h3>Editar compromisso</h3>
+      <h3>${novo ? 'Novo compromisso' : 'Editar compromisso'}</h3>
       <label>O quê</label>
-      <input name="titulo" value="${esc(ev.titulo)}" required>
+      <input name="titulo" value="${esc(ev.titulo)}" placeholder="Ex.: Dentista" required>
       <div class="dupla">
         <div><label>Dia</label><input type="date" name="dia" value="${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}" required></div>
         <div><label>Hora</label><input type="time" name="hora" value="${pad(d.getHours())}:${pad(d.getMinutes())}" required></div>
@@ -2008,12 +2038,12 @@ function abrirEdicao(ev) {
           .map(([v, t]) => `<option value="${v}" ${(ev.repetir?.freq || 'nenhuma') === v ? 'selected' : ''}>${esc(t)}</option>`).join('')}
       </select>
       <div class="botoes">
-        <button type="button" class="perigo" id="bExcluir">Excluir</button>
-        <button type="submit" class="primario">Salvar</button>
+        ${novo ? '<button type="button" id="bCancelar">Cancelar</button>' : '<button type="button" class="perigo" id="bExcluir">Excluir</button>'}
+        <button type="submit" class="primario">${novo ? 'Criar' : 'Salvar'}</button>
       </div>
-      <a class="ics" id="bIcs" href="#">📅 Adicionar ao Calendário do iPhone</a>
     </form>`);
   const f = document.getElementById('fEditar');
+  if (novo) setTimeout(() => f.titulo.focus(), 80);
   f.onsubmit = (e) => {
     e.preventDefault();
     const [a, mes, dia] = f.dia.value.split('-').map(Number);
@@ -2026,30 +2056,15 @@ function abrirEdicao(ev) {
       : freq === 'semanal' && ev.repetir?.freq === 'semanal' ? ev.repetir
       : montarRepetir(freq, freq === 'semanal' ? [new Date(ev.inicio).getDay()] : []);
     ev.avisado = false; ev.avisados = [];
-    salvar(); destacarId = ev.id; render(); fecharFolha(); toast('Salvo');
+    if (novo) { eventos.push(ev); diaSel = inicioDoDia(new Date(ev.inicio)); rolarParaDia = true; }
+    salvar(); destacarId = ev.id; render(); fecharFolha(); toast(novo ? '✅ Compromisso criado' : 'Salvo');
   };
-  document.getElementById('bExcluir').onclick = () => {
+  if (novo) document.getElementById('bCancelar').onclick = fecharFolha;
+  else document.getElementById('bExcluir').onclick = () => {
     eventos = eventos.filter(e => e.id !== ev.id); salvar(); render(); fecharFolha(); toast('Excluído');
   };
-  document.getElementById('bIcs').onclick = (e) => { e.preventDefault(); baixarIcs(ev); };
 }
 
-// ---------- .ics (lembrete real pelo Calendário do iPhone) ----------
-function baixarIcs(ev) {
-  const fmt = (d) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
-  const ini = new Date(ev.inicio), fim = new Date(ini.getTime() + 3600000);
-  const linhas = [
-    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Agenda por Voz//PT-BR', 'BEGIN:VEVENT',
-    `UID:${ev.id}@agenda-voz`, `DTSTAMP:${fmt(new Date())}`, `DTSTART:${fmt(ini)}`, `DTEND:${fmt(fim)}`,
-    `SUMMARY:${ev.titulo.replace(/[,;\\]/g, m => '\\' + m)}`,
-  ];
-  if (ev.lembreteMin !== null) linhas.push('BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${ev.titulo}`, `TRIGGER:-PT${ev.lembreteMin}M`, 'END:VALARM');
-  linhas.push('END:VEVENT', 'END:VCALENDAR');
-  const a = document.createElement('a');
-  a.href = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(linhas.join('\r\n'));
-  a.download = 'compromisso.ics';
-  document.body.appendChild(a); a.click(); a.remove();
-}
 
 // ---------- Voz ----------
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
