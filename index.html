@@ -173,6 +173,19 @@
   .relogio .tempo { position: absolute; inset: 0; display: grid; place-items: center; font-size: 50px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
   .foco-tarefa { width: 100%; font: inherit; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); color: var(--text); text-align: center; }
   .foco-tarefa:disabled { opacity: .7; }
+  .tempo-ajuste { display: flex; align-items: center; justify-content: center; gap: 18px; margin-top: 12px; }
+  .tempo-ajuste button { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: var(--bg); color: var(--text); font-size: 24px; font-weight: 700; cursor: pointer; }
+  .tempo-ajuste button:disabled { opacity: .35; }
+  .tempo-ajuste div { min-width: 96px; display: flex; flex-direction: column; }
+  .tempo-ajuste b { font-size: 20px; }
+  .tempo-ajuste small { color: var(--muted); font-size: 12px; }
+  .sons-rot { margin-top: 14px; font-size: 12px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+  .sons { display: flex; gap: 8px; overflow-x: auto; padding: 8px 2px 4px; margin: 0 -20px; padding-left: 20px; padding-right: 20px; scrollbar-width: none; }
+  .sons::-webkit-scrollbar { display: none; }
+  .sons button { flex: none; display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 76px; padding: 10px 8px; border-radius: 14px;
+    border: 1px solid var(--line); background: var(--bg); color: var(--muted); font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .sons button span { font-size: 22px; }
+  .sons button.ativa { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
   .foco-dur { display: flex; gap: 8px; justify-content: center; margin-top: 12px; }
   .foco-dur button { border: 1px solid var(--line); background: none; color: var(--muted); border-radius: 999px; padding: 6px 14px; font: inherit; font-size: 14px; cursor: pointer; }
   .foco-dur button.ativa { border-color: var(--accent); color: var(--accent); font-weight: 600; }
@@ -356,7 +369,7 @@
   .hero-pts { font-size: 12px; font-weight: 600; opacity: .92; }
   .hero-chips { display: flex; gap: 6px; margin-top: 14px; flex-wrap: wrap; }
   .hc { border: 0; border-radius: 999px; padding: 7px 11px; background: rgba(255,255,255,.2); color: #fff; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
-  .hc.compartilhar { background: #fff; color: var(--accent); margin-left: auto; }
+  .hc.compartilhar { background: #fff; color: var(--accent); margin-left: auto; padding: 9px 14px; }
   .proximo-linha { margin: 12px 2px 0; font-size: 14px; color: var(--muted); cursor: pointer; }
   .proximo-linha b { color: var(--text); }
   .novo-comp { width: 100%; margin-top: 12px; padding: 14px; border-radius: 16px; border: 2px dashed var(--accent); background: var(--accent-soft);
@@ -859,7 +872,6 @@ function telaHoje() {
   const tudo = total > 0 && feitos === total;
   const t = tituloAtual(), proxT = xp.secreto ? null : proximoTitulo(xp.pontos);
   const pctT = proxT ? Math.round((xp.pontos - t.min) / (proxT.min - t.min) * 100) : 100;   // no topo, barra cheia
-  const d = desafioDaSemana();
   const nivel = TITULOS.indexOf(t);
   const jeito = nivel <= 2 ? 'lento' : nivel <= 8 ? 'animado' : 'turbo';   // bicho preguiçoso balança devagar; os do topo vibram
   let html = htmlCheckin() + `
@@ -874,8 +886,6 @@ function telaHoje() {
         </span>
       </button>
       <div class="hero-chips">
-        <span class="hc">${tudo ? '🎉' : '✅'} Tarefas ${feitos}/${total}</span>
-        <button class="hc" data-desafio>🎯 Desafio ${d.feito}/${d.meta}</button>
         <button class="hc compartilhar" data-compartilhar>📸 Compartilhar meu dia</button>
       </div>
     </div>
@@ -1184,7 +1194,7 @@ function telaFoco() {
   const st = estatisticasFoco(), rodando = !!foco.fim, pausado = !foco.fim && foco.restante !== null;
   const minHoje = st.hoje.reduce((s, f) => s + f.min, 0);
   const maxSem = Math.max(...st.semana.map(x => x.min), 25);
-  const opcoes = foco.modo === 'foco' ? [25, 50] : [5, 15];
+  const travado = rodando || pausado;
   return `
     <div class="foco-card ${foco.modo}">
       <div class="foco-modo">${foco.modo === 'foco' ? 'Hora de focar' : 'Pausa · respira um pouco'}</div>
@@ -1193,7 +1203,13 @@ function telaFoco() {
         <div class="tempo" id="focoTempo">${fmtMS(restanteMs())}</div>
       </div>
       ${foco.modo === 'foco' ? `<input id="focoTarefa" class="foco-tarefa" placeholder="No que você vai focar?" value="${esc(foco.tarefa || '')}" ${rodando ? 'disabled' : ''}>` : ''}
-      <div class="foco-dur">${opcoes.map(m => `<button data-dur="${m}" class="${foco.duracao === m ? 'ativa' : ''}" ${rodando || pausado ? 'disabled' : ''}>${m} min</button>`).join('')}</div>
+      <div class="tempo-ajuste">
+        <button data-ajuste="-1" ${travado ? 'disabled' : ''} aria-label="Menos tempo">−</button>
+        <div><b>${foco.duracao} min</b><small>${foco.modo === 'foco' ? 'de foco' : 'de pausa'}</small></div>
+        <button data-ajuste="1" ${travado ? 'disabled' : ''} aria-label="Mais tempo">+</button>
+      </div>
+      <div class="sons-rot">Som de fundo</div>
+      <div class="sons">${SONS.map(([id, ico, nome]) => `<button data-som="${id}" class="${(foco.som || 'nenhum') === id ? 'ativa' : ''}"><span>${ico}</span>${nome}</button>`).join('')}</div>
       <div class="botoes">
         ${rodando || pausado ? '<button id="focoParar">Parar</button>' : foco.modo === 'pausa' ? '<button id="focoPular">Pular pausa</button>' : ''}
         <button class="primario" id="focoBotao">${rodando ? 'Pausar' : pausado ? 'Continuar' : 'Começar'}</button>
@@ -1219,7 +1235,98 @@ function telaFoco() {
 
 function iniciarModo(modo) {
   foco.modo = modo; foco.fim = null; foco.restante = null;
-  foco.duracao = modo === 'foco' ? (foco.ultimoFoco || 25) : 5;
+  foco.duracao = modo === 'foco' ? (foco.ultimoFoco || 25) : (foco.ultimaPausa || 5);
+  pararAmbiente();
+}
+// Foco: de 5 em 5 min (15 a 120). Pausa: de 1 em 1 min (1 a 30).
+function ajustarTempo(sentido) {
+  const [passo, min, max] = foco.modo === 'foco' ? [5, 15, 120] : [1, 1, 30];
+  foco.duracao = Math.min(max, Math.max(min, foco.duracao + sentido * passo));
+  if (foco.modo === 'foco') foco.ultimoFoco = foco.duracao; else foco.ultimaPausa = foco.duracao;
+}
+
+// ---------- Sons de fundo (gerados no próprio aparelho, sem baixar nada) ----------
+const SONS = [['nenhum', '🔇', 'Silêncio'], ['branco', '⚪', 'Ruído branco'], ['rosa', '🌸', 'Ruído rosa'], ['marrom', '🟤', 'Ruído marrom'],
+  ['chuva', '🌧️', 'Chuva'], ['mar', '🌊', 'Mar'], ['floresta', '🌳', 'Floresta'], ['lareira', '🔥', 'Lareira']];
+let ambiente = null;   // { saida, timers, fontes }
+function bufferRuido(ctx, tipo) {
+  const n = ctx.sampleRate * 4, buf = ctx.createBuffer(1, n, ctx.sampleRate), d = buf.getChannelData(0);
+  let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0, ultimo = 0;
+  for (let i = 0; i < n; i++) {
+    const w = Math.random() * 2 - 1;
+    if (tipo === 'branco') d[i] = w * 0.5;
+    else if (tipo === 'rosa') {
+      b0 = 0.99886 * b0 + w * 0.0555179; b1 = 0.99332 * b1 + w * 0.0750759; b2 = 0.969 * b2 + w * 0.153852;
+      b3 = 0.8665 * b3 + w * 0.3104856; b4 = 0.55 * b4 + w * 0.5329522; b5 = -0.7616 * b5 - w * 0.016898;
+      d[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * 0.5362) * 0.11; b6 = w * 0.115926;
+    } else { ultimo = (ultimo + 0.02 * w) / 1.02; d[i] = ultimo * 3.5; }   // marrom
+  }
+  return buf;
+}
+function fonteRuido(ctx, tipo, destino) {
+  const f = ctx.createBufferSource(); f.buffer = bufferRuido(ctx, tipo); f.loop = true; f.connect(destino); f.start(); return f;
+}
+function filtro(ctx, tipo, freq, destino) { const b = ctx.createBiquadFilter(); b.type = tipo; b.frequency.value = freq; b.connect(destino); return b; }
+function iniciarAmbiente(tipo) {
+  pararAmbiente();
+  if (!tipo || tipo === 'nenhum') return;
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const ctx = audioCtx, saida = ctx.createGain(), t = ctx.currentTime, timers = [], fontes = [];
+    saida.gain.setValueAtTime(0, t); saida.gain.linearRampToValueAtTime(0.6, t + 1.5);
+    saida.connect(ctx.destination);
+    if (['branco', 'rosa', 'marrom'].includes(tipo)) fontes.push(fonteRuido(ctx, tipo, saida));
+    else if (tipo === 'chuva') {
+      const g = ctx.createGain(); g.gain.value = 0.55; g.connect(saida);
+      fontes.push(fonteRuido(ctx, 'rosa', filtro(ctx, 'lowpass', 7000, filtro(ctx, 'highpass', 450, g))));
+      timers.push(setInterval(() => g.gain.setTargetAtTime(0.4 + Math.random() * 0.3, ctx.currentTime, 0.2), 300));
+    } else if (tipo === 'mar') {
+      const g = ctx.createGain(); g.gain.value = 0.45; g.connect(saida);
+      fontes.push(fonteRuido(ctx, 'marrom', filtro(ctx, 'lowpass', 1000, g)));
+      const onda = ctx.createOscillator(), forca = ctx.createGain();
+      onda.frequency.value = 0.09; forca.gain.value = 0.4; onda.connect(forca); forca.connect(g.gain); onda.start(); fontes.push(onda);
+    } else if (tipo === 'floresta') {
+      const vento = ctx.createGain(); vento.gain.value = 0.3; vento.connect(saida);
+      fontes.push(fonteRuido(ctx, 'marrom', filtro(ctx, 'lowpass', 600, vento)));
+      const passaro = () => {   // canto de passarinho: assobios curtos subindo
+        const n = 2 + Math.floor(Math.random() * 4), base = 2600 + Math.random() * 1600, ini = ctx.currentTime;
+        for (let i = 0; i < n; i++) {
+          const o = ctx.createOscillator(), g = ctx.createGain(), t0 = ini + i * (0.11 + Math.random() * 0.06);
+          o.frequency.setValueAtTime(base, t0); o.frequency.exponentialRampToValueAtTime(base * 1.45, t0 + 0.07);
+          g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(0.05, t0 + 0.01); g.gain.exponentialRampToValueAtTime(0.0005, t0 + 0.09);
+          o.connect(g); g.connect(saida); o.start(t0); o.stop(t0 + 0.1);
+        }
+      };
+      timers.push(setInterval(() => { if (Math.random() < 0.45) passaro(); }, 1300));
+    } else if (tipo === 'lareira') {
+      const fogo = ctx.createGain(); fogo.gain.value = 0.55; fogo.connect(saida);
+      fontes.push(fonteRuido(ctx, 'marrom', filtro(ctx, 'lowpass', 450, fogo)));
+      const estalo = filtro(ctx, 'highpass', 1800, saida), buf = bufferRuido(ctx, 'branco');
+      timers.push(setInterval(() => {   // estalos da madeira
+        if (Math.random() > 0.35) return;
+        const f = ctx.createBufferSource(), g = ctx.createGain(), t0 = ctx.currentTime;
+        f.buffer = buf; g.gain.setValueAtTime(0.25 + Math.random() * 0.4, t0); g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.02 + Math.random() * 0.04);
+        f.connect(g); g.connect(estalo); f.start(t0, Math.random() * 3); f.stop(t0 + 0.08);
+      }, 90));
+    }
+    ambiente = { saida, timers, fontes };
+  } catch {}
+}
+function pararAmbiente() {
+  if (!ambiente) return;
+  const { saida, timers, fontes } = ambiente, t = audioCtx.currentTime;
+  ambiente = null;
+  timers.forEach(clearInterval);
+  saida.gain.cancelScheduledValues(t); saida.gain.setValueAtTime(saida.gain.value, t); saida.gain.linearRampToValueAtTime(0, t + 0.6);
+  setTimeout(() => { fontes.forEach(f => { try { f.stop(); } catch {} }); saida.disconnect(); }, 700);
+}
+let previaTimer;
+function escolherSom(id) {
+  foco.som = id;
+  clearTimeout(previaTimer);
+  if (foco.fim && foco.modo === 'foco') iniciarAmbiente(id);   // rodando: troca na hora
+  else { iniciarAmbiente(id); previaTimer = setTimeout(() => { if (!foco.fim) pararAmbiente(); }, 4000); }   // parado: amostra de 4 s
 }
 function avisarFoco(msg) {
   toast(msg, 6000);
@@ -1228,6 +1335,7 @@ function avisarFoco(msg) {
 }
 function terminarCiclo() {
   const eraFoco = foco.modo === 'foco';
+  pararAmbiente();
   if (eraFoco) { focos.push({ dia: chaveDia(new Date()), min: foco.duracao, tarefa: foco.tarefa || '' }); gravarJSON('agenda.focos', focos.slice(-2000)); }
   const qtd = focosDoDia(new Date()).length;
   iniciarModo(eraFoco ? 'pausa' : 'foco');
@@ -1246,10 +1354,15 @@ document.getElementById('lista').addEventListener('click', (ev) => {
   if (!b) return;
   const tarefa = document.getElementById('focoTarefa');
   if (tarefa) foco.tarefa = tarefa.value.trim();
-  if (b.dataset.dur) { foco.duracao = +b.dataset.dur; if (foco.modo === 'foco') foco.ultimoFoco = foco.duracao; }
+  if (b.dataset.ajuste) ajustarTempo(+b.dataset.ajuste);
+  else if (b.dataset.som) escolherSom(b.dataset.som);
   else if (b.id === 'focoBotao') {
-    if (foco.fim) { foco.restante = foco.fim - Date.now(); foco.fim = null; }
-    else { foco.fim = Date.now() + restanteMs(); foco.restante = null; }
+    clearTimeout(previaTimer);
+    if (foco.fim) { foco.restante = foco.fim - Date.now(); foco.fim = null; pararAmbiente(); }
+    else {
+      foco.fim = Date.now() + restanteMs(); foco.restante = null;
+      if (foco.modo === 'foco') iniciarAmbiente(foco.som); else pararAmbiente();
+    }
   }
   else if (b.id === 'focoParar') iniciarModo(foco.modo);
   else if (b.id === 'focoPular') iniciarModo('foco');
@@ -1495,6 +1608,7 @@ function abrirNiveis() {
     <div class="niveis">
       <h3>Seus títulos</h3>
       <p>Você tem <b>${xp.pontos} pontos</b>. Toque em compromissos, hábitos e Pomodoros pra subir.</p>
+      ${htmlDesafio()}
       ${xp.secreto ? '' : `<div class="secreto-dica">✨ Existe um título secreto. Só quem faz check-in <b>${DIAS_SECRETO} dias seguidos</b> descobre qual é.</div>`}
       <ol class="escada">${secreto}${[...TITULOS].reverse().map(t => `
         <li class="${t === atual ? 'atual' : t.min > xp.pontos ? 'bloq' : 'passou'}">
