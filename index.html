@@ -135,6 +135,11 @@
   details.ajuda { margin-top: 32px; background: var(--card); border-radius: 14px; padding: 14px 16px; box-shadow: var(--shadow); }
   details.ajuda summary { font-weight: 600; cursor: pointer; }
   details.ajuda ol { padding-left: 20px; color: var(--muted); }
+  details.ajuda .instalar {
+    display: block; margin: 10px 0 14px; padding: 14px; border-radius: 12px; text-align: center;
+    background: var(--accent); color: #fff; font-weight: 600; text-decoration: none;
+  }
+  details.ajuda li { margin-bottom: 8px; }
   details.ajuda code { background: var(--bg); padding: 2px 6px; border-radius: 6px; font-size: 13px; word-break: break-all; color: var(--text); }
 </style>
 </head>
@@ -155,16 +160,14 @@
 
 <main id="lista"></main>
 
-<details class="ajuda">
+<details class="ajuda" open>
   <summary>Como abrir com 2 toques atrás do iPhone</summary>
   <ol>
-    <li>Abra o app <b>Atalhos</b> e crie um atalho novo chamado “Agenda por voz”.</li>
-    <li>Adicione a ação <b>Ditar Texto</b> (idioma: Português).</li>
-    <li>Adicione a ação <b>Codificar URL</b> (ela recebe o texto ditado).</li>
-    <li>Adicione <b>Abrir URLs</b> com: <code><span id="urlAtalho"></span>?texto=</code> + a variável “Texto Codificado”.</li>
-    <li>Vá em <b>Ajustes → Acessibilidade → Toque → Toque Traseiro → Toque Duplo</b> e escolha o atalho.</li>
+    <li>Toque no botão abaixo e depois em <b>Adicionar Atalho</b>.
+      <a class="instalar" href="Anotar-na-Agenda.shortcut">⬇️ Instalar atalho “Anotar na Agenda”</a></li>
+    <li>Vá em <b>Ajustes → Acessibilidade → Toque → Toque Traseiro → Toque Duplo</b> e escolha <b>Anotar na Agenda</b> (lá embaixo, em Atalhos).</li>
   </ol>
-  <p style="color:var(--muted);margin:0">Pronto: 2 toques atrás → fale → o compromisso aparece aqui já salvo.</p>
+  <p style="color:var(--muted);margin:0">Pronto: 2 toques atrás → fale → o compromisso aparece aqui já salvo. Também funciona dizendo “E aí Siri, Anotar na Agenda”.</p>
 </details>
 
 <div class="mic-wrap">
@@ -586,7 +589,6 @@ function toast(msg, ms = 2500) {
 // ---------- Entrada vinda do atalho do iPhone ----------
 // ?texto=...  → cria o compromisso direto (Atalho "Ditar Texto")
 // ?voz=1      → abre a tela de ouvir
-document.getElementById('urlAtalho').textContent = location.origin + location.pathname;
 render();
 checarLembretes();
 const params = new URLSearchParams(location.search);
