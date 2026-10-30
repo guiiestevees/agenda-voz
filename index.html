@@ -546,19 +546,8 @@ function executar(r, frase) {
   const mudou = JSON.stringify(eventos) !== antes;
   if (mudou) { salvar(); if (mostrar) destacarId = mostrar.id; render(); }
   mostrarResultado(r, frase, mostrar, mudou ? antes : null);
-  falar(r.resposta);
 }
 
-// Lê a resposta em voz alta, como uma secretária (se o iPhone permitir)
-function falar(texto) {
-  try {
-    if (!texto || !('speechSynthesis' in window)) return;
-    speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(texto);
-    u.lang = 'pt-BR';
-    speechSynthesis.speak(u);
-  } catch {}
-}
 
 document.getElementById('quick').addEventListener('submit', (e) => {
   e.preventDefault();
