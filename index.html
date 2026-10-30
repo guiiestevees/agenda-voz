@@ -164,10 +164,10 @@
   <summary>Como abrir com 2 toques atrás do iPhone</summary>
   <ol>
     <li>Toque no botão abaixo e depois em <b>Adicionar Atalho</b>.
-      <a class="instalar" href="https://www.icloud.com/shortcuts/0f67d321a3234cd68ca4416a6921c032">⬇️ Instalar atalho “Agenda por Voz”</a></li>
-    <li>Vá em <b>Ajustes → Acessibilidade → Toque → Toque Traseiro → Toque Duplo</b> e escolha <b>Agenda por Voz</b> (lá embaixo, em Atalhos).</li>
+      <a class="instalar" href="https://www.icloud.com/shortcuts/7935ee07c5ac46bea2381cffcf53d948">⬇️ Instalar atalho “Anotar Compromisso”</a></li>
+    <li>Vá em <b>Ajustes → Acessibilidade → Toque → Toque Traseiro → Toque Duplo</b> e escolha <b>Anotar Compromisso</b> (lá embaixo, em Atalhos).</li>
   </ol>
-  <p style="color:var(--muted);margin:0">Pronto: 2 toques atrás → fale → o compromisso aparece aqui já salvo. Também funciona dizendo “E aí Siri, Agenda por Voz”.</p>
+  <p style="color:var(--muted);margin:0">Pronto: 2 toques atrás → fale com calma → toque em “Concluído” → o compromisso aparece aqui já salvo. Também funciona dizendo “E aí Siri, Anotar Compromisso”.</p>
 </details>
 
 <div class="mic-wrap">
@@ -521,13 +521,19 @@ function iniciarReconhecimento() {
   rec = new SR();
   rec.lang = 'pt-BR';
   rec.interimResults = true;
-  rec.continuous = false;
-  rec.onstart = () => { titulo.textContent = 'Ouvindo…'; document.getElementById('vMic').classList.add('ativo'); };
+  rec.continuous = true; // não corta na primeira pausa
+  rec.onstart = () => {
+    titulo.textContent = 'Ouvindo… toque quando terminar';
+    document.getElementById('vMic').classList.add('ativo');
+    esperarSilencio(8000); // tempo pra começar a falar
+  };
   rec.onresult = (e) => {
-    let parcial = '';
-    for (const r of e.results) { if (r.isFinal) textoFinal = r[0].transcript; else parcial += r[0].transcript; }
+    let final = '', parcial = '';
+    for (const r of e.results) { if (r.isFinal) final += r[0].transcript + ' '; else parcial += r[0].transcript; }
+    textoFinal = (final + parcial).trim();
     const el = document.getElementById('vTexto');
-    if (el) el.textContent = textoFinal || parcial;
+    if (el) el.textContent = textoFinal;
+    esperarSilencio(3500); // encerra sozinho após 3,5 s calado
   };
   rec.onerror = (e) => {
     const t = document.getElementById('vTitulo');
@@ -535,14 +541,20 @@ function iniciarReconhecimento() {
   };
   rec.onend = () => {
     rec = null;
+    clearTimeout(silencioTimer);
     const mic = document.getElementById('vMic');
     if (mic) mic.classList.remove('ativo');
     if (textoFinal) criarDeFrase(textoFinal);
-    else { const t = document.getElementById('vTitulo'); if (t && t.textContent === 'Ouvindo…') t.textContent = 'Toque para falar'; }
+    else { const t = document.getElementById('vTitulo'); if (t && t.textContent.startsWith('Ouvindo')) t.textContent = 'Toque para falar'; }
   };
   try { rec.start(); } catch { titulo.textContent = 'Toque para falar'; rec = null; }
 }
-function pararReconhecimento() { if (rec) rec.stop(); }
+let silencioTimer;
+function esperarSilencio(ms) {
+  clearTimeout(silencioTimer);
+  silencioTimer = setTimeout(pararReconhecimento, ms);
+}
+function pararReconhecimento() { clearTimeout(silencioTimer); if (rec) rec.stop(); }
 
 document.getElementById('btnMic').onclick = abrirVoz;
 
