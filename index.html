@@ -151,6 +151,41 @@
   .g-ev.novo { animation: flash 1.6s ease; }
   .g-agora { position: absolute; left: 0; right: 0; height: 2px; background: #e53935; z-index: 2; }
   .g-agora::before { content: ''; position: absolute; left: -5px; top: -4px; width: 10px; height: 10px; border-radius: 50%; background: #e53935; }
+  .visoes { display: flex; background: var(--line); border-radius: 12px; padding: 3px; margin: 0 0 12px; }
+  .visoes button { flex: 1; border: 0; background: none; color: var(--muted); font: inherit; font-weight: 600; font-size: 15px; padding: 8px; border-radius: 9px; cursor: pointer; }
+  .visoes button.ativa { background: var(--card); color: var(--text); box-shadow: var(--shadow); }
+  .navega .periodo { font-weight: 700; font-size: 16px; }
+  .foco-card { background: var(--card); border-radius: 20px; padding: 20px; box-shadow: var(--shadow); text-align: center; }
+  .foco-modo { font-weight: 700; color: var(--accent); }
+  .foco-card.pausa .foco-modo { color: var(--ok); }
+  .relogio { position: relative; width: 210px; height: 210px; margin: 10px auto 14px; }
+  .relogio svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .relogio circle { fill: none; stroke-width: 7; }
+  .relogio .trilha { stroke: var(--line); }
+  .relogio .prog { stroke: var(--accent); stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
+  .pausa .relogio .prog { stroke: var(--ok); }
+  .relogio .tempo { position: absolute; inset: 0; display: grid; place-items: center; font-size: 50px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+  .foco-tarefa { width: 100%; font: inherit; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); color: var(--text); text-align: center; }
+  .foco-tarefa:disabled { opacity: .7; }
+  .foco-dur { display: flex; gap: 8px; justify-content: center; margin-top: 12px; }
+  .foco-dur button { border: 1px solid var(--line); background: none; color: var(--muted); border-radius: 999px; padding: 6px 14px; font: inherit; font-size: 14px; cursor: pointer; }
+  .foco-dur button.ativa { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  .foco-dur button:disabled { opacity: .4; }
+  .foco-stats { margin-top: 12px; display: flex; flex-direction: column; gap: 10px; }
+  .painel { background: var(--card); border-radius: 16px; padding: 14px 16px; box-shadow: var(--shadow); }
+  .painel .rot { font-size: 13px; color: var(--muted); font-weight: 600; }
+  .painel .sub { font-size: 13px; color: var(--muted); }
+  .painel .num { font-size: 18px; font-weight: 700; }
+  .tomates { font-size: 28px; margin: 6px 0; display: flex; gap: 6px; flex-wrap: wrap; }
+  .tomates span { filter: grayscale(1); opacity: .25; }
+  .tomates span.feito { filter: none; opacity: 1; animation: pop .5s ease; }
+  @keyframes pop { 0% { transform: scale(.4); } 70% { transform: scale(1.25); } 100% { transform: scale(1); } }
+  .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .barras { display: flex; gap: 6px; align-items: flex-end; height: 96px; margin-top: 8px; }
+  .barra { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 3px; }
+  .barra b { font-size: 10px; color: var(--muted); font-weight: 600; }
+  .barra i { width: 100%; background: var(--accent); border-radius: 6px 6px 2px 2px; min-height: 3px; }
+  .barra span { font-size: 11px; color: var(--muted); }
   .resumo { text-align: center; color: var(--muted); font-size: 14px; margin-top: 12px; }
 
   #mais .icon-btn { width: 100%; padding: 14px; font-size: 16px; font-weight: 600; }
@@ -249,6 +284,10 @@
   <button type="submit">Criar</button>
 </form>
 
+<div class="visoes" id="visoes" hidden>
+  <button data-visao="semana">Semana</button><button data-visao="mes">Mês</button>
+</div>
+
 <main id="lista"></main>
 
 <section id="mais" hidden>
@@ -278,11 +317,11 @@
 
 <nav class="abas">
   <button class="aba" data-aba="hoje"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>Hoje</button>
-  <button class="aba" data-aba="semana"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16M15 4v16"/></svg>Semana</button>
+  <button class="aba" data-aba="semana"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16M15 4v16"/></svg>Agenda</button>
   <button class="mic" id="btnMic" aria-label="Falar com a secretária">
     <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2Z"/></svg>
   </button>
-  <button class="aba" data-aba="mes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Mês</button>
+  <button class="aba" data-aba="foco"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6M12 2v3"/></svg>Foco</button>
   <button class="aba" data-aba="mais"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>Mais</button>
 </nav>
 
@@ -602,7 +641,7 @@ function faixaDia(dia, ocs, extra = '') {
 }
 
 // Semana: grade de horários, 3 dias por tela, arrastando para o lado (estilo Google Agenda)
-const HORA_PX = 52, COL_HORAS = 44, DIAS_GRADE = 120;
+const HORA_PX = 52, COL_HORAS = 44, DIAS_GRADE = 7;
 let rolarParaDia = true;   // na próxima renderização, leva a grade até o diaSel
 
 function blocosDoDia(lista, agora) {
@@ -627,7 +666,7 @@ function blocosDoDia(lista, agora) {
 
 function telaSemana() {
   const agora = new Date(), hojeK = chaveDia(agora);
-  const ini = maisDias(diaSel, -30);
+  const ini = maisDias(diaSel, -diaSel.getDay());   // domingo da semana escolhida
   const porDia = new Map();
   for (const o of ocorrencias(ini, maisDias(ini, DIAS_GRADE))) {
     const k = chaveDia(o.inicio);
@@ -642,11 +681,16 @@ function telaSemana() {
     cols += `<div class="g-col" style="grid-column:${i + 2}" data-col="${k}">${blocosDoDia(porDia.get(k) || [], agora)}${linha}</div>`;
   }
   const horas = Array.from({ length: 23 }, (_, h) => `<div style="top:${(h + 1) * HORA_PX}px">${h + 1}h</div>`).join('');
-  return `<div class="grade3" id="grade3"><div class="g-in" style="grid-template-columns:${COL_HORAS}px repeat(${DIAS_GRADE}, var(--col));grid-template-rows:56px ${24 * HORA_PX}px">
+  const fim = maisDias(ini, 6);
+  const faixa = ini.getMonth() === fim.getMonth()
+    ? `${ini.getDate()} a ${fim.getDate()} de ${fim.toLocaleDateString('pt-BR', { month: 'long' })}`
+    : `${ini.getDate()} ${ini.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')} a ${fim.getDate()} ${fim.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}`;
+  return `<div class="navega"><button data-nav="-7" aria-label="Semana anterior">‹</button><span class="periodo">${faixa}</span><button data-nav="7" aria-label="Próxima semana">›</button></div>
+    <div class="grade3" id="grade3"><div class="g-in" style="grid-template-columns:${COL_HORAS}px repeat(${DIAS_GRADE}, var(--col));grid-template-rows:56px ${24 * HORA_PX}px">
     <div class="g-canto"></div>${cab}<div class="g-horas">${horas}</div>${cols}</div></div>`;
 }
 
-// Ajusta tamanho da grade, posição inicial e o mês mostrado no topo
+// Ajusta o tamanho da grade e a posição inicial (dia escolhido, perto da hora atual)
 function montarGrade(pos) {
   const g = document.getElementById('grade3');
   if (!g) return;
@@ -655,25 +699,16 @@ function montarGrade(pos) {
   if (pos) { g.scrollLeft = pos.l; g.scrollTop = pos.t; }
   else {
     const col = g.querySelector(`[data-col="${chaveDia(diaSel)}"]`);
-    g.scrollLeft = col.offsetLeft - COL_HORAS;
+    if (col) g.scrollLeft = col.offsetLeft - COL_HORAS;
     const agora = new Date();
     g.scrollTop = (chaveDia(diaSel) === chaveDia(agora) ? Math.max(agora.getHours() - 2, 0) : 7) * HORA_PX;
   }
-  const mostrarMes = () => {
-    const i = Math.round(g.scrollLeft / ((g.clientWidth - COL_HORAS) / 3));
-    const d = new Date(g.querySelectorAll('.g-col')[i]?.dataset.col + 'T12:00:00');
-    if (!isNaN(d)) document.getElementById('hoje').textContent = maiuscula(d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }));
-  };
-  let pendente = false;
-  g.onscroll = () => { if (!pendente) { pendente = true; requestAnimationFrame(() => { pendente = false; mostrarMes(); }); } };
-  mostrarMes();
 }
 
 function telaMes() {
   const agora = new Date();
   const ini = new Date(mesVisto), fimMes = new Date(ini.getFullYear(), ini.getMonth() + 1, 1);
   const ocs = ocorrencias(ini, fimMes);
-  document.getElementById('hoje').textContent = maiuscula(ini.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }));
   let grade = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map(d => `<div class="cab">${d}</div>`).join('');
   grade += '<div></div>'.repeat(ini.getDay());
   for (let d = new Date(ini); d < fimMes; d = maisDias(d, 1)) grade += faixaDia(d, ocs);
@@ -681,7 +716,7 @@ function telaMes() {
   const anuais = ocorrencias(inicioDoDia(agora), maisDias(agora, 120)).filter(o => o.ev.repetir?.freq === 'anual').slice(0, 5);
   return `
     <div class="navega"><button data-nav="-1m" aria-label="Mês anterior">‹</button>
-      <button class="volta" data-nav="hoje">Hoje</button>
+      <span class="periodo">${maiuscula(ini.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }))}</span>
       <button data-nav="1m" aria-label="Próximo mês">›</button></div>
     <div class="mes-grade">${grade.replace(/<span class="ds">[^<]*<\/span>/g, '')}</div>
     <section class="grupo"><h2>${esc(maiuscula(rotuloDia(diaSel)))}</h2>${linhaDoTempo(diaSel, agora, false)}</section>
@@ -692,22 +727,28 @@ function telaMes() {
     }).join('')}</section>` : ''}`;
 }
 
+let visao = lerPref('agenda.visao', 'semana');   // dentro da aba Semana: 'semana' ou 'mes'
+if (aba === 'mes') { aba = 'semana'; visao = 'mes'; }
+
 function render() {
   const lista = document.getElementById('lista');
   const gradeAnt = document.getElementById('grade3');
   const pos = gradeAnt && !rolarParaDia ? { l: gradeAnt.scrollLeft, t: gradeAnt.scrollTop } : null;
   rolarParaDia = false;
-  document.body.classList.toggle('cheia', aba === 'semana');
+  document.body.classList.toggle('cheia', aba === 'semana' && visao === 'semana');
   document.getElementById('btnHoje').hidden = aba !== 'semana';
+  document.getElementById('visoes').hidden = aba !== 'semana';
+  document.querySelectorAll('[data-visao]').forEach(b => b.classList.toggle('ativa', b.dataset.visao === visao));
   document.querySelectorAll('.aba').forEach(b => b.classList.toggle('ativa', b.dataset.aba === aba));
-  document.getElementById('titulo').textContent = { hoje: 'Hoje', semana: 'Semana', mes: 'Mês', mais: 'Mais' }[aba];
+  document.getElementById('titulo').textContent = { hoje: 'Hoje', semana: 'Agenda', foco: 'Foco', mais: 'Mais' }[aba];
   document.getElementById('quick').hidden = aba !== 'hoje';
   document.getElementById('mais').hidden = aba !== 'mais';
   lista.hidden = aba === 'mais';
   document.getElementById('hoje').textContent = maiuscula(fmtDataLonga(new Date()));
   if (aba === 'hoje') lista.innerHTML = telaHoje();
-  else if (aba === 'semana') { lista.innerHTML = telaSemana(); montarGrade(pos); }
-  else if (aba === 'mes') lista.innerHTML = telaMes();
+  else if (aba === 'semana' && visao === 'semana') { lista.innerHTML = telaSemana(); montarGrade(pos); }
+  else if (aba === 'semana') lista.innerHTML = telaMes();
+  else if (aba === 'foco') lista.innerHTML = telaFoco();
   destacarId = null;
 }
 
@@ -726,6 +767,9 @@ function navegar(passo) {
 }
 document.querySelectorAll('.aba').forEach(b => b.onclick = () => irPara(b.dataset.aba));
 document.getElementById('btnHoje').onclick = () => navegar('hoje');
+document.querySelectorAll('[data-visao]').forEach(b => b.onclick = () => {
+  visao = b.dataset.visao; gravarPref('agenda.visao', visao); rolarParaDia = true; render(); window.scrollTo(0, 0);
+});
 window.addEventListener('resize', () => { if (aba === 'semana') render(); });
 document.getElementById('lista').addEventListener('click', (ev) => {
   const alvo = ev.target.closest('[data-id], [data-dia], [data-nav], [data-ir]');
@@ -735,14 +779,123 @@ document.getElementById('lista').addEventListener('click', (ev) => {
   else if (alvo.dataset.dia) { const [a, m, d] = alvo.dataset.dia.split('-').map(Number); diaSel = new Date(a, m - 1, d); render(); }
   else abrirEdicao(eventos.find(e => e.id === alvo.dataset.id));
 });
-// Arrastar para o lado troca de semana/mês
+// No mês, arrastar para o lado troca de mês
 let toqueX = null;
 document.getElementById('lista').addEventListener('touchstart', (e) => { toqueX = e.touches[0].clientX; }, { passive: true });
 document.getElementById('lista').addEventListener('touchend', (e) => {
-  if (toqueX === null || aba !== 'mes') return;
+  if (toqueX === null || aba !== 'semana' || visao !== 'mes') return;
   const dx = e.changedTouches[0].clientX - toqueX; toqueX = null;
   if (Math.abs(dx) > 60) navegar(dx < 0 ? '1m' : '-1m');
 });
+
+// ---------- Foco (Pomodoro) ----------
+const lerJSON = (k, padrao) => { try { return JSON.parse(localStorage.getItem(k)) ?? padrao; } catch { return padrao; } };
+const gravarJSON = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+// fim = quando acaba (rodando); restante = ms que faltam (pausado); os dois null = parado
+let foco = lerJSON('agenda.foco', { modo: 'foco', duracao: 25, ultimoFoco: 25, fim: null, restante: null, tarefa: '' });
+let focos = lerJSON('agenda.focos', []);   // histórico: [{ dia: 'AAAA-MM-DD', min, tarefa }]
+const META_DIA = 4;
+const NIVEIS = [[0, 'Iniciante'], [10, 'Focado'], [30, 'Concentrado'], [75, 'Mestre do foco'], [150, 'Lenda']];
+
+const restanteMs = () => foco.fim ? Math.max(foco.fim - Date.now(), 0) : foco.restante ?? foco.duracao * 60000;
+const fmtMS = (ms) => { const t = Math.ceil(ms / 1000); return `${pad(Math.floor(t / 60))}:${pad(t % 60)}`; };
+const salvarFoco = () => gravarJSON('agenda.foco', foco);
+const focosDoDia = (d) => focos.filter(f => f.dia === chaveDia(d));
+
+function estatisticasFoco() {
+  const hoje = focosDoDia(new Date());
+  let seq = 0, d = hoje.length ? new Date() : maisDias(new Date(), -1);   // dias seguidos com pelo menos 1 foco
+  while (focosDoDia(d).length) { seq++; d = maisDias(d, -1); }
+  const semana = Array.from({ length: 7 }, (_, i) => {
+    const dia = maisDias(new Date(), i - 6);
+    return { dia, min: focosDoDia(dia).reduce((s, f) => s + f.min, 0) };
+  });
+  let nivel = NIVEIS[0], proximo = null;
+  for (const n of NIVEIS) { if (focos.length >= n[0]) nivel = n; else { proximo = n; break; } }
+  return { hoje, seq, semana, nivel, proximo };
+}
+
+function telaFoco() {
+  const st = estatisticasFoco(), rodando = !!foco.fim, pausado = !foco.fim && foco.restante !== null;
+  const minHoje = st.hoje.reduce((s, f) => s + f.min, 0);
+  const maxSem = Math.max(...st.semana.map(x => x.min), 25);
+  const opcoes = foco.modo === 'foco' ? [25, 50] : [5, 15];
+  return `
+    <div class="foco-card ${foco.modo}">
+      <div class="foco-modo">${foco.modo === 'foco' ? 'Hora de focar' : 'Pausa · respira um pouco'}</div>
+      <div class="relogio">
+        <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" class="trilha"/><circle cx="60" cy="60" r="52" class="prog" id="focoAnel" pathLength="100" stroke-dasharray="100" stroke-dashoffset="${100 * (1 - restanteMs() / (foco.duracao * 60000))}"/></svg>
+        <div class="tempo" id="focoTempo">${fmtMS(restanteMs())}</div>
+      </div>
+      ${foco.modo === 'foco' ? `<input id="focoTarefa" class="foco-tarefa" placeholder="No que você vai focar?" value="${esc(foco.tarefa || '')}" ${rodando ? 'disabled' : ''}>` : ''}
+      <div class="foco-dur">${opcoes.map(m => `<button data-dur="${m}" class="${foco.duracao === m ? 'ativa' : ''}" ${rodando || pausado ? 'disabled' : ''}>${m} min</button>`).join('')}</div>
+      <div class="botoes">
+        ${rodando || pausado ? '<button id="focoParar">Parar</button>' : foco.modo === 'pausa' ? '<button id="focoPular">Pular pausa</button>' : ''}
+        <button class="primario" id="focoBotao">${rodando ? 'Pausar' : pausado ? 'Continuar' : 'Começar'}</button>
+      </div>
+    </div>
+    <div class="foco-stats">
+      <div class="painel">
+        <div class="rot">Meta de hoje</div>
+        <div class="tomates">${Array.from({ length: Math.max(META_DIA, st.hoje.length) }, (_, i) => `<span class="${i < st.hoje.length ? 'feito' : ''}">🍅</span>`).join('')}</div>
+        <div class="sub">${st.hoje.length >= META_DIA ? 'Meta batida! 🎉' : `${st.hoje.length} de ${META_DIA} focos`} · ${minHoje} min focado</div>
+      </div>
+      <div class="duo">
+        <div class="painel"><div class="num">🔥 ${st.seq}</div><div class="sub">dia${st.seq === 1 ? '' : 's'} seguido${st.seq === 1 ? '' : 's'}</div></div>
+        <div class="painel"><div class="num">${st.nivel[1]}</div><div class="sub">${st.proximo ? `faltam ${st.proximo[0] - focos.length} focos para ${st.proximo[1]}` : 'nível máximo'}</div></div>
+      </div>
+      <div class="painel">
+        <div class="rot">Últimos 7 dias</div>
+        <div class="barras">${st.semana.map(x => `<div class="barra"><b>${x.min ? x.min : ''}</b><i style="height:${Math.round(x.min / maxSem * 100)}%"></i><span>${DIAS_CURTOS[x.dia.getDay()]}</span></div>`).join('')}</div>
+      </div>
+    </div>`;
+}
+
+function iniciarModo(modo) {
+  foco.modo = modo; foco.fim = null; foco.restante = null;
+  foco.duracao = modo === 'foco' ? (foco.ultimoFoco || 25) : 5;
+}
+function avisarFoco(msg) {
+  toast(msg, 6000);
+  if (navigator.vibrate) navigator.vibrate([300, 120, 300]);
+  if ('Notification' in window && Notification.permission === 'granted') new Notification('Foco', { body: msg });
+}
+function terminarCiclo() {
+  const eraFoco = foco.modo === 'foco';
+  if (eraFoco) { focos.push({ dia: chaveDia(new Date()), min: foco.duracao, tarefa: foco.tarefa || '' }); gravarJSON('agenda.focos', focos.slice(-2000)); }
+  const qtd = focosDoDia(new Date()).length;
+  iniciarModo(eraFoco ? 'pausa' : 'foco');
+  salvarFoco();
+  avisarFoco(!eraFoco ? 'Pausa acabou. Bora focar de novo?'
+    : qtd === META_DIA ? '🎉 Meta do dia batida! Hora de uma pausa.' : `+1 🍅 Foco concluído! Hora de uma pausa.`);
+  if (aba === 'foco') render();
+}
+document.getElementById('lista').addEventListener('click', (ev) => {
+  const b = aba === 'foco' && ev.target.closest('button');
+  if (!b) return;
+  const tarefa = document.getElementById('focoTarefa');
+  if (tarefa) foco.tarefa = tarefa.value.trim();
+  if (b.dataset.dur) { foco.duracao = +b.dataset.dur; if (foco.modo === 'foco') foco.ultimoFoco = foco.duracao; }
+  else if (b.id === 'focoBotao') {
+    if (foco.fim) { foco.restante = foco.fim - Date.now(); foco.fim = null; }
+    else { foco.fim = Date.now() + restanteMs(); foco.restante = null; }
+  }
+  else if (b.id === 'focoParar') iniciarModo(foco.modo);
+  else if (b.id === 'focoPular') iniciarModo('foco');
+  else return;
+  salvarFoco(); render();
+});
+document.getElementById('lista').addEventListener('input', (ev) => {
+  if (ev.target.id === 'focoTarefa') { foco.tarefa = ev.target.value; salvarFoco(); }
+});
+// Relógio: atualiza só o número e o anel (sem redesenhar a tela)
+setInterval(() => {
+  if (foco.fim && Date.now() >= foco.fim) terminarCiclo();
+  if (aba !== 'foco') return;
+  const t = document.getElementById('focoTempo'), anel = document.getElementById('focoAnel');
+  if (t) t.textContent = fmtMS(restanteMs());
+  if (anel) anel.setAttribute('stroke-dashoffset', 100 * (1 - restanteMs() / (foco.duracao * 60000)));
+}, 1000);
 
 // ---------- Secretária: entende a frase com IA e executa ----------
 const IA_URL = 'https://agenda-voz.guiiestevees.workers.dev/';
@@ -1079,7 +1232,7 @@ function checarLembretes() {
   }
   if (mudou) salvar();
 }
-setInterval(() => { checarLembretes(); render(); }, 30000);
+setInterval(() => { checarLembretes(); if (aba !== 'foco') render(); }, 30000);
 
 // ---------- Toast ----------
 let toastTimer;
