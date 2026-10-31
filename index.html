@@ -1085,6 +1085,11 @@
   .cf-txt { flex: 1; min-width: 0; font-size: 14px; font-weight: 700; line-height: 1.25; }
   .cf-acao { flex: none; display: inline-flex; align-items: center; gap: 5px; height: 38px; padding: 0 13px 0 10px; border-radius: 12px; background: #fff; color: #c63f0d; font-weight: 800; font-size: 14px; animation: chamaBotao 2s ease-in-out infinite; }
   .cf-acao svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+  .evento.em-foco { box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--accent) 55%, transparent), var(--shadow-sm); }
+  .selo-prox { display: inline-flex; align-items: center; gap: 5px; vertical-align: 2px; margin-right: 7px; padding: 2px 8px; border-radius: 999px;
+    background: var(--accent-soft); color: var(--accent-ink); font-size: 11px; font-weight: 800; letter-spacing: .01em; }
+  .selo-prox.agora { background: var(--accent); color: var(--on-accent); }
+  .selo-prox.agora i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: vivo 1.6s infinite; box-shadow: 0 0 0 0 rgba(255,255,255,.7); }
   .lista-links { display: flex; flex-direction: column; padding: 4px 14px; }
   .lista-links a { padding: 13px 0; color: var(--text); text-decoration: none; font-weight: 600; border-top: 1px solid var(--line); display: flex; justify-content: space-between; }
   .lista-links a:first-child { border-top: 0; }
@@ -1690,16 +1695,28 @@ let destacarId = null;
 const estaFeito = (ev, inicio) => (ev.feitos || []).includes(chaveDia(inicio));
 const ICONE_CHECK = '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 
+// Na tela Hoje, o compromisso que está acontecendo (ou o próximo) ganha um selo discreto na própria lista
+let chaveProximo = null;
+function proximoDeHoje(agora) {
+  const hoje = inicioDoDia(agora);
+  const ocs = ocorrencias(hoje, maisDias(hoje, 1)).filter(o => !estaFeito(o.ev, o.inicio) && o.ev.repetir?.freq !== 'anual');
+  const o = ocs.find(x => x.inicio <= agora && fimDe(x.ev, x.inicio) > agora) || ocs.find(x => x.inicio > agora);
+  return o ? `${o.ev.id}|${chaveDia(o.inicio)}` : null;
+}
+function seloProximo(inicio, ev, agora) {
+  if (inicio <= agora) return '<span class="selo-prox agora"><i></i>Agora</span>';
+  return `<span class="selo-prox">${maiuscula(quandoFalta(inicio, agora))}</span>`;
+}
 function cartao({ ev: e, inicio }, agora) {
-  const feito = estaFeito(e, inicio);
+  const feito = estaFeito(e, inicio), ehProx = chaveProximo === `${e.id}|${chaveDia(inicio)}`;
   return `
     <div class="deslize" data-deslize="${e.id}|${chaveDia(inicio)}" data-esq="1">
     <div class="deslize-fundo" aria-hidden="true"><span class="df-ok">${ICO.ok}${feito ? 'Desmarcar' : 'Feito'}</span><span class="df-del">${e.repetir ? 'Só hoje' : 'Excluir'}${ICO.lixo}</span></div>
-    <div style="--cat:${corCat(e.titulo)}" class="evento com-cat ${inicio < agora && !feito ? 'passado' : ''} ${feito ? 'feito' : ''} ${[].concat(destacarId).includes(e.id) ? 'novo' : ''}" data-id="${e.id}">
+    <div style="--cat:${corCat(e.titulo)}" class="evento com-cat ${ehProx ? 'em-foco' : inicio < agora && !feito ? 'passado' : ''} ${feito ? 'feito' : ''} ${[].concat(destacarId).includes(e.id) ? 'novo' : ''}" data-id="${e.id}">
       <button class="check ${feito ? 'on' : ''}" data-check="${e.id}|${chaveDia(inicio)}" aria-label="${feito ? 'Desmarcar como feito' : 'Marcar como feito'}">${ICONE_CHECK}</button>
       <div class="hora">${fmtHora(inicio)}<small>${fmtHora(fimDe(e, inicio))}</small></div>
       <div class="info">
-        <div class="titulo">${esc(e.titulo)}</div>
+        <div class="titulo">${ehProx ? seloProximo(inicio, e, agora) : ''}${esc(e.titulo)}</div>
         <div class="lembrete">${categoria(e.titulo) ? `<span class="meta cat">${icoCat(categoria(e.titulo))}${categoria(e.titulo).nome}</span>` : ''}${seqHabitoHtml(e)}<span class="meta">${e.lembreteMin !== null ? ICO.sino : ''}${fmtLembrete(e.lembreteMin)}</span>${e.repetir ? `<span class="meta">${ICO.repete}${fmtRepetir(e.repetir)}</span>` : ''}</div>
       </div>
     </div></div>`;
@@ -1786,7 +1803,8 @@ function telaHoje() {
   const feitosL = deHoje.filter(o => estaFeito(o.ev, o.inicio)), total = deHoje.length, feitos = feitosL.length;
   const tudo = total > 0 && feitos === total;
   // Um destaque só por vez: o check-in (enquanto não feito) ou o próximo compromisso
-  let html = (fezCheckinHoje() ? htmlProximo(agora) : htmlCheckinHero()) + htmlProgresso() + htmlResgate() + (feitos && agora.getHours() >= 18 ? htmlConvitePost(feitos) : '');   // o convite para postar só aparece no fim do dia; antes, o selo +10 na câmera já avisa
+  chaveProximo = proximoDeHoje(agora);
+  let html = htmlCheckinHero() + htmlProgresso() + htmlResgate() + (feitos && agora.getHours() >= 18 ? htmlConvitePost(feitos) : '');   // o convite para postar só aparece no fim do dia; antes, o selo +10 na câmera já avisa
   html += `<section class="grupo"><div class="grupo-topo"><h2>Agenda de hoje</h2><button class="novo-mini" data-novo-comp>${ICO.mais}Novo</button></div>${total && tudo ? `<div class="tudo-feito">${cenaMascote('festa')}<b>Tudo feito por hoje</b><span>Pode descansar. Amanhã tem mais.</span></div>` : linhaDoTempo(hoje, agora, true)}</section>`;
   if (feitos) html += `<details class="feitos"><summary>Feitos (${feitos})</summary>${feitosL.map(o => cartao(o, agora)).join('')}</details>`;
   return html;
@@ -1994,7 +2012,7 @@ function render() {
   lista.hidden = aba === 'mais';
   document.getElementById('hoje').innerHTML = aba === 'hoje' ? resumoDoDia() : maiuscula(fmtDataLonga(new Date()));
   comFlip(() => {
-    if (aba === 'hoje') lista.innerHTML = telaHoje();
+    if (aba === 'hoje') { lista.innerHTML = telaHoje(); chaveProximo = null; }
     else if (aba === 'semana' && visao === 'semana') { lista.innerHTML = telaSemana(); montarGrade(pos); }
     else if (aba === 'semana') lista.innerHTML = telaMes();
     else if (aba === 'foco') { lista.innerHTML = telaFoco(); montarRoda(); posicionarBicho(); }
