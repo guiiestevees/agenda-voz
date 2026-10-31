@@ -1070,6 +1070,12 @@
   .ac-ico { width: 44px; height: 44px; border-radius: 13px; background: rgba(255,255,255,.2); display: grid; place-items: center; flex: none; }
   .ac-ico svg { width: 24px; height: 24px; }
   .ac-txt b { display: block; font-size: 16px; } .ac-txt small { opacity: .9; font-size: 13px; }
+  .bk-txt { font-size: 14px; color: var(--muted) !important; margin: 0 0 6px !important; }
+  .bk-ultimo { font-size: 13px; font-weight: 650; color: var(--text) !important; margin: 0 0 12px !important; }
+  .bk-ultimo.velho { color: var(--fogo-b) !important; }
+  .bk-botoes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .bk-botoes .icon-btn { height: 46px; border-radius: 12px; font-size: 15px; }
+  .bk-botoes .icon-btn svg { width: 18px; height: 18px; color: var(--accent); }
   .lista-links { display: flex; flex-direction: column; padding: 4px 14px; }
   .lista-links a { padding: 13px 0; color: var(--text); text-decoration: none; font-weight: 600; border-top: 1px solid var(--line); display: flex; justify-content: space-between; }
   .lista-links a:first-child { border-top: 0; }
@@ -1317,6 +1323,16 @@
       <button class="tema-btn modo-btn" data-escolher-modo="escuro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>Escuro</button>
       <button class="tema-btn modo-btn" data-escolher-modo="auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg>Igual ao iPhone</button>
     </div>
+  </div>
+  <h2 class="sec">Backup</h2>
+  <div class="dicas backup">
+    <p class="bk-txt">Seus dados ficam só neste aparelho. Salve um backup no iCloud ou no Arquivos para não perder nada se trocar de celular.</p>
+    <p class="bk-ultimo" id="bkUltimo"></p>
+    <div class="bk-botoes">
+      <button class="icon-btn" id="btnBackup"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M7 10l5 5 5-5M5 21h14"/></svg>Salvar</button>
+      <button class="icon-btn" id="btnRestaurar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5M5 21h14"/></svg>Restaurar</button>
+    </div>
+    <input type="file" id="arqBackup" accept=".json,application/json" hidden>
   </div>
   <h2 class="sec">Atalho do iPhone</h2>
   <details class="ajuda">
@@ -2036,6 +2052,63 @@ function mostrarSequencia() {
 document.getElementById('btnMais').onclick = () => irPara('mais');
 document.getElementById('btnConvites').onclick = () => abrirConvites();
 document.getElementById('btnNome').onclick = () => pedirNome();
+
+// ---------- Backup: tudo o que o app guarda vira um arquivo .json ----------
+const CHAVES_BACKUP = ['agenda.eventos', 'agenda.habitos', 'agenda.xp', 'agenda.focos', 'agenda.foco', 'agenda.nome', 'agenda.tema', 'agenda.modo', 'agenda.marca', 'agenda.visao', 'agenda.boasVindas', 'agenda.dicaFechada'];
+function mostrarUltimoBackup() {
+  const el = document.getElementById('bkUltimo'), quando = lerPref('agenda.ultimoBackup', '');
+  if (!quando) { el.textContent = 'Você ainda não salvou nenhum backup.'; el.classList.add('velho'); return; }
+  const dias = Math.floor((Date.now() - new Date(quando)) / 86400000);
+  el.textContent = `Último backup: ${dias === 0 ? 'hoje' : dias === 1 ? 'ontem' : `há ${dias} dias`}`;
+  el.classList.toggle('velho', dias > 14);
+}
+async function salvarBackup() {
+  const dados = {};
+  for (const k of CHAVES_BACKUP) { try { const v = localStorage.getItem(k); if (v !== null) dados[k] = v; } catch {} }
+  const corpo = JSON.stringify({ app: 'agenda-por-voz', versao: 1, criado: new Date().toISOString(), dados });
+  const arq = new File([corpo], `agenda-backup-${chaveDia(new Date())}.json`, { type: 'application/json' });
+  let ok = false;
+  if (navigator.canShare && navigator.canShare({ files: [arq] })) {
+    try { await navigator.share({ files: [arq] }); ok = true; } catch (e) { if (e.name === 'AbortError') return; }
+  }
+  if (!ok) {
+    const a = document.createElement('a'); a.href = URL.createObjectURL(arq); a.download = arq.name;
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+  gravarPref('agenda.ultimoBackup', new Date().toISOString());
+  mostrarUltimoBackup(); vibrar('sucesso');
+  toast('Backup salvo. Guarde o arquivo no iCloud Drive ou no Arquivos.', 4000);
+}
+function restaurarBackup(arquivo) {
+  const leitor = new FileReader();
+  leitor.onload = () => {
+    let b;
+    try { b = JSON.parse(leitor.result); } catch { b = null; }
+    if (!b || b.app !== 'agenda-por-voz' || !b.dados) return toast('Esse arquivo não é um backup da Agenda por Voz.', 4000);
+    let qtd = 0; try { qtd = JSON.parse(b.dados['agenda.eventos'] || '[]').length; } catch {}
+    const data = new Date(b.criado).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
+    abrirFolha(`
+      <div>
+        <h3>Restaurar backup?</h3>
+        <p style="margin-top:6px">Backup de <b>${esc(data)}</b>, com ${qtd} compromisso${qtd === 1 ? '' : 's'}. Os dados atuais deste aparelho serão <b>substituídos</b> pelos do backup.</p>
+        <div class="botoes"><button id="bkCancelar">Cancelar</button><button class="primario" id="bkConfirmar">Restaurar</button></div>
+      </div>`);
+    document.getElementById('bkCancelar').onclick = fecharFolha;
+    document.getElementById('bkConfirmar').onclick = () => {
+      try {
+        CHAVES_BACKUP.forEach(k => localStorage.removeItem(k));
+        for (const [k, v] of Object.entries(b.dados)) if (k.startsWith('agenda.')) localStorage.setItem(k, v);
+        localStorage.setItem('agenda.aba', 'hoje');
+      } catch { return toast('Não deu para restaurar. Tente de novo.', 4000); }
+      location.reload();
+    };
+  };
+  leitor.readAsText(arquivo);
+}
+document.getElementById('btnBackup').onclick = salvarBackup;
+document.getElementById('btnRestaurar').onclick = () => document.getElementById('arqBackup').click();
+document.getElementById('arqBackup').onchange = (e) => { const f = e.target.files[0]; e.target.value = ''; if (f) restaurarBackup(f); };
+mostrarUltimoBackup();
 document.getElementById('topoAcao').onclick = (e) => {
   const b = e.target.closest('[data-checkin], [data-fogo]');
   if (!b) return;
