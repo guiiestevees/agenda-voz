@@ -2015,7 +2015,9 @@ function render() {
   document.getElementById('btnMais').hidden = aba === 'mais';
   document.getElementById('mais').hidden = aba !== 'mais';
   lista.hidden = aba === 'mais';
-  document.getElementById('hoje').innerHTML = aba === 'hoje' ? resumoDoDia() : maiuscula(fmtDataLonga(new Date()));
+  const linhaHoje = document.getElementById('hoje');
+  linhaHoje.hidden = aba === 'hoje';   // na tela Hoje a data já aparece no topo; o resumo do dia era repetido
+  linhaHoje.textContent = aba === 'hoje' ? '' : maiuscula(fmtDataLonga(new Date()));
   comFlip(() => {
     if (aba === 'hoje') { lista.innerHTML = telaHoje(); chaveProximo = null; }
     else if (aba === 'semana' && visao === 'semana') { lista.innerHTML = telaSemana(); montarGrade(pos); }
