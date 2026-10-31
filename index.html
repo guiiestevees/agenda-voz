@@ -1161,6 +1161,19 @@
   .deslize.ensina .df-ok { opacity: 1; }
   .deslize.ensina .evento { animation: ensinaDeslize 2.2s cubic-bezier(.4,0,.2,1) .8s 2; }
   @keyframes ensinaDeslize { 0%, 100% { transform: translateX(0); } 35%, 60% { transform: translateX(96px); } }
+  .permissao-ia { text-align: center; }
+  .pi-ico { width: 64px; height: 64px; margin: 4px auto 12px; border-radius: 20px; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; }
+  .pi-ico svg { width: 30px; height: 30px; }
+  .permissao-ia p { font-size: 15px; margin-top: 8px !important; }
+  .permissao-ia ul { list-style: none; padding: 0; margin: 14px 0; text-align: left; display: flex; flex-direction: column; gap: 8px; }
+  .permissao-ia li { display: flex; gap: 8px; align-items: center; font-size: 15px; font-weight: 600; }
+  .permissao-ia li svg { width: 18px; height: 18px; color: var(--ok); flex: none; }
+  .permissao-ia .pi-nao { font-size: 13px; }
+  .pi-link { display: inline-block; margin-top: 12px; font-size: 13px; color: var(--accent); font-weight: 650; }
+  .nota-simples { margin: 4px 0 0; padding: 10px 12px; border-radius: 12px; background: var(--field); font-size: 13px; color: var(--muted); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .nota-simples button { flex: none; height: 32px; padding: 0 12px; border: 0; border-radius: 10px; background: var(--accent); color: var(--on-accent); font-weight: 750; cursor: pointer; }
+  #btnIA.on { border-color: var(--ok); color: var(--ok); }
+  #btnIA.on svg { color: var(--ok); }
   .lista-links { display: flex; flex-direction: column; padding: 4px 14px; }
   .lista-links a { padding: 13px 0; color: var(--text); text-decoration: none; font-weight: 600; border-top: 1px solid var(--line); display: flex; justify-content: space-between; }
   .lista-links a:first-child { border-top: 0; }
@@ -1408,6 +1421,11 @@
       <button class="tema-btn modo-btn" data-escolher-modo="escuro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>Escuro</button>
       <button class="tema-btn modo-btn" data-escolher-modo="auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg>Igual ao iPhone</button>
     </div>
+  </div>
+  <h2 class="sec">Secretária inteligente</h2>
+  <div class="dicas">
+    <p class="bk-txt" id="txtIA"></p>
+    <button class="icon-btn linha-ajuste" id="btnIA"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Ativar secretária inteligente</span></button>
   </div>
   <h2 class="sec">Backup</h2>
   <div class="dicas backup">
@@ -2204,6 +2222,12 @@ function restaurarBackup(arquivo) {
   leitor.readAsText(arquivo);
 }
 document.getElementById('btnBackup').onclick = salvarBackup;
+document.getElementById('btnIA').onclick = () => {
+  const on = lerPref('agenda.iaOk', '') === 'sim';
+  gravarPref('agenda.iaOk', on ? 'nao' : 'sim'); marcarIA(); vibrar('selecao');
+  toast(on ? 'Secretária inteligente desligada. O app cria só compromissos simples.' : 'Secretária inteligente ativada!', 3500);
+};
+marcarIA();
 document.getElementById('btnRestaurar').onclick = () => document.getElementById('arqBackup').click();
 document.getElementById('arqBackup').onchange = (e) => { const f = e.target.files[0]; e.target.value = ''; if (f) restaurarBackup(f); };
 mostrarUltimoBackup();
@@ -3672,18 +3696,50 @@ const dataHoraLocal = (data, hora) => {
 };
 const montarRepetir = (freq, dias) => (!freq || freq === 'nenhuma' || freq === 'manter') ? null : { freq, dias: freq === 'semanal' ? (dias || []) : [] };
 
+// ---------- Permissão para usar a IA ----------
+const TEXTO_IA = 'Para entender o que você fala, sua frase e um resumo dos seus próximos compromissos são enviados à IA da Anthropic (Claude). Nada disso fica guardado nem é usado para treinar a IA.';
+function pedirPermissaoIA() {
+  return new Promise((pronto) => {
+    abrirFolha(`
+      <div class="permissao-ia">
+        <div class="pi-ico">${ICO.chat}</div>
+        <h3>Ativar a secretária inteligente?</h3>
+        <p>${TEXTO_IA}</p>
+        <ul>
+          <li>${ICO.ok}Entende pedidos do seu jeito, vários de uma vez</li>
+          <li>${ICO.ok}Muda, desmarca e responde perguntas da agenda</li>
+        </ul>
+        <p class="pi-nao">Sem ela, o app só consegue criar compromissos simples. Dá pra mudar depois em Ajustes.</p>
+        <div class="botoes"><button id="piNao">Agora não</button><button class="primario" id="piSim">Ativar</button></div>
+        <a class="pi-link" href="privacidade.html" target="_blank" rel="noopener">Ver política de privacidade</a>
+      </div>`);
+    document.getElementById('piSim').onclick = () => { gravarPref('agenda.iaOk', 'sim'); marcarIA(); vibrar('sucesso'); pronto(); };
+    document.getElementById('piNao').onclick = () => { gravarPref('agenda.iaOk', 'nao'); marcarIA(); pronto(); };
+  });
+}
+function marcarIA() {
+  const b = document.getElementById('btnIA');
+  if (!b) return;
+  const on = lerPref('agenda.iaOk', '') === 'sim';
+  b.classList.toggle('on', on);
+  b.querySelector('span').textContent = on ? 'Secretária inteligente ativada' : 'Ativar secretária inteligente';
+}
+
 async function criarDeFrase(frase) {
   frase = frase.trim();
   if (!frase) return;
+  // Antes da primeira vez, pede permissão para mandar a frase à IA (exigência da Apple)
+  if (!lerPref('agenda.iaOk', '')) await pedirPermissaoIA();
   abrirFolha(`<div class="pensando"><div class="frase">“${esc(frase)}”</div><div class="pontos"><i></i><i></i><i></i></div></div>`);
   let r = null;
-  if (IA_URL && navigator.onLine !== false) {
+  const usaIA = lerPref('agenda.iaOk', '') === 'sim';
+  if (IA_URL && usaIA && navigator.onLine !== false) {
     try { r = await perguntarIA(frase); } catch (e) { console.warn('IA indisponível, usando o modo simples', e); }
   }
   if (!r || !Array.isArray(r.acoes)) {
     // Sem internet/IA: entende só pedidos de criar, pelo jeito antigo
     const p = interpretar(frase), d = new Date(p.inicio);
-    r = { tipo: 'agir', resposta: 'Anotado!', acoes: [{ acao: 'criar', titulo: p.titulo, data: chaveDia(d), hora: `${pad(d.getHours())}:${pad(d.getMinutes())}`, lembreteMin: p.lembreteMin, repetir: 'nenhuma', diasSemana: [] }] };
+    r = { tipo: 'agir', resposta: 'Anotado!', modoSimples: !usaIA, acoes: [{ acao: 'criar', titulo: p.titulo, data: chaveDia(d), hora: `${pad(d.getHours())}:${pad(d.getMinutes())}`, lembreteMin: p.lembreteMin, repetir: 'nenhuma', diasSemana: [] }] };
   }
   executar(r, frase);
 }
@@ -3795,6 +3851,7 @@ function mostrarResultado(r, frase, evs, antes) {
       ${formatarResposta(r.resposta || '', icone)}
       <div class="frase">“${esc(frase)}”</div>
       ${detalhes}
+      ${r.modoSimples ? '<div class="nota-simples">Modo simples: a secretária inteligente está desligada. <button id="bAtivarIA">Ativar</button></div>' : ''}
       <div class="botoes">
         ${antes ? '<button class="perigo" id="bDesfazer">Desfazer</button>' : ''}
         ${um ? '<button id="bEditar">Editar</button>' : ''}
@@ -3803,6 +3860,7 @@ function mostrarResultado(r, frase, evs, antes) {
       </div>
     </div>`);
   document.getElementById('bOk').onclick = fecharFolha;
+  if (r.modoSimples) document.getElementById('bAtivarIA').onclick = () => { gravarPref('agenda.iaOk', 'sim'); marcarIA(); fecharFolha(); vibrar('sucesso'); toast('Secretária inteligente ativada!'); };
   if (um) document.getElementById('bEditar').onclick = () => abrirEdicao(um);
   if (r.tipo === 'nao_entendi') document.getElementById('bDeNovo').onclick = abrirVoz;
   if (antes) document.getElementById('bDesfazer').onclick = () => {
@@ -4676,6 +4734,7 @@ function toast(msg, ms = 2500, acao) {
 // ---------- Entrada vinda do atalho do iPhone ----------
 // ?texto=...  → cria o compromisso direto (Atalho "Ditar Texto")
 // ?voz=1      → abre a tela de ouvir
+document.getElementById('txtIA').textContent = TEXTO_IA;   // aqui embaixo porque TEXTO_IA é declarado mais adiante no código
 registrarInicioMes();
 usarProtetores();
 aplicarPenalidades();
