@@ -1090,6 +1090,8 @@
     background: var(--accent-soft); color: var(--accent-ink); font-size: 11px; font-weight: 800; letter-spacing: .01em; }
   .selo-prox.agora { background: var(--accent); color: var(--on-accent); }
   .selo-prox.agora i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: vivo 1.6s infinite; box-shadow: 0 0 0 0 rgba(255,255,255,.7); }
+  .pg-share.chama { border: 0; background: var(--accent); color: var(--on-accent); animation: chamaPost 2s ease-in-out infinite; }
+  @keyframes chamaPost { 0%, 100% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb),.45); } 60% { box-shadow: 0 0 0 10px rgba(var(--accent-rgb),0); } }
   .lista-links { display: flex; flex-direction: column; padding: 4px 14px; }
   .lista-links a { padding: 13px 0; color: var(--text); text-decoration: none; font-weight: 600; border-top: 1px solid var(--line); display: flex; justify-content: space-between; }
   .lista-links a:first-child { border-top: 0; }
@@ -1804,7 +1806,7 @@ function telaHoje() {
   const tudo = total > 0 && feitos === total;
   // Um destaque só por vez: o check-in (enquanto não feito) ou o próximo compromisso
   chaveProximo = proximoDeHoje(agora);
-  let html = htmlCheckinHero() + htmlProgresso() + htmlResgate() + (feitos && agora.getHours() >= 18 ? htmlConvitePost(feitos) : '');   // o convite para postar só aparece no fim do dia; antes, o selo +10 na câmera já avisa
+  let html = htmlCheckinHero() + htmlProgresso() + htmlResgate();   // no fim do dia, o botão da câmera no cartão do bicho vira "Postar"
   html += `<section class="grupo"><div class="grupo-topo"><h2>Agenda de hoje</h2><button class="novo-mini" data-novo-comp>${ICO.mais}Novo</button></div>${total && tudo ? `<div class="tudo-feito">${cenaMascote('festa')}<b>Tudo feito por hoje</b><span>Pode descansar. Amanhã tem mais.</span></div>` : linhaDoTempo(hoje, agora, true)}</section>`;
   if (feitos) html += `<details class="feitos"><summary>Feitos (${feitos})</summary>${feitosL.map(o => cartao(o, agora)).join('')}</details>`;
   return html;
@@ -1852,6 +1854,9 @@ function htmlProgresso() {
   const pct = prox ? Math.round((xp.pontos - t.min) / (prox.min - t.min) * 100) : 100;
   const nivel = TITULOS.indexOf(t), jeito = nivel <= 2 ? 'lento' : nivel <= 8 ? 'animado' : 'turbo';
   const postou = (xp.postados || []).includes(chaveDia(new Date()));
+  // fim do dia, com algo concluído e ainda sem postar: a câmera vira um botão "Postar" mais chamativo
+  const hojeD = inicioDoDia(new Date());
+  const chamarPost = !postou && new Date().getHours() >= 18 && ocorrencias(hojeD, maisDias(hojeD, 1)).some(o => estaFeito(o.ev, o.inicio));
   return `
     <div class="nivel-card ${tier.cls}" style="--ta:${tier.a};--tb:${tier.b}">
       <button class="nv-conselho" data-conselho aria-label="Pedir um conselho para o ${esc(t.nome)}">💬 Conselho</button>
@@ -1864,7 +1869,7 @@ function htmlProgresso() {
           <span class="nv-pts">${prox ? `<b>${xp.pontos}</b> de ${prox.min} pts para ${prox.nome}` : t.secreto ? `${xp.pontos} pts · o maior de todos` : `${xp.pontos} pts · topo alcançado`}</span>
         </span>
       </button>
-      <button class="pg-share" data-compartilhar aria-label="Compartilhar meu dia${postou ? '' : `, vale ${PONTOS.postar} pontos`}">${ICO.camera}${postou ? '' : `<span class="pg-selo">+${PONTOS.postar}</span>`}</button>
+      <button class="pg-share ${chamarPost ? 'chama' : ''}" data-compartilhar aria-label="Compartilhar meu dia${postou ? '' : `, vale ${PONTOS.postar} pontos`}">${ICO.camera}${postou ? '' : `<span class="pg-selo">+${PONTOS.postar}</span>`}</button>
     </div>`;
 }
 
