@@ -136,10 +136,12 @@
   .grupo-topo { display: flex; align-items: center; justify-content: space-between; margin: 24px 0 10px; }
   .grupo-topo h2 { margin: 0; font-size: 20px; font-weight: 750; letter-spacing: -.015em; text-transform: none; color: var(--text); }
   .novo-mini {
-    height: 34px; border: 0; border-radius: 999px; padding: 0 14px 0 11px; background: var(--accent-soft); color: var(--accent);
-    font-size: 14px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
+    height: 40px; border: 0; border-radius: 999px; padding: 0 16px 0 12px; background: var(--accent); color: var(--on-accent);
+    font-size: 15px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
+    box-shadow: 0 6px 16px rgba(var(--accent-rgb),.3); transition: transform .15s var(--ease);
   }
-  .novo-mini svg { width: 16px; height: 16px; }
+  .novo-mini:active { transform: scale(.95); }
+  .novo-mini svg { width: 18px; height: 18px; stroke-width: 2.6; }
   .evento {
     display: flex; gap: 14px; align-items: center; background: var(--card); border: 1px solid var(--line); border-radius: var(--r);
     padding: 14px 16px; margin-bottom: 8px; box-shadow: var(--shadow-sm); cursor: pointer;
@@ -1138,6 +1140,27 @@
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tb) 22%, transparent); transition: transform .15s var(--ease); }
   .nv-acoes button:active { transform: scale(.96); }
   .nv-acoes svg { width: 17px; height: 17px; }
+  .ampulheta { display: block; width: 130px; height: 195px; margin: 14px auto 4px; overflow: visible; }
+  .amp-vidro { fill: color-mix(in srgb, var(--accent) 7%, transparent); stroke: var(--line-2); stroke-width: 2.5; stroke-linejoin: round; }
+  .amp-moldura { fill: var(--accent); }
+  .amp-brilho { fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; opacity: .5; }
+  .amp-fio { stroke: #e9a63a; stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 4 5; opacity: 0; }
+  .ampulheta.rodando .amp-fio { opacity: 1; animation: areiaCai .5s linear infinite; }
+  .ampulheta.acabando .amp-fio { opacity: 0; }
+  @keyframes areiaCai { to { stroke-dashoffset: -9; } }
+  #areiaTopo, #areiaBase { transition: y 1s linear, height 1s linear; }
+  .foco-card.pausa .amp-moldura { fill: var(--ok); }
+  .form-topo { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .form-falar { flex: none; height: 36px; display: inline-flex; align-items: center; gap: 5px; padding: 0 13px 0 10px; border: 0; border-radius: 999px;
+    background: var(--accent-soft); color: var(--accent-ink); font-weight: 750; font-size: 14px; cursor: pointer; }
+  .form-falar svg { width: 17px; height: 17px; }
+  .dica-gesto { display: flex; align-items: center; gap: 10px; margin: -2px 0 10px; padding: 10px 10px 10px 12px; border-radius: 14px; background: var(--accent-soft); font-size: 13.5px; line-height: 1.35; color: var(--text); }
+  .dica-gesto button { flex: none; height: 32px; padding: 0 12px; border: 0; border-radius: 10px; background: var(--card); color: var(--accent-ink); font-weight: 750; cursor: pointer; }
+  .deslize.ensina .deslize-fundo { opacity: 1; background: var(--ok); }
+  .deslize.ensina .df-del { display: none; }
+  .deslize.ensina .df-ok { opacity: 1; }
+  .deslize.ensina .evento { animation: ensinaDeslize 2.2s cubic-bezier(.4,0,.2,1) .8s 2; }
+  @keyframes ensinaDeslize { 0%, 100% { transform: translateX(0); } 35%, 60% { transform: translateX(96px); } }
   .lista-links { display: flex; flex-direction: column; padding: 4px 14px; }
   .lista-links a { padding: 13px 0; color: var(--text); text-decoration: none; font-weight: 600; border-top: 1px solid var(--line); display: flex; justify-content: space-between; }
   .lista-links a:first-child { border-top: 0; }
@@ -1853,7 +1876,12 @@ function telaHoje() {
   // Um destaque só por vez: o check-in (enquanto não feito) ou o próximo compromisso
   chaveProximo = proximoDeHoje(agora);
   let html = htmlCheckinHero() + htmlProgresso() + htmlResgate();   // no fim do dia, o botão da câmera no cartão do bicho vira "Postar"
-  html += `<section class="grupo"><div class="grupo-topo"><h2>Agenda de hoje</h2><button class="novo-mini" data-novo-comp>${ICO.mais}Novo</button></div>${total && tudo ? `<div class="tudo-feito">${cenaMascote('festa')}<b>Tudo feito por hoje</b><span>Pode descansar. Amanhã tem mais.</span></div>` : linhaDoTempo(hoje, agora, true)}</section>`;
+  html += `<section class="grupo"><div class="grupo-topo"><h2>Agenda de hoje</h2><button class="novo-mini" data-novo-comp>${ICO.mais}Novo compromisso</button></div>${total && tudo ? `<div class="tudo-feito">${cenaMascote('festa')}<b>Tudo feito por hoje</b><span>Pode descansar. Amanhã tem mais.</span></div>` : linhaDoTempo(hoje, agora, true)}</section>`;
+  // Na primeira vez com compromissos, mostra que dá pra arrastar os cartões
+  if (total > feitos && !lerPref('agenda.dicaGesto', '')) {
+    html = html.replace('<div class="deslize"', '<div class="deslize ensina"');
+    html = html.replace('<section class="grupo">', `<section class="grupo">`).replace(/(<div class="grupo-topo">[\s\S]*?<\/div>)/, `$1<div class="dica-gesto"><span>👉 Arraste um compromisso para a <b>direita</b> para marcar como feito, ou para a <b>esquerda</b> para excluir.</span><button data-fechar-gesto>Entendi</button></div>`);
+  }
   if (feitos) html += `<details class="feitos"><summary>Feitos (${feitos})</summary>${feitosL.map(o => cartao(o, agora)).join('')}</details>`;
   return html;
 }
@@ -2203,10 +2231,11 @@ window.addEventListener('resize', () => { if (aba === 'semana') render(); });
 document.getElementById('lista').addEventListener('click', (ev) => {
   if (ignorarClique) { ev.preventDefault(); ev.stopImmediatePropagation(); return; }
   if (ev.target.closest('[data-fechar-ontem]')) return fecharOntem();
+  if (ev.target.closest('[data-fechar-gesto]')) { gravarPref('agenda.dicaGesto', '1'); return render(); }
   if (ev.target.closest('[data-fogo]')) return mostrarSequencia();
   const alvo = ev.target.closest('[data-novo-comp], [data-falar], [data-fechar-dica], [data-desafio], [data-hab-check], [data-hab], [data-novo-hab], [data-compartilhar], [data-checkin], [data-check], [data-conselho], [data-niveis], [data-id], [data-dia], [data-nav], [data-ir]');
   if (!alvo) return;
-  if ('novoComp' in alvo.dataset) escolherComoCriar();
+  if ('novoComp' in alvo.dataset) novoCompromisso();
   else if ('falar' in alvo.dataset) abrirVoz();
   else if ('fecharDica' in alvo.dataset) { gravarPref('agenda.dicaFechada', '1'); render(); }
   else if ('desafio' in alvo.dataset) abrirDesafio();
@@ -2326,26 +2355,13 @@ function estatisticasFoco() {
 function telaFoco() {
   const st = estatisticasFoco(), rodando = !!foco.fim, pausado = !foco.fim && foco.restante !== null;
   const minHoje = st.hoje.reduce((s, f) => s + f.min, 0);
-  const maxSem = Math.max(...st.semana.map(x => x.min), 25);
   const travado = rodando || pausado;
-  const t = tituloAtual(), tier = tierDe(t);
-  const onda = '<path d="M0 14 C25 4 50 4 75 14 S125 24 150 14 S200 4 225 14 S275 24 300 14 S350 4 375 14 S425 24 450 14 V40 H0 Z"/>';
   return `
     <div class="foco-card ${foco.modo} ${rodando ? 'rodando' : ''}">
       <div class="foco-modo">${foco.modo === 'foco' ? 'Hora de focar' : 'Pausa · respira um pouco'}</div>
-      <div class="tanque ${tier.cls} part-${tier.part} ${rodando ? 'rodando' : ''} ${foco.modo}" style="--ta:${tier.a};--tb:${tier.b}" aria-hidden="true">
-        <div class="tq-liquido" id="focoNivel" style="height:${nivelTanque()}%">
-          <svg class="tq-onda o1" viewBox="0 0 300 40" preserveAspectRatio="none">${onda}</svg>
-          <svg class="tq-onda o2" viewBox="0 0 300 40" preserveAspectRatio="none">${onda}</svg>
-        </div>
-        <div class="tq-part">${'<i></i>'.repeat(9)}</div>
-        <img class="tq-bicho" src="${mascoteDe(t)}" alt="">
-        ${foco.modo === 'pausa' ? '<span class="tq-zz">z<b>z</b><i>z</i></span>' : ''}
-        <span class="tq-selo">${tier.nome}</span>
-      </div>
+      ${htmlAmpulheta(rodando)}
       <div class="tempo-area">${travado ? `<div class="tempo" id="focoTempo">${fmtMS(restanteMs())}</div>` : rodaMinutos()}</div>
-      <div class="roda-rot">${rodando ? (foco.modo === 'foco' ? 'Foco total. Quando o tanque encher, acabou.' : 'Respira. Já já volta.') : pausado ? 'Pausado. Toque em Continuar quando quiser.' : (foco.modo === 'foco' && foco.duracao < FOCO_MIN_PONTOS ? `Role para escolher o tempo. A partir de ${FOCO_MIN_PONTOS} min vale pontos.` : 'Role os números para escolher o tempo')}</div>
-      ${foco.modo === 'foco' ? `<input id="focoTarefa" class="foco-tarefa" placeholder="No que você vai focar?" value="${esc(foco.tarefa || '')}" ${rodando ? 'disabled' : ''}>` : ''}
+      <div class="roda-rot">${rodando ? (foco.modo === 'foco' ? 'Foco total. Quando a areia acabar, acabou.' : 'Respira. Já já volta.') : pausado ? 'Pausado. Toque em Continuar quando quiser.' : (foco.modo === 'foco' && foco.duracao < FOCO_MIN_PONTOS ? `Role para escolher o tempo. A partir de ${FOCO_MIN_PONTOS} min vale pontos.` : 'Role os números para escolher o tempo')}</div>
       <div class="sons-rot">Som de fundo</div>
       <div class="sons">${SONS.map(([id, ico, nome]) => `<button data-som="${id}" class="${(foco.som || 'nenhum') === id ? 'ativa' : ''}"><span>${ico}</span>${nome}</button>`).join('')}</div>
       <div class="botoes">
@@ -2354,23 +2370,31 @@ function telaFoco() {
       </div>
     </div>
     <div class="foco-stats">
-      ${htmlProgresso()}
       <div class="painel">
         <div class="rot">Meta de hoje</div>
         <div class="tomates">${Array.from({ length: Math.max(META_DIA, st.hoje.length) }, (_, i) => `<span class="${i < st.hoje.length ? 'feito' : ''}">🍅</span>`).join('')}</div>
-        <div class="sub">${st.hoje.length >= META_DIA ? `Meta batida! +${PONTOS.quatroFocos} de bônus` : `${st.hoje.length} de ${META_DIA} focos · bata a meta e ganhe +${PONTOS.quatroFocos}`} · ${minHoje} min focado</div>
-      </div>
-      <div class="duo">
-        <div class="painel"><div class="num">${ICO.alvo}${st.seq}</div><div class="sub">dia${st.seq === 1 ? '' : 's'} seguido${st.seq === 1 ? '' : 's'} focando</div></div>
-        <div class="painel"><div class="num"><span class="num-tomate">🍅</span>${focos.length}</div><div class="sub">focos no total</div></div>
-      </div>
-      <div class="painel">
-        <div class="rot">Últimos 7 dias</div>
-        <div class="barras">${st.semana.map(x => `<div class="barra"><b>${x.min ? x.min : ''}</b><i style="height:${Math.round(x.min / maxSem * 100)}%"></i><span>${DIAS_CURTOS[x.dia.getDay()]}</span></div>`).join('')}</div>
+        <div class="sub">${st.hoje.length >= META_DIA ? `Meta batida! +${PONTOS.quatroFocos} de bônus` : `${st.hoje.length} de ${META_DIA} focos · bata a meta e ganhe +${PONTOS.quatroFocos}`}${minHoje ? ` · ${minHoje} min focado` : ''}</div>
       </div>
     </div>`;
 }
-
+// Ampulheta: a areia de cima desce conforme o tempo passa
+function htmlAmpulheta(rodando) {
+  return `
+    <svg class="ampulheta ${rodando ? 'rodando' : ''}" id="ampulheta" viewBox="0 0 120 180" aria-hidden="true">
+      <defs>
+        <clipPath id="ampTopo"><path d="M24 20 H96 C96 54 70 70 61 90 H59 C50 70 24 54 24 20Z"/></clipPath>
+        <clipPath id="ampBase"><path d="M59 90 H61 C70 110 96 126 96 160 H24 C24 126 50 110 59 90Z"/></clipPath>
+        <linearGradient id="ampAreia" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f8d47a"/><stop offset="1" stop-color="#e39a2d"/></linearGradient>
+      </defs>
+      <path class="amp-vidro" d="M24 20 H96 C96 54 70 70 61 90 C70 110 96 126 96 160 H24 C24 126 50 110 59 90 C50 70 24 54 24 20Z"/>
+      <rect id="areiaTopo" clip-path="url(#ampTopo)" x="20" y="20" width="80" height="70" fill="url(#ampAreia)"/>
+      <rect id="areiaBase" clip-path="url(#ampBase)" x="20" y="160" width="80" height="0" fill="url(#ampAreia)"/>
+      <line class="amp-fio" id="ampFio" x1="60" y1="90" x2="60" y2="160"/>
+      <path class="amp-brilho" d="M32 26 C33 46 44 60 52 70"/>
+      <rect class="amp-moldura" x="12" y="8" width="96" height="13" rx="6.5"/>
+      <rect class="amp-moldura" x="12" y="159" width="96" height="13" rx="6.5"/>
+    </svg>`;
+}
 function iniciarModo(modo) {
   foco.modo = modo; foco.fim = null; foco.restante = null;
   foco.duracao = modo === 'foco' ? (foco.ultimoFoco || 25) : (foco.ultimaPausa || 5);
@@ -2393,19 +2417,16 @@ function rodaMinutos() {
     </div>`;
 }
 // Quanto o tanque do Pomodoro está cheio (sempre um pouquinho, para as ondas aparecerem)
-function nivelTanque() {
-  const frac = 1 - Math.max(0, Math.min(1, restanteMs() / (foco.duracao * 60000)));
-  return Math.round(8 + frac * 82);
-}
-function posicionarBicho() {
-  const tq = document.getElementById('focoNivel');
-  if (tq) tq.style.height = `${nivelTanque()}%`;
-  const el = document.getElementById('focoBicho');
-  if (!el) return;
-  const frac = Math.max(0, Math.min(1, restanteMs() / (foco.duracao * 60000))), ang = frac * Math.PI * 2;
-  const r = 43.3;   // % do tamanho do relógio (raio do anel)
-  el.style.left = `${50 + r * Math.sin(ang)}%`;
-  el.style.top = `${50 - r * Math.cos(ang)}%`;
+function posicionarBicho() {   // atualiza a areia da ampulheta
+  const topo = document.getElementById('areiaTopo');
+  if (!topo) return;
+  const resta = Math.max(0, Math.min(1, restanteMs() / (foco.duracao * 60000)));
+  const alto = 70 * resta, baixo = 70 * (1 - resta);
+  topo.setAttribute('y', 90 - alto); topo.setAttribute('height', alto);
+  const base = document.getElementById('areiaBase');
+  base.setAttribute('y', 160 - baixo); base.setAttribute('height', baixo);
+  document.getElementById('ampFio').setAttribute('y2', 160 - baixo);
+  document.getElementById('ampulheta').classList.toggle('acabando', resta <= 0);
 }
 function montarRoda() {
   const roda = document.getElementById('roda');
@@ -3711,6 +3732,13 @@ function aplicarAcao(a, frase) {
   return null;
 }
 
+// Depois do primeiro compromisso criado, ensina a marcar como feito (uma vez só)
+function dicaPosCriar() {
+  if (lerPref('agenda.dicaCheck', '')) return false;
+  gravarPref('agenda.dicaCheck', '1');
+  toast('Quando terminar, toque no círculo do compromisso para ganhar +5 pontos!', 6000);
+  return true;
+}
 function executar(r, frase) {
   const antes = JSON.stringify({ e: eventos, h: habitos });
   const tocados = (r.tipo === 'agir' ? r.acoes : []).map(a => aplicarAcao(a, frase)).filter(Boolean);
@@ -3720,7 +3748,7 @@ function executar(r, frase) {
   // Só mostra os que continuam na agenda (ex.: criado e depois desmarcado na mesma fala)
   const mostrar = tocados.filter((ev, i) => eventos.includes(ev) && tocados.indexOf(ev) === i);
   if (mostrar[0]) { rolarParaDia = true; diaSel = inicioDoDia(new Date(mostrar[0].inicio)); mesVisto = new Date(diaSel.getFullYear(), diaSel.getMonth(), 1); }
-  if (mudou) { salvar(); destacarId = mostrar.map(e => e.id); render(); }
+  if (mudou) { salvar(); destacarId = mostrar.map(e => e.id); render(); if ((r.acoes || []).some(a => a.acao === 'criar')) setTimeout(dicaPosCriar, 2500); }
   mostrarResultado(r, frase, mostrar, mudou ? antes : null);
 }
 
@@ -3816,7 +3844,7 @@ function abrirEdicao(ev, novo = false) {
   let diasSem = ev.repetir?.freq === 'semanal' ? [...diasDaSerie(ev)] : [d.getDay()];
   abrirFolha(`
     <form class="editar" id="fEditar">
-      <h3>${novo ? 'Novo compromisso' : 'Editar compromisso'}</h3>
+      <div class="form-topo"><h3>${novo ? 'Novo compromisso' : 'Editar compromisso'}</h3>${novo ? `<button type="button" class="form-falar" id="bFalarForm">${ICO.mic}Falar</button>` : ''}</div>
       <label for="eTitulo">O quê</label>
       <input id="eTitulo" name="titulo" value="${esc(ev.titulo)}" placeholder="Ex.: Dentista" required>
       <div class="dupla">
@@ -3863,9 +3891,9 @@ function abrirEdicao(ev, novo = false) {
     ev.repetir = freq === 'nenhuma' ? null : montarRepetir(freq, freq === 'semanal' ? diasSem : []);
     ev.avisado = false; ev.avisados = [];
     if (novo) { eventos.push(ev); diaSel = inicioDoDia(new Date(ev.inicio)); rolarParaDia = true; }
-    salvar(); destacarId = ev.id; render(); fecharFolha(); vibrar('sucesso'); toast(novo ? 'Compromisso criado' : 'Alterações salvas');
+    salvar(); destacarId = ev.id; render(); fecharFolha(); vibrar('sucesso'); if (!(novo && dicaPosCriar())) toast(novo ? 'Compromisso criado' : 'Alterações salvas');
   };
-  if (novo) document.getElementById('bCancelar').onclick = fecharFolha;
+  if (novo) { document.getElementById('bCancelar').onclick = fecharFolha; document.getElementById('bFalarForm').onclick = abrirVoz; }
   else document.getElementById('bExcluir').onclick = () => {
     const antes = JSON.stringify(eventos);
     eventos = eventos.filter(e => e.id !== ev.id); salvar(); render(); fecharFolha();
