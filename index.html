@@ -1094,6 +1094,44 @@
   .selo-prox.agora i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: vivo 1.6s infinite; box-shadow: 0 0 0 0 rgba(255,255,255,.7); }
   .pg-share.chama { border: 0; background: var(--accent); color: var(--on-accent); animation: chamaPost 2s ease-in-out infinite; }
   @keyframes chamaPost { 0%, 100% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb),.45); } 60% { box-shadow: 0 0 0 10px rgba(var(--accent-rgb),0); } }
+  .nt-topo { display: flex; align-items: center; gap: 14px; padding: 14px; border-radius: 20px; margin-top: 4px;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--ta) 26%, var(--card)), color-mix(in srgb, var(--tb) 10%, var(--card))); }
+  .nt-topo img { width: 76px; height: 76px; object-fit: contain; flex: none; filter: drop-shadow(0 6px 8px rgba(0,0,0,.2)); }
+  .nt-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+  .nt-info > span { font-size: 11px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; color: color-mix(in srgb, var(--tb) 85%, var(--text)); }
+  .nt-info > b { font-size: 22px; font-weight: 850; letter-spacing: -.02em; font-family: var(--fonte-display); }
+  .nt-info small { font-size: 12px; color: var(--muted); }
+  .nt-info small b { color: var(--text); }
+  .nt-grade { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 16px 0 8px; }
+  .nt-item { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 10px 2px 8px; border-radius: 14px; text-align: center; }
+  .nt-item .badge { width: 46px; height: 46px; }
+  .nt-item .badge b { font-size: 20px; }
+  .nt-item > b { font-size: 11.5px; font-weight: 700; line-height: 1.15; min-height: 2.3em; display: flex; align-items: center; }
+  .nt-item small { font-size: 10.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .nt-item.atual { background: var(--accent-soft); box-shadow: inset 0 0 0 1.5px var(--accent); }
+  .nt-item.atual small { color: var(--accent-ink); font-weight: 800; }
+  .nt-item.bloq .badge { filter: grayscale(1); opacity: .35; }
+  .nt-item.bloq > b { color: var(--muted); }
+  .nt-item.secreto:not(.atual) { background: linear-gradient(145deg, #2b1a56, #0f0823); }
+  .nt-item.secreto:not(.atual) > b { color: #f5c451; }
+  .nt-item.secreto:not(.atual) small { color: #c9bde8; }
+  .nt-dica { font-size: 13px; text-align: center; margin: 0 0 12px !important; }
+  details.nt-mais { border-top: 1px solid var(--line); }
+  details.nt-mais summary { list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 14px 2px; font-weight: 700; cursor: pointer; }
+  details.nt-mais summary::-webkit-details-marker { display: none; }
+  details.nt-mais summary::after { content: ''; width: 7px; height: 7px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(45deg); margin-left: auto; transition: transform .2s; }
+  details.nt-mais[open] summary::after { transform: rotate(-135deg); }
+  details.nt-mais ul { list-style: none; padding: 0; margin: 0 0 12px; }
+  details.nt-mais li { display: flex; justify-content: space-between; gap: 12px; padding: 7px 2px; font-size: 14px; color: var(--muted); }
+  details.nt-mais li b { color: var(--ok); }
+  details.nt-mais li.perde b { color: var(--danger); }
+  details.nt-mais .protetores { margin: 0 0 12px; padding: 0; box-shadow: none; background: none; }
+  details.nt-mais .pt-topo { display: none; }
+  details.nt-mais .pt-lista { margin-top: 0; }
+  .nt-escudos { display: inline-flex; align-items: center; gap: 3px; color: #3b82f6; font-size: 14px; }
+  .nt-escudos svg { width: 15px; height: 15px; }
+  .nv-atalhos.tres { grid-template-columns: repeat(3, 1fr); margin-top: 4px; }
+  .nv-atalhos.tres button { font-size: 13px; flex-direction: column; gap: 4px; height: 60px; }
   .lista-links { display: flex; flex-direction: column; padding: 4px 14px; }
   .lista-links a { padding: 13px 0; color: var(--text); text-decoration: none; font-weight: 600; border-top: 1px solid var(--line); display: flex; justify-content: space-between; }
   .lista-links a:first-child { border-top: 0; }
@@ -3038,31 +3076,50 @@ function abrirConselho() {
 }
 
 function abrirNiveis() {
-  const atual = tituloAtual(), seq = sequencia();
+  const atual = tituloAtual(), tier = tierDe(atual), seq = sequencia(), prox = xp.secreto ? null : proximoTitulo(xp.pontos);
+  const pct = prox ? Math.round((xp.pontos - atual.min) / (prox.min - atual.min) * 100) : 100;
+  const n = xp.protetores ?? 1;
+  const bloco = (t) => {
+    const cls = t === atual ? 'atual' : t.min > xp.pontos ? 'bloq' : '';
+    return `<div class="nt-item ${cls}">${badgeSVG(t)}<b>${t.nome}</b><small>${t === atual ? 'Você' : `${t.min} pts`}</small></div>`;
+  };
   const secreto = xp.secreto
-    ? `<li class="secreto revelado atual"><span>${badgeSVG(SECRETO)}</span><b>${SECRETO.nome}</b><small>conquistado</small></li>`
-    : `<li class="secreto"><span>${badgeSVG('bloqueado')}</span><b>??? <em>acima de Milionário</em></b><small>${seq} de ${DIAS_SECRETO} dias</small></li>`;
+    ? `<div class="nt-item atual secreto">${badgeSVG(SECRETO)}<b>${SECRETO.nome}</b><small>Você</small></div>`
+    : `<div class="nt-item secreto">${badgeSVG('bloqueado')}<b>Secreto</b><small>${seq}/${DIAS_SECRETO} dias</small></div>`;
   abrirFolha(`
-    <div class="niveis">
-      <h3>Seus títulos</h3>
-      <p>Você tem <b>${xp.pontos} pontos</b>. Toque em compromissos, hábitos e Pomodoros pra subir.</p>
-      ${htmlDesafio()}
-      ${xp.secreto ? '' : `
-      <div class="misterio-card">
-        <div class="mc-topo">${badgeSVG('bloqueado')}<div><span class="mc-rot">Título secreto</span><b>Existe um título acima de Milionário</b></div></div>
-        <p>Ninguém sabe o nome até conquistar. Dizem que é o maior de todos. A única chave: <b>${DIAS_SECRETO} dias seguidos de check-in</b>.</p>
-        <div class="mc-barra"><i style="width:${Math.max(2, Math.round(seq / DIAS_SECRETO * 100))}%"></i></div>
-        <small>${seq} de ${DIAS_SECRETO} dias · ${seq ? `faltam ${DIAS_SECRETO - seq}` : 'comece hoje com o check-in'}</small>
-      </div>`}
-      <ol class="escada">${secreto}${[...TITULOS].reverse().map(t => `
-        <li class="${t === atual ? 'atual' : t.min > xp.pontos ? 'bloq' : 'passou'}">
-          <span>${badgeSVG(t)}</span><b>${t.nome}</b><small>${t.min} pts</small></li>`).join('')}</ol>
-      ${htmlProtetores()}
-      <button class="nv-retro" id="bRetro"><span>${maiuscula(mesDaRetro().toLocaleDateString('pt-BR', { month: 'long' }))}</span><b>Sua retrospectiva do mês</b><small>Seu mês em 6 Stories prontos para postar</small></button>
-      <div class="nv-atalhos"><button id="bResumoSem">${ICO.grafico}Resumo da semana</button><button id="bConvites">${ICO.presenteIco}Convidar amigos</button></div>
-      <div class="regras">
-        <div><b>Ganha</b> check-in do dia +${PONTOS.checkin} · compromisso feito +${PONTOS.feito} · dia completo +${PONTOS.diaCompleto} · cada foco +${PONTOS.foco} · 4 focos no dia +${PONTOS.quatroFocos} de bônus · postar seu dia +${PONTOS.postar} (1 vez por dia) · amigo que entra com seu código +${BONUS_CONVITE}</div>
-        <div><b>Perde</b> ${PONTOS.esquecido} por compromisso que ficou sem check. Você tem até o fim do dia seguinte pra marcar. Dá pra cair de título!</div>
+    <div class="niveis" style="--ta:${tier.a};--tb:${tier.b}">
+      <div class="nt-topo">
+        <img src="${mascoteDe(atual)}" alt="">
+        <div class="nt-info">
+          <span>${atual.secreto ? 'Título secreto' : `Nível ${TITULOS.indexOf(atual) + 1} de ${TITULOS.length}`}</span>
+          <b>${atual.nome}</b>
+          <div class="nv-barra"><i style="width:${pct}%"></i></div>
+          <small>${prox ? `<b>${xp.pontos}</b> de ${prox.min} pts para ${prox.nome}` : `${xp.pontos} pts · topo alcançado`}</small>
+        </div>
+      </div>
+      <div class="nt-grade">${TITULOS.map(bloco).join('')}${secreto}</div>
+      ${xp.secreto ? '' : `<p class="nt-dica">O título secreto só se revela com ${DIAS_SECRETO} dias seguidos de check-in.</p>`}
+      <details class="nt-mais">
+        <summary>Como ganhar pontos</summary>
+        <ul>
+          <li><span>Compromisso ou hábito feito</span><b>+${PONTOS.feito}</b></li>
+          <li><span>Dia completo</span><b>+${PONTOS.diaCompleto}</b></li>
+          <li><span>Pomodoro de 10 min ou mais</span><b>+${PONTOS.foco}</b></li>
+          <li><span>4 Pomodoros no dia</span><b>+${PONTOS.quatroFocos}</b></li>
+          <li><span>Postar seu dia (1 vez por dia)</span><b>+${PONTOS.postar}</b></li>
+          <li><span>Check-in do dia</span><b>+${PONTOS.checkin}</b></li>
+          <li><span>Amigo que entra com seu código</span><b>+${BONUS_CONVITE}</b></li>
+          <li class="perde"><span>Compromisso que ficou sem check</span><b>${PONTOS.esquecido}</b></li>
+        </ul>
+      </details>
+      <details class="nt-mais">
+        <summary>Protetores de sequência <span class="nt-escudos">${ICO.escudo}${n}</span></summary>
+        ${htmlProtetores()}
+      </details>
+      <div class="nv-atalhos tres">
+        <button id="bRetro">${ICO.estrela}Retrospectiva</button>
+        <button id="bResumoSem">${ICO.grafico}Semana</button>
+        <button id="bConvites">${ICO.presenteIco}Convidar</button>
       </div>
       <div class="botoes"><button class="primario" id="bOk">Fechar</button></div>
     </div>`);
@@ -3089,6 +3146,7 @@ function desafioDaSemana() {
   return { ...d, chave: chaveDia(ini), feito: Math.min(d.medir(ini, fim), d.meta), faltamDias: 7 - hoje.getDay() };
 }
 function verificarDesafio() {
+  return;   // desafio da semana desligado por enquanto
   const d = desafioDaSemana();
   xp.desafios = xp.desafios || [];
   if (d.feito < d.meta || xp.desafios.includes(d.chave)) return;
