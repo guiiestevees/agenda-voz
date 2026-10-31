@@ -916,7 +916,7 @@
   .resgate-corpo { padding: 0 10px; }
 
   /* ===== Rodada 8: cartão de nível e tanque do Pomodoro ===== */
-  .nivel-card { position: relative; display: flex; align-items: center; gap: 10px; margin: 40px 0 4px; padding: 12px 12px 12px 8px; border-radius: 22px;
+  .nivel-card { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 40px 0 4px; padding: 12px 12px 12px 8px; border-radius: 22px;
     background: linear-gradient(135deg, color-mix(in srgb, var(--ta) 26%, var(--card)), color-mix(in srgb, var(--tb) 10%, var(--card)) 70%);
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tb) 22%, transparent), var(--shadow-sm); }
   .nv-titulo { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; border: 0; background: none; padding: 0; text-align: left; cursor: pointer; color: var(--text); }
@@ -1132,6 +1132,12 @@
   .nt-escudos svg { width: 15px; height: 15px; }
   .nv-atalhos.tres { grid-template-columns: repeat(3, 1fr); margin-top: 4px; }
   .nv-atalhos.tres button { font-size: 13px; flex-direction: column; gap: 4px; height: 60px; }
+  .nv-acoes { flex: 1 0 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding-left: 4px; }
+  .nv-acoes button { height: 40px; display: flex; align-items: center; justify-content: center; gap: 6px; border: 0; border-radius: 12px; cursor: pointer;
+    background: color-mix(in srgb, var(--card) 80%, transparent); color: color-mix(in srgb, var(--tb) 80%, var(--text)); font-size: 14px; font-weight: 750;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tb) 22%, transparent); transition: transform .15s var(--ease); }
+  .nv-acoes button:active { transform: scale(.96); }
+  .nv-acoes svg { width: 17px; height: 17px; }
   .lista-links { display: flex; flex-direction: column; padding: 4px 14px; }
   .lista-links a { padding: 13px 0; color: var(--text); text-decoration: none; font-weight: 600; border-top: 1px solid var(--line); display: flex; justify-content: space-between; }
   .lista-links a:first-child { border-top: 0; }
@@ -1899,7 +1905,6 @@ function htmlProgresso() {
   const chamarPost = !postou && new Date().getHours() >= 18 && ocorrencias(hojeD, maisDias(hojeD, 1)).some(o => estaFeito(o.ev, o.inicio));
   return `
     <div class="nivel-card ${tier.cls}" style="--ta:${tier.a};--tb:${tier.b}">
-      <button class="nv-conselho" data-conselho aria-label="Pedir um conselho para o ${esc(t.nome)}">💬 Conselho</button>
       <button class="nv-titulo" data-niveis aria-label="Ver todos os títulos">
         <span class="nv-bicho ${jeito}"><i></i><img src="${mascoteDe(t)}" alt=""></span>
         <span class="nv-info">
@@ -1910,6 +1915,10 @@ function htmlProgresso() {
         </span>
       </button>
       <button class="pg-share ${chamarPost ? 'chama' : ''}" data-compartilhar aria-label="Compartilhar meu dia${postou ? '' : `, vale ${PONTOS.postar} pontos`}">${ICO.camera}<span>Postar</span>${postou ? '' : `<span class="pg-selo">+${PONTOS.postar}</span>`}</button>
+      <div class="nv-acoes">
+        <button data-niveis>${ICO.estrela}Ver títulos</button>
+        <button data-conselho>${ICO.chat}Pedir conselho</button>
+      </div>
     </div>`;
 }
 
