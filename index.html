@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Agenda">
+<meta name="apple-mobile-web-app-title" content="Tap Bee">
 <meta name="theme-color" content="#0B7F76">
-<title>Agenda por Voz</title>
+<title>Tap Bee: Agenda por Voz</title>
 <script>
   (function () {
     const ler = (k, p) => { try { return localStorage.getItem(k) || p; } catch { return p; } };
@@ -1174,6 +1174,11 @@
   .nota-simples button { flex: none; height: 32px; padding: 0 12px; border: 0; border-radius: 10px; background: var(--accent); color: var(--on-accent); font-weight: 750; cursor: pointer; }
   #btnIA.on { border-color: var(--ok); color: var(--ok); }
   #btnIA.on svg { color: var(--ok); }
+  .bee-voz { display: block; width: 64px; height: 64px; margin: 0 auto 6px; object-fit: contain; filter: drop-shadow(0 6px 8px rgba(0,0,0,.18)); animation: pulinho 2.4s ease-in-out infinite; }
+  .bee-voz.voando { width: 84px; height: 84px; animation: beeVoa 1.6s ease-in-out infinite; }
+  @keyframes beeVoa { 0%, 100% { transform: translate(0, 0) rotate(-4deg); } 25% { transform: translate(6px, -6px) rotate(3deg); } 50% { transform: translate(0, -10px) rotate(-2deg); } 75% { transform: translate(-6px, -5px) rotate(4deg); } }
+  .bee-rot { font-weight: 750; color: var(--text); margin: 4px 0 6px; }
+  .bv-ilustra .bee-bv { width: 120px; height: 120px; object-fit: contain; filter: drop-shadow(0 8px 12px rgba(0,0,0,.18)); animation: beeVoa 2.4s ease-in-out infinite; }
   .lista-links { display: flex; flex-direction: column; padding: 4px 14px; }
   .lista-links a { padding: 13px 0; color: var(--text); text-decoration: none; font-weight: 600; border-top: 1px solid var(--line); display: flex; justify-content: space-between; }
   .lista-links a:first-child { border-top: 0; }
@@ -1422,10 +1427,10 @@
       <button class="tema-btn modo-btn" data-escolher-modo="auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg>Igual ao iPhone</button>
     </div>
   </div>
-  <h2 class="sec">Secretária inteligente</h2>
+  <h2 class="sec">Bee, sua secretária</h2>
   <div class="dicas">
     <p class="bk-txt" id="txtIA"></p>
-    <button class="icon-btn linha-ajuste" id="btnIA"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Ativar secretária inteligente</span></button>
+    <button class="icon-btn linha-ajuste" id="btnIA"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Ativar a Bee</span></button>
   </div>
   <h2 class="sec">Backup</h2>
   <div class="dicas backup">
@@ -1475,7 +1480,7 @@
     <svg class="ic-linha" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="3.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><text class="ic-dia" x="12" y="18.6" text-anchor="middle" font-size="7.2" font-weight="700" fill="currentColor" stroke="none">30</text></svg>
     <svg class="ic-cheio" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="17" rx="4" fill="#fff" stroke="#e2e8e7" stroke-width="1"/><path d="M3 8.5a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4V10H3Z" fill="url(#gCal)"/><rect x="7" y="2.5" width="2.2" height="4.5" rx="1.1" fill="#7f1d1d"/><rect x="14.8" y="2.5" width="2.2" height="4.5" rx="1.1" fill="#7f1d1d"/><text class="ic-dia" x="12" y="18.8" text-anchor="middle" font-size="8" font-weight="800" fill="#1f2937">30</text></svg>
   </span>Agenda</button>
-  <button class="mic-aba" id="btnMic" aria-label="Falar com a secretária">
+  <button class="mic-aba" id="btnMic" aria-label="Falar com a Bee">
     <span class="mic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2Z"/></svg></span>Falar
   </button>
   <button class="aba" data-aba="habitos" aria-label="Hábitos"><span class="aba-ic">
@@ -2200,7 +2205,7 @@ function restaurarBackup(arquivo) {
   leitor.onload = () => {
     let b;
     try { b = JSON.parse(leitor.result); } catch { b = null; }
-    if (!b || b.app !== 'agenda-por-voz' || !b.dados) return toast('Esse arquivo não é um backup da Agenda por Voz.', 4000);
+    if (!b || b.app !== 'agenda-por-voz' || !b.dados) return toast('Esse arquivo não é um backup do Tap Bee.', 4000);
     let qtd = 0; try { qtd = JSON.parse(b.dados['agenda.eventos'] || '[]').length; } catch {}
     const data = new Date(b.criado).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
     abrirFolha(`
@@ -2225,7 +2230,7 @@ document.getElementById('btnBackup').onclick = salvarBackup;
 document.getElementById('btnIA').onclick = () => {
   const on = lerPref('agenda.iaOk', '') === 'sim';
   gravarPref('agenda.iaOk', on ? 'nao' : 'sim'); marcarIA(); vibrar('selecao');
-  toast(on ? 'Secretária inteligente desligada. O app cria só compromissos simples.' : 'Secretária inteligente ativada!', 3500);
+  toast(on ? 'Bee desligada. O app cria só compromissos simples.' : 'Bee ativada! 🐝', 3500);
 };
 marcarIA();
 document.getElementById('btnRestaurar').onclick = () => document.getElementById('arqBackup').click();
@@ -2713,7 +2718,7 @@ const FRASES_DIA = [
   'Produtividade não é correr, é não parar.', 'Hoje você escolheu aparecer. Isso já é muito.',
   'Faz o simples bem feito. Todo dia.', 'Todo Leão já foi Bicho-preguiça um dia.',
   'Sua versão do futuro agradece esse check-in.', 'Feito é melhor que perfeito.',
-  'Bora fazer acontecer!', 'Foco no que importa. O resto a secretária anota.',
+  'Bora fazer acontecer!', 'Foco no que importa. O resto a Bee anota.',
   'Ninguém segura quem tem constância.', 'Respira, planeja e executa.',
   'Mais um dia pra conta. Orgulho!', 'Até o caramujo chega, se não parar.',
   'Sequência é igual planta: rega todo dia.', 'Hoje é um ótimo dia pra ser produtivo.',
@@ -3379,10 +3384,10 @@ document.getElementById('lista').addEventListener('click', (ev) => {
 function boasVindas(passo = 0) {
   const instalado = navigator.standalone || matchMedia('(display-mode: standalone)').matches;
   const passos = [
-    [SPOT.voz, 'Fale com sua secretária', 'Toque em <b>Falar</b>, lá embaixo, e diga do seu jeito: <i>“dentista quinta às 3, me lembra meia hora antes”</i>. Ela anota, muda, desmarca e responde o que você tem no dia.'],
+    [`<img class="bee-bv" src="${MASCOTES.honeybee}" alt="">`, 'Oi! Eu sou a Bee, sua secretária', 'Toque em <b>Falar</b>, lá embaixo, e diga do seu jeito: <i>“dentista quinta às 3, me lembra meia hora antes”</i>. Ela anota, muda, desmarca e responde o que você tem no dia.'],
     [spotTitulos(), 'Marque o que fez e suba de título', 'Você começa como <b>Bicho-preguiça</b>. Cada compromisso, hábito e foco concluído vale pontos, até chegar a <b>Milionário</b>. Faça o check-in todo dia para manter sua sequência.'],
     instalado
-      ? [SPOT.celular, 'Abra com 2 toques', 'Dá pra falar com a secretária tocando 2 vezes atrás do iPhone. Veja como configurar em <b>Ajustes</b>.']
+      ? [SPOT.celular, 'Abra com 2 toques', 'Dá pra falar com a Bee tocando 2 vezes atrás do iPhone. Veja como configurar em <b>Ajustes</b>.']
       : [SPOT.celular, 'Coloque na Tela de Início', 'No Safari, toque em <b>Compartilhar</b> e depois em <b>“Adicionar à Tela de Início”</b>. O app abre em tela cheia e seus dados ficam guardados.'],
   ];
   const [emoji, tit, txt] = passos[passo], ultimo = passo === passos.length - 1;
@@ -3489,7 +3494,7 @@ function novoCard(d) {
       caber(frase, 800, tamFrase, 940); g.fillText(frase, W / 2, yFrase);
     },
     rodape: () => {
-      const txt = 'Agenda por Voz';
+      const txt = 'Tap Bee';
       g.font = fonteCard(700, 38); const tw = g.measureText(txt).width, total = 60 + 18 + tw, x0 = (W - total) / 2, y = 1745;
       g.save(); g.translate(x0, y - 43); g.scale(60 / 48, 60 / 48); g.fillStyle = 'rgba(255,255,255,.95)'; g.fill(new Path2D(MARCA_FUNDO));
       g.fillStyle = c2; g.fill(new Path2D(MARCA_ONDA)); g.restore();
@@ -3634,7 +3639,7 @@ function abrirCompartilhar(tipoInicial = 'dia') {
   abrirFolha(`
     <div class="compartilhar">
       <h3>Compartilhar</h3>
-      <div class="post-pts ${(xp.postados || []).includes(chaveDia(new Date())) ? 'ganho' : ''}">${(xp.postados || []).includes(chaveDia(new Date())) ? `${ICO.ok}Pontos de hoje garantidos. Pode postar à vontade!` : `${ICO.estrela}Poste seu dia e ganhe <b>+${PONTOS.postar} pontos</b> hoje`}</div>
+      <div class="post-pts ${(xp.postados || []).includes(chaveDia(new Date())) ? 'ganho' : ''}">${(xp.postados || []).includes(chaveDia(new Date())) ? `${ICO.ok}Pontos de hoje garantidos. Pode postar à vontade!` : `${ICO.estrela}<span>Poste seu dia e ganhe <b>+${PONTOS.postar} pontos</b> hoje</span>`}</div>
       <div class="visoes"><button data-card="dia">Resumo</button><button data-card="completo">Dia completo</button><button data-card="semana">Semana</button></div>
       <p class="card-explica" id="cardExplica"></p>
       <img id="cardImg" class="card-prev" alt="Card para compartilhar">
@@ -3697,19 +3702,19 @@ const dataHoraLocal = (data, hora) => {
 const montarRepetir = (freq, dias) => (!freq || freq === 'nenhuma' || freq === 'manter') ? null : { freq, dias: freq === 'semanal' ? (dias || []) : [] };
 
 // ---------- Permissão para usar a IA ----------
-const TEXTO_IA = 'Para entender o que você fala, sua frase e um resumo dos seus próximos compromissos são enviados à IA da Anthropic (Claude). Nada disso fica guardado nem é usado para treinar a IA.';
+const TEXTO_IA = 'A Bee é sua secretária com inteligência artificial. Para entender o que você fala, sua frase e um resumo dos seus próximos compromissos são enviados à IA da Anthropic (Claude). Nada disso fica guardado nem é usado para treinar a IA.';
 function pedirPermissaoIA() {
   return new Promise((pronto) => {
     abrirFolha(`
       <div class="permissao-ia">
-        <div class="pi-ico">${ICO.chat}</div>
-        <h3>Ativar a secretária inteligente?</h3>
+        <img class="bee-voz" src="${MASCOTES.honeybee}" alt="">
+        <h3>Ativar a Bee?</h3>
         <p>${TEXTO_IA}</p>
         <ul>
           <li>${ICO.ok}Entende pedidos do seu jeito, vários de uma vez</li>
           <li>${ICO.ok}Muda, desmarca e responde perguntas da agenda</li>
         </ul>
-        <p class="pi-nao">Sem ela, o app só consegue criar compromissos simples. Dá pra mudar depois em Ajustes.</p>
+        <p class="pi-nao">Sem a Bee, o app só consegue criar compromissos simples. Dá pra mudar depois em Ajustes.</p>
         <div class="botoes"><button id="piNao">Agora não</button><button class="primario" id="piSim">Ativar</button></div>
         <a class="pi-link" href="privacidade.html" target="_blank" rel="noopener">Ver política de privacidade</a>
       </div>`);
@@ -3722,7 +3727,7 @@ function marcarIA() {
   if (!b) return;
   const on = lerPref('agenda.iaOk', '') === 'sim';
   b.classList.toggle('on', on);
-  b.querySelector('span').textContent = on ? 'Secretária inteligente ativada' : 'Ativar secretária inteligente';
+  b.querySelector('span').textContent = on ? 'Bee ativada' : 'Ativar a Bee';
 }
 
 async function criarDeFrase(frase) {
@@ -3730,7 +3735,7 @@ async function criarDeFrase(frase) {
   if (!frase) return;
   // Antes da primeira vez, pede permissão para mandar a frase à IA (exigência da Apple)
   if (!lerPref('agenda.iaOk', '')) await pedirPermissaoIA();
-  abrirFolha(`<div class="pensando"><div class="frase">“${esc(frase)}”</div><div class="pontos"><i></i><i></i><i></i></div></div>`);
+  abrirFolha(`<div class="pensando"><img class="bee-voz voando" src="${MASCOTES.honeybee}" alt=""><div class="bee-rot">A Bee está anotando…</div><div class="frase">“${esc(frase)}”</div><div class="pontos"><i></i><i></i><i></i></div></div>`);
   let r = null;
   const usaIA = lerPref('agenda.iaOk', '') === 'sim';
   if (IA_URL && usaIA && navigator.onLine !== false) {
@@ -3851,7 +3856,7 @@ function mostrarResultado(r, frase, evs, antes) {
       ${formatarResposta(r.resposta || '', icone)}
       <div class="frase">“${esc(frase)}”</div>
       ${detalhes}
-      ${r.modoSimples ? '<div class="nota-simples">Modo simples: a secretária inteligente está desligada. <button id="bAtivarIA">Ativar</button></div>' : ''}
+      ${r.modoSimples ? '<div class="nota-simples">Modo simples: a Bee está desligada. <button id="bAtivarIA">Ativar</button></div>' : ''}
       <div class="botoes">
         ${antes ? '<button class="perigo" id="bDesfazer">Desfazer</button>' : ''}
         ${um ? '<button id="bEditar">Editar</button>' : ''}
@@ -3860,7 +3865,7 @@ function mostrarResultado(r, frase, evs, antes) {
       </div>
     </div>`);
   document.getElementById('bOk').onclick = fecharFolha;
-  if (r.modoSimples) document.getElementById('bAtivarIA').onclick = () => { gravarPref('agenda.iaOk', 'sim'); marcarIA(); fecharFolha(); vibrar('sucesso'); toast('Secretária inteligente ativada!'); };
+  if (r.modoSimples) document.getElementById('bAtivarIA').onclick = () => { gravarPref('agenda.iaOk', 'sim'); marcarIA(); fecharFolha(); vibrar('sucesso'); toast('Bee ativada! 🐝'); };
   if (um) document.getElementById('bEditar').onclick = () => abrirEdicao(um);
   if (r.tipo === 'nao_entendi') document.getElementById('bDeNovo').onclick = abrirVoz;
   if (antes) document.getElementById('bDesfazer').onclick = () => {
@@ -3969,6 +3974,7 @@ function abrirVoz() {
   if (navigator.onLine === false) return abrirDigitar();   // o reconhecimento de voz do iPhone precisa de internet
   abrirFolha(`
     <div class="ouvindo">
+      <img class="bee-voz" src="${MASCOTES.honeybee}" alt="">
       <h3 id="vTitulo">Toque para falar</h3>
       <button class="pulse" id="vMic" aria-label="Começar ou parar de ouvir">${ICONE_MIC}</button>
       <div class="onda" id="vOnda" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
@@ -3985,7 +3991,7 @@ function abrirDigitar() {
   pararReconhecimento();
   abrirFolha(`
     <div class="ouvindo">
-      <h3>Escreva para a secretária</h3>
+      <h3>Escreva para a Bee</h3>
       ${navigator.onLine === false ? '<div class="aviso-offline" style="margin-top:10px">Sem internet agora. Dá pra criar compromissos digitando, como “dentista quinta às 3”. Mudar e desmarcar volta quando a conexão voltar.</div>' : ''}
       <form class="digitar" id="fDigitar">
         <input id="dTexto" placeholder="Ex.: dentista quinta às 3" autocomplete="off" enterkeyhint="send">
@@ -4350,7 +4356,7 @@ function abrirConvites() {
       </div>`}
     </div>`);
   document.getElementById('bConvidar').onclick = async () => {
-    const texto = `Tô usando o Agenda por Voz pra organizar meu dia falando e subir de Bicho-preguiça até o título secreto. Baixa e usa meu código ${codigo} pra ganhar ${BONUS_CONVIDADO} pontos!`;
+    const texto = `Tô usando o Tap Bee pra organizar meu dia falando e subir de Bicho-preguiça até o título secreto. Baixa e usa meu código ${codigo} pra ganhar ${BONUS_CONVIDADO} pontos!`;
     try { if (navigator.share) await navigator.share({ text: texto }); else { await navigator.clipboard.writeText(texto); toast('Convite copiado. Agora é só colar pro seu amigo!'); } } catch {}
   };
   const f = document.getElementById('fCodigo');
@@ -4503,7 +4509,7 @@ function desenharCardEvolucao(antigo, novo) {
   g.fillText(novo.nome, W / 2, 1160);
   g.globalAlpha = .9; g.font = fonteCard(700, 46); g.fillText(`Nível ${TITULOS.indexOf(novo) + 1} de ${TITULOS.length} · ${tier.nome}`, W / 2, 1250);
   g.font = fonteCard(600, 40); g.fillText(`Antes eu era ${antigo.nome}.`, W / 2, 1340); g.globalAlpha = 1;
-  g.globalAlpha = .92; g.font = fonteCard(700, 38); g.fillText('Agenda por Voz', W / 2, 1745); g.globalAlpha = 1;
+  g.globalAlpha = .92; g.font = fonteCard(700, 38); g.fillText('Tap Bee', W / 2, 1745); g.globalAlpha = 1;
   return c;
 }
 function compartilharEvolucao(antigo, novo) {
@@ -4580,7 +4586,7 @@ function desenharSlideRetro(i, r) {
   // rodapé com a marca e o convite
   const rodape = () => {
     g.save(); g.translate(W / 2 - 230, 1690); g.scale(56 / 48, 56 / 48); g.fillStyle = 'rgba(255,255,255,.95)'; g.fill(new Path2D(MARCA_FUNDO)); g.fillStyle = cb; g.fill(new Path2D(MARCA_ONDA)); g.restore();
-    g.textAlign = 'left'; g.font = fonteCard(800, 40); g.fillText('Agenda por Voz', W / 2 - 160, 1735); g.textAlign = 'center';
+    g.textAlign = 'left'; g.font = fonteCard(800, 40); g.fillText('Tap Bee', W / 2 - 160, 1735); g.textAlign = 'center';
     txt('Baixe na App Store', 600, 32, 1800, .8);
   };
   if (i === 0) {   // capa
