@@ -81,17 +81,44 @@ function proximosDias(dataISO) {
 function cabecalhos(origem) {
   return {
     "Access-Control-Allow-Origin": ORIGENS.includes(origem) ? origem : ORIGENS[0],
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
     "Content-Type": "application/json; charset=utf-8",
   };
 }
 const responder = (corpo, status, origem) => new Response(JSON.stringify(corpo), { status, headers: cabecalhos(origem) });
 
+// Convites: POST soma 1 ao código do amigo (uma vez por aparelho/IP); GET devolve o total do código
+const CODIGO = /^[A-Z0-9]{6}$/;
+async function convite(req, env, origem) {
+  const url = new URL(req.url);
+  if (req.method === "GET") {
+    const codigo = (url.searchParams.get("codigo") || "").toUpperCase();
+    if (!CODIGO.test(codigo)) return responder({ erro: "código inválido" }, 400, origem);
+    return responder({ total: +(await env.CONVITES.get(`total:${codigo}`)) || 0 }, 200, origem);
+  }
+  if (req.method !== "POST") return responder({ erro: "use GET ou POST" }, 405, origem);
+  let entrada;
+  try { entrada = await req.json(); } catch { return responder({ erro: "JSON inválido" }, 400, origem); }
+  const codigo = String(entrada.codigo || "").toUpperCase();
+  if (!CODIGO.test(codigo)) return responder({ erro: "código inválido" }, 400, origem);
+  const ip = req.headers.get("CF-Connecting-IP") || "?";
+  const marca = `ip:${ip}:${codigo}`;
+  if (await env.CONVITES.get(marca)) return responder({ ok: true, repetido: true }, 200, origem);
+  await env.CONVITES.put(marca, "1", { expirationTtl: 60 * 60 * 24 * 365 });
+  const total = (+(await env.CONVITES.get(`total:${codigo}`)) || 0) + 1;
+  await env.CONVITES.put(`total:${codigo}`, String(total));
+  return responder({ ok: true }, 200, origem);
+}
+
 export default {
   async fetch(req, env) {
     const origem = req.headers.get("Origin") || "";
     if (req.method === "OPTIONS") return new Response(null, { headers: cabecalhos(origem) });
+    if (new URL(req.url).pathname === "/convite") {
+      if (!ORIGENS.includes(origem)) return responder({ erro: "origem não permitida" }, 403, origem);
+      return convite(req, env, origem);
+    }
     if (req.method !== "POST") return responder({ erro: "use POST" }, 405, origem);
     if (!ORIGENS.includes(origem)) return responder({ erro: "origem não permitida" }, 403, origem);
 

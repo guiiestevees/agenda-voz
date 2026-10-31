@@ -5,3 +5,8 @@ compatibility_flags = ["nodejs_compat"]
 
 # A chave da Anthropic NÃO fica aqui. Ela é guardada com:
 #   npx wrangler secret put ANTHROPIC_API_KEY
+
+# Convites: quantos amigos entraram com cada código
+[[kv_namespaces]]
+binding = "CONVITES"
+id = "4cba6bc7796a477693f71bb856d5a34c"
