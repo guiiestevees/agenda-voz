@@ -652,7 +652,7 @@
   /* Próximo compromisso */
   .proximo {
     width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: left; cursor: pointer;
-    padding: 18px 18px 16px; margin-bottom: 12px; border: 0; border-radius: 22px; color: #fff; position: relative; overflow: hidden;
+    padding: 12px 16px 13px; margin-bottom: 12px; border: 0; border-radius: 20px; color: #fff; position: relative; overflow: hidden;
     background: radial-gradient(120% 140% at 0% 0%, rgba(255,255,255,.22), transparent 55%), linear-gradient(135deg, var(--grad-b), var(--grad-c));
     box-shadow: 0 10px 28px rgba(var(--accent-rgb),.28); transition: transform .15s var(--ease);
   }
@@ -661,7 +661,7 @@
   .px-rot svg { width: 15px; height: 15px; }
   .px-vivo { width: 8px; height: 8px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 0 rgba(255,255,255,.7); animation: vivo 1.6s infinite; margin: 0 2px; }
   @keyframes vivo { 70% { box-shadow: 0 0 0 7px rgba(255,255,255,0); } 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); } }
-  .px-tit { font-size: 24px; font-weight: 800; letter-spacing: -.02em; line-height: 1.2; margin-top: 6px; overflow-wrap: anywhere; }
+  .px-tit { font-size: 20px; font-weight: 800; letter-spacing: -.02em; line-height: 1.2; margin-top: 2px; overflow-wrap: anywhere; }
   .px-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; font-size: 14px; opacity: .92; font-variant-numeric: tabular-nums; }
   .px-chip { display: inline-flex; align-items: center; gap: 4px; }
   .px-chip svg { width: 14px; height: 14px; }
@@ -736,6 +736,7 @@
   .spot .sp-sol { fill: var(--fogo-a); }
   .dia-livre, .tudo-feito { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 20px 18px 22px; }
   .dia-livre b, .tudo-feito b { color: var(--text); font-size: 17px; }
+  .dia-livre span b { font-size: inherit; display: inline; }
   .dia-livre span, .tudo-feito span { font-size: 14px; }
   .vazio .spot { margin-bottom: 4px; }
   .bv-ilustra { min-height: 110px; display: grid; place-items: center; margin-bottom: 8px; }
@@ -915,7 +916,7 @@
   .resgate-corpo { padding: 0 10px; }
 
   /* ===== Rodada 8: cartão de nível e tanque do Pomodoro ===== */
-  .nivel-card { position: relative; display: flex; align-items: center; gap: 10px; margin: 26px 0 12px; padding: 12px 12px 12px 8px; border-radius: 22px;
+  .nivel-card { position: relative; display: flex; align-items: center; gap: 10px; margin: 24px 0 4px; padding: 12px 12px 12px 8px; border-radius: 22px;
     background: linear-gradient(135deg, color-mix(in srgb, var(--ta) 26%, var(--card)), color-mix(in srgb, var(--tb) 10%, var(--card)) 70%);
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tb) 22%, transparent), var(--shadow-sm); }
   .nv-titulo { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; border: 0; background: none; padding: 0; text-align: left; cursor: pointer; color: var(--text); }
@@ -1076,6 +1077,14 @@
   .bk-botoes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .bk-botoes .icon-btn { height: 46px; border-radius: 12px; font-size: 15px; }
   .bk-botoes .icon-btn svg { width: 18px; height: 18px; color: var(--accent); }
+  .checkin-faixa { width: 100%; display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding: 8px 8px 8px 10px; border: 0; border-radius: 18px; cursor: pointer; text-align: left; color: #fff;
+    background: linear-gradient(120deg, #f7a23b, #ea5a1c 70%, #c63f0d); box-shadow: 0 8px 20px rgba(var(--fogo-rgb),.3); transition: transform .15s var(--ease); }
+  .checkin-faixa:active { transform: scale(.98); }
+  .cf-fogo { flex: none; display: inline-flex; align-items: center; gap: 3px; height: 38px; padding: 0 10px 0 8px; border-radius: 12px; background: rgba(255,255,255,.2); font-weight: 900; font-size: 17px; font-variant-numeric: tabular-nums; }
+  .cf-fogo svg { width: 18px; height: 18px; color: #fff3d6; animation: tremula 1.4s ease-in-out infinite; }
+  .cf-txt { flex: 1; min-width: 0; font-size: 14px; font-weight: 700; line-height: 1.25; }
+  .cf-acao { flex: none; display: inline-flex; align-items: center; gap: 5px; height: 38px; padding: 0 13px 0 10px; border-radius: 12px; background: #fff; color: #c63f0d; font-weight: 800; font-size: 14px; animation: chamaBotao 2s ease-in-out infinite; }
+  .cf-acao svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
   .lista-links { display: flex; flex-direction: column; padding: 4px 14px; }
   .lista-links a { padding: 13px 0; color: var(--text); text-decoration: none; font-weight: 600; border-top: 1px solid var(--line); display: flex; justify-content: space-between; }
   .lista-links a:first-child { border-top: 0; }
@@ -1083,11 +1092,11 @@
 
   /* ===== Rodada 11: cabeçalho com céu ===== */
   header { position: relative; }
-  header.ceu { padding-top: 14px; padding-bottom: 20px; display: grid; grid-template-columns: 1fr auto; align-items: center; column-gap: 12px; }
+  header.ceu { padding-top: 10px; padding-bottom: 12px; display: grid; grid-template-columns: 1fr auto; align-items: center; column-gap: 12px; }
   header.ceu .topo-esq { display: contents; }
   header.ceu .topo-data { grid-column: 1; grid-row: 1; justify-self: start; margin-bottom: 0 !important; }
   header.ceu .topo-dir { grid-column: 2; grid-row: 1; }
-  header.ceu h1 { grid-column: 1 / -1; grid-row: 2; margin-top: 14px; }
+  header.ceu h1 { grid-column: 1 / -1; grid-row: 2; margin-top: 8px; }
   header.ceu .hoje { grid-column: 1 / -1; grid-row: 3; }
   header.ceu .offline { grid-column: 1 / -1; grid-row: 4; justify-self: start; }
   header.ceu::before { content: ''; position: absolute; z-index: -1; left: -16px; right: -16px; top: calc(-1 * env(safe-area-inset-top) - 40px); bottom: -70px;
@@ -1106,16 +1115,16 @@
   body { isolation: isolate; }
   .topo-esq { min-width: 0; flex: 1; }
   .topo-data { display: none; }
-  header.ceu .topo-data { display: inline-block; margin-bottom: 10px; padding: 4px 11px; border-radius: 999px; background: rgba(255,255,255,.6); color: var(--text); font-size: 13px; font-weight: 650; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+  header.ceu .topo-data { display: inline-block; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; margin-bottom: 10px; padding: 4px 11px; border-radius: 999px; background: rgba(255,255,255,.6); color: var(--text); font-size: 13px; font-weight: 650; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
   :root[data-modo="escuro"] header.ceu .topo-data { background: rgba(255,255,255,.08); }
-  header.ceu h1 { display: flex; align-items: center; gap: 10px; font-size: 30px; line-height: 1.15; }
-  .per-ic { width: 42px; height: 42px; flex: none; animation: perFlutua 5s ease-in-out infinite; }
+  header.ceu h1 { display: flex; align-items: center; gap: 8px; font-size: 27px; line-height: 1.15; }
+  .per-ic { width: 34px; height: 34px; flex: none; animation: perFlutua 5s ease-in-out infinite; }
   .per-ic svg { width: 100%; height: 100%; display: block; }
   @keyframes perFlutua { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-3px) rotate(-4deg); } }
   .per-txt { min-width: 0; }
   .per-txt b { font-weight: 800; color: var(--accent-ink); }
   :root[data-modo="escuro"] .per-txt b { color: var(--accent); }
-  header.ceu .hoje { margin-top: 8px; font-size: 15px; color: var(--text); opacity: .8; white-space: normal; }
+  header.ceu .hoje { margin-top: 4px; font-size: 15px; color: var(--text); opacity: .8; white-space: normal; }
   header.ceu .hoje b { font-weight: 800; }
   .pedir-nome { border: 0; background: none; padding: 0 0 0 4px; color: var(--accent); font-weight: 700; font-size: 14px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
   header.ceu .topo-dir { padding-top: 2px; }
@@ -1726,9 +1735,7 @@ function quandoFalta(inicio, agora) {
 function linhaDoTempo(dia, agora, esconderFeitos) {
   const ocs = ocorrencias(dia, maisDias(dia, 1));
   const ehHoje = chaveDia(dia) === chaveDia(agora);
-  if (!ocs.length) return `<div class="dia-livre">${cenaMascote('relax')}<b>${ehHoje ? 'Nada marcado para hoje' : 'Dia livre'}</b><span>Fale do seu jeito e a secretária anota pra você.</span>
-      <button class="cta-falar" data-falar>${ICO.mic}Marcar um compromisso</button>
-      <button class="cta-digitar" data-novo-comp>Prefiro preencher</button></div>${ehHoje ? linhaAgora(agora) : ''}`;
+  if (!ocs.length) return `<div class="dia-livre"><b>${ehHoje ? 'Nada marcado para hoje' : 'Dia livre'}</b><span>Toque em <b>Falar</b>, lá embaixo, e diga: “dentista quinta às 3”.</span></div>${ehHoje ? linhaAgora(agora) : ''}`;
   let html = '', agoraPosto = !ehHoje;
   for (const o of ocs) {
     if (!agoraPosto && o.inicio > agora) { html += linhaAgora(agora); agoraPosto = true; }
@@ -1782,12 +1789,6 @@ function telaHoje() {
   let html = (fezCheckinHoje() ? htmlProximo(agora) : htmlCheckinHero()) + htmlProgresso() + htmlResgate() + (feitos && agora.getHours() >= 18 ? htmlConvitePost(feitos) : '');   // o convite para postar só aparece no fim do dia; antes, o selo +10 na câmera já avisa
   html += `<section class="grupo"><div class="grupo-topo"><h2>Agenda de hoje</h2><button class="novo-mini" data-novo-comp>${ICO.mais}Novo</button></div>${total && tudo ? `<div class="tudo-feito">${cenaMascote('festa')}<b>Tudo feito por hoje</b><span>Pode descansar. Amanhã tem mais.</span></div>` : linhaDoTempo(hoje, agora, true)}</section>`;
   if (feitos) html += `<details class="feitos"><summary>Feitos (${feitos})</summary>${feitosL.map(o => cartao(o, agora)).join('')}</details>`;
-  if (eventos.length < 3 && !lerPref('agenda.dicaFechada', '')) html += `
-    <div class="dica-criar">
-      <b>${ICO.mic}Como criar um compromisso</b>
-      <span>Toque em <b>Falar</b>, lá embaixo, e diga do seu jeito: “dentista quinta às 3, me lembra meia hora antes”.</span>
-      <div class="acoes-dica"><button class="falar" data-falar>Experimentar agora</button><button class="fechar" data-fechar-dica>Entendi</button></div>
-    </div>`;
   return html;
 }
 // Check-in do dia em destaque (some depois de feito; o fogo continua no cabeçalho)
@@ -1795,16 +1796,11 @@ function htmlCheckinHero() {
   if (fezCheckinHoje()) return '';
   const n = sequencia();
   return `
-    <div class="checkin-hero">
-      <div class="chh-topo">
-        <div class="chh-fogo">${ICO.fogo}<b>${n}</b></div>
-        <div class="chh-txt">
-          <b>${n ? `${n} dia${n > 1 ? 's' : ''} seguido${n > 1 ? 's' : ''}! Não deixa apagar` : 'Acenda seu fogo hoje'}</b>
-          <span>${n ? `Faça o check-in de hoje e chegue a ${n + 1}.` : 'Faça o check-in todo dia e veja sua sequência crescer.'} Vale +${PONTOS.checkin} ponto.</span>
-        </div>
-      </div>
-      <button class="chh-botao" data-checkin>${ICONE_CHECK}Fazer check-in de hoje</button>
-    </div>`;
+    <button class="checkin-faixa" data-checkin aria-label="Fazer check-in de hoje">
+      <span class="cf-fogo">${ICO.fogo}<b>${n}</b></span>
+      <span class="cf-txt">${n ? `${n} dia${n > 1 ? 's' : ''} seguido${n > 1 ? 's' : ''}. Não deixa apagar!` : 'Acenda seu fogo hoje'}</span>
+      <span class="cf-acao">${ICONE_CHECK}Check-in</span>
+    </button>`;
 }
 // Convite para postar o dia nos Stories (pontos 1 vez por dia)
 function htmlConvitePost(feitosHoje) {
