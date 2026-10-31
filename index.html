@@ -937,6 +937,20 @@
   .nivel-card .pg-share { background: var(--card); }
   .nivel-card.lendario .nv-rot { color: #b8890f; }
   .nivel-card.goat { box-shadow: inset 0 0 0 1.5px #e0b333, 0 0 22px rgba(247,201,72,.35); }
+  .nv-conselho { position: absolute; left: 74px; top: -20px; z-index: 2; display: inline-flex; align-items: center; gap: 4px; height: 30px; padding: 0 11px 0 9px;
+    border: 0; border-radius: 15px 15px 15px 4px; background: var(--card); color: var(--text); font-size: 13px; font-weight: 750; cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,.12), inset 0 0 0 1px var(--line); animation: pulinho 3s ease-in-out infinite; }
+  .nv-conselho:active { transform: scale(.94); }
+  .conselho { text-align: center; padding-top: 4px; }
+  .cs-cena { position: relative; display: flex; flex-direction: column; align-items: center; }
+  .cs-balao { position: relative; margin: 0 4px 6px; padding: 16px 18px; border-radius: 22px; background: color-mix(in srgb, var(--ta) 16%, var(--card));
+    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--tb) 30%, transparent); font-size: 19px; font-weight: 700; line-height: 1.4; color: var(--text); font-family: var(--fonte-display); }
+  .cs-balao::after { content: ''; position: absolute; left: 50%; bottom: -10px; width: 20px; height: 20px; margin-left: -10px; transform: rotate(45deg);
+    background: color-mix(in srgb, var(--ta) 16%, var(--card)); box-shadow: inset -1.5px -1.5px 0 0 color-mix(in srgb, var(--tb) 30%, transparent); }
+  .cs-balao.troca { animation: checkpop .35s ease; }
+  .cs-intro { font-size: 13px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: color-mix(in srgb, var(--tb) 85%, var(--text)); margin-bottom: 10px; }
+  .cs-bicho { width: 120px; height: 120px; object-fit: contain; margin-top: 6px; filter: drop-shadow(0 8px 12px rgba(0,0,0,.18)); animation: pulinho 2.4s ease-in-out infinite; }
+  .cs-nome { font-size: 13px; color: var(--muted); font-weight: 650; margin-top: 2px; }
 
   /* Tanque */
   .tanque { position: relative; width: 210px; height: 210px; margin: 16px auto 4px; border-radius: 50%; overflow: hidden; isolation: isolate;
@@ -1810,6 +1824,7 @@ function htmlProgresso() {
   const postou = (xp.postados || []).includes(chaveDia(new Date()));
   return `
     <div class="nivel-card ${tier.cls}" style="--ta:${tier.a};--tb:${tier.b}">
+      <button class="nv-conselho" data-conselho aria-label="Pedir um conselho para o ${esc(t.nome)}">💬 Conselho</button>
       <button class="nv-titulo" data-niveis aria-label="Ver todos os títulos">
         <span class="nv-bicho ${jeito}"><i></i><img src="${mascoteDe(t)}" alt=""></span>
         <span class="nv-info">
@@ -2046,7 +2061,7 @@ document.getElementById('lista').addEventListener('click', (ev) => {
   if (ignorarClique) { ev.preventDefault(); ev.stopImmediatePropagation(); return; }
   if (ev.target.closest('[data-fechar-ontem]')) return fecharOntem();
   if (ev.target.closest('[data-fogo]')) return mostrarSequencia();
-  const alvo = ev.target.closest('[data-novo-comp], [data-falar], [data-fechar-dica], [data-desafio], [data-hab-check], [data-hab], [data-novo-hab], [data-compartilhar], [data-checkin], [data-check], [data-niveis], [data-id], [data-dia], [data-nav], [data-ir]');
+  const alvo = ev.target.closest('[data-novo-comp], [data-falar], [data-fechar-dica], [data-desafio], [data-hab-check], [data-hab], [data-novo-hab], [data-compartilhar], [data-checkin], [data-check], [data-conselho], [data-niveis], [data-id], [data-dia], [data-nav], [data-ir]');
   if (!alvo) return;
   if ('novoComp' in alvo.dataset) escolherComoCriar();
   else if ('falar' in alvo.dataset) abrirVoz();
@@ -2058,6 +2073,7 @@ document.getElementById('lista').addEventListener('click', (ev) => {
   else if ('compartilhar' in alvo.dataset) abrirCompartilhar();
   else if ('checkin' in alvo.dataset) fazerCheckin(alvo);
   else if (alvo.dataset.check) marcarFeito(alvo);
+  else if ('conselho' in alvo.dataset) abrirConselho();
   else if ('niveis' in alvo.dataset) abrirNiveis();
   else if (alvo.dataset.ir) { ev.preventDefault(); irPara(alvo.dataset.ir); }
   else if (alvo.dataset.nav) navegar(alvo.dataset.nav);
@@ -2862,6 +2878,67 @@ function htmlTitulo() {
       </span>
       <span class="titulo-seta" aria-hidden="true"></span>
     </button>`;
+}
+
+// ---------- Conselho do mascote: perguntas que ajudam a escolher bons compromissos ----------
+const PERGUNTAS_CONSELHO = [
+  'Qual tarefa simples pode trazer um resultado enorme hoje?',
+  'Se você só pudesse fazer uma coisa hoje, qual faria o dia valer a pena?',
+  'O que você vem adiando e resolveria em 15 minutos?',
+  'Qual pequena ação te deixa mais perto do seu maior objetivo?',
+  'Com quem vale a pena marcar uma conversa esta semana?',
+  'O que você pode tirar da agenda para respirar melhor?',
+  'Qual hábito, feito todo dia, mudaria sua vida em um ano?',
+  'O que te daria orgulho de ter feito quando o dia acabar?',
+  'Tem alguma conta, documento ou pendência te tirando o sono?',
+  'Quando foi a última vez que você cuidou do corpo? Bora marcar?',
+  'Qual habilidade você quer aprender? Que tal 20 minutos hoje?',
+  'Que tarefa difícil fica fácil se você fizer logo de manhã?',
+  'O que você pode preparar hoje para o amanhã ser mais leve?',
+  'Tem alguém que você quer agradecer ou rever? Marca um café.',
+  'Qual reunião, ligação ou mensagem destrava as outras coisas?',
+  'O que você faria se tivesse 1 hora só pra você hoje?',
+  'Qual tarefa chata você pode dividir em um passo bem pequeno?',
+  'Já reservou um tempo de descanso de verdade esta semana?',
+  'O que te deixaria mais tranquilo se já estivesse resolvido?',
+  'Qual meta do mês precisa de um compromisso fixo na agenda?',
+];
+const INTRO_CONSELHO = {
+  inicio: ['Bocejo… tá, um conselho rapidinho:', 'Até eu, devagar, sei que isso importa:', 'Sem pressa, mas pensa nisso:'],
+  bronze: ['Ei, olha que pergunta boa:', 'Pensa comigo um minutinho:', 'Tenho uma pra você:'],
+  prata: ['Bora acelerar? Responde essa:', 'Pergunta de quem está evoluindo:', 'Foco nisso aqui:'],
+  ouro: ['Pergunta de campeão:', 'Quem chega no topo responde isso:', 'Escuta o conselho do rei:'],
+  elite: ['Modo máquina ativado:', 'Calculando o próximo passo:', 'Missão do dia:'],
+  lendario: ['Lendas fazem essa pergunta:', 'O segredo de quem chegou longe:', 'Pergunta de milionário:'],
+  goat: ['O maior de todos pergunta:', 'Palavra de GOAT:', 'Escuta o mestre:'],
+};
+let ultimaPergunta = -1;
+function sortearPergunta() {
+  let i;
+  do { i = Math.floor(Math.random() * PERGUNTAS_CONSELHO.length); } while (i === ultimaPergunta && PERGUNTAS_CONSELHO.length > 1);
+  ultimaPergunta = i;
+  return PERGUNTAS_CONSELHO[i];
+}
+function abrirConselho() {
+  const t = tituloAtual(), tier = tierDe(t), intros = INTRO_CONSELHO[tier.cls] || INTRO_CONSELHO.inicio;
+  const intro = () => intros[Math.floor(Math.random() * intros.length)];
+  vibrar('leve');
+  abrirFolha(`
+    <div class="conselho" style="--ta:${tier.a};--tb:${tier.b}">
+      <div class="cs-intro" id="csIntro">${intro()}</div>
+      <div class="cs-cena">
+        <div class="cs-balao" id="csBalao">${sortearPergunta()}</div>
+        <img class="cs-bicho" src="${mascoteDe(t)}" alt="">
+        <div class="cs-nome">${esc(t.nome)}</div>
+      </div>
+      <div class="botoes"><button id="csOutra">Outra pergunta</button><button class="primario" id="csVirar">Anotar isso</button></div>
+    </div>`);
+  document.getElementById('csOutra').onclick = () => {
+    const b = document.getElementById('csBalao');
+    b.textContent = sortearPergunta(); document.getElementById('csIntro').textContent = intro();
+    b.classList.remove('troca'); void b.offsetWidth; b.classList.add('troca'); vibrar('selecao');
+  };
+  document.getElementById('csVirar').onclick = escolherComoCriar;
 }
 
 function abrirNiveis() {
