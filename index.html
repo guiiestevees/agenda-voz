@@ -701,10 +701,10 @@
   .navega .nav-btns .nav-hoje { width: auto; border-radius: 999px; padding: 0 14px; font-size: 14px; font-weight: 650; color: var(--accent); }
 
   /* Formulário: opções em botões */
-  .chips-sel { display: flex; gap: 6px; overflow-x: auto; margin: 0 -20px; padding: 2px 20px 4px; scrollbar-width: none; }
+  .chips-sel { display: flex; gap: 6px; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; touch-action: pan-x; margin: 0 -20px; padding: 2px 20px 4px; scrollbar-width: none; scroll-padding: 0 20px; }
   .chips-sel::-webkit-scrollbar { display: none; }
-  .chip-op { flex: none; position: relative; margin: 0 !important; display: block !important; }
-  .chip-op input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+  .chip-op { flex: none; position: relative; margin: 0 !important; display: flex !important; line-height: 1; }
+  .chip-op input, form.editar .chip-op input { position: absolute; top: 0; left: 0; opacity: 0; width: 1px; height: 1px; padding: 0; border: 0; pointer-events: none; }
   .chip-op span { display: inline-flex; align-items: center; height: 40px; padding: 0 15px; border-radius: 999px; border: 1px solid var(--line); background: var(--field); color: var(--text); font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer; transition: background .15s, border-color .15s, color .15s; }
   .chip-op input:checked + span { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
   .chip-op input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
