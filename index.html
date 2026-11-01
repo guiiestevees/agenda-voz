@@ -2473,7 +2473,11 @@ function render() {
     if (aba === 'hoje') { lista.innerHTML = telaHoje(); chaveProximo = null; }
     else if (aba === 'semana' && visao === 'semana') { lista.innerHTML = telaSemana(); montarGrade(pos); }
     else if (aba === 'semana') lista.innerHTML = telaMes();
-    else if (aba === 'foco') { lista.innerHTML = telaFoco(); montarRoda(); posicionarBicho(); prepararSom(); }
+    else if (aba === 'foco') {
+      const sx = document.querySelector('.sons')?.scrollLeft || 0;   // a lista de sons fica onde a pessoa deixou
+      lista.innerHTML = telaFoco(); montarRoda(); posicionarBicho(); prepararSom();
+      const sons = document.querySelector('.sons'); if (sons) sons.scrollLeft = sx;
+    }
     else if (aba === 'habitos') lista.innerHTML = telaHabitos();
   });
   destacarId = null;
