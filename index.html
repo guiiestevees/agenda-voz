@@ -2473,7 +2473,7 @@ function render() {
     if (aba === 'hoje') { lista.innerHTML = telaHoje(); chaveProximo = null; }
     else if (aba === 'semana' && visao === 'semana') { lista.innerHTML = telaSemana(); montarGrade(pos); }
     else if (aba === 'semana') lista.innerHTML = telaMes();
-    else if (aba === 'foco') { lista.innerHTML = telaFoco(); montarRoda(); posicionarBicho(); }
+    else if (aba === 'foco') { lista.innerHTML = telaFoco(); montarRoda(); posicionarBicho(); prepararSom(); }
     else if (aba === 'habitos') lista.innerHTML = telaHabitos();
   });
   destacarId = null;
@@ -2949,19 +2949,36 @@ const marcarCarregando = (id) => {
   somCarregando = id;
   document.querySelectorAll('[data-som]').forEach(b => b.classList.toggle('carregando', b.dataset.som === id));
 };
-somEl.addEventListener('playing', () => marcarCarregando(null));
+const VERSAO_SONS = 2;   // muda quando os arquivos de som forem refeitos (fura o cache)
+const urlSom = (id) => `sons/${id}.m4a?v=${VERSAO_SONS}`;
+let avisoDemora;
+somEl.addEventListener('playing', () => {
+  clearTimeout(avisoDemora); marcarCarregando(null);
+  // prévia (Pomodoro parado): conta os 4 s só depois que o som realmente começou
+  if (!foco.fim) { clearTimeout(previaTimer); previaTimer = setTimeout(() => { if (!foco.fim) pararAmbiente(); }, 4000); }
+});
+// Deixa o som escolhido já baixando quando a tela do Pomodoro abre, para tocar na hora
+function prepararSom() {
+  const id = somValido(foco.som);
+  if (id === 'nenhum' || ambiente || somEl.src.endsWith(urlSom(id))) return;
+  somEl.src = urlSom(id); somEl.load();
+}
 somEl.addEventListener('error', () => { if (ambiente) { marcarCarregando(null); toast('Não deu para carregar esse som agora. Confira a internet.'); ambiente = null; } });
 // Se o foco acabou com o celular bloqueado, o som para sozinho
 somEl.addEventListener('timeupdate', () => { if (ambiente && foco.modo === 'foco' && foco.fim && Date.now() >= foco.fim) pararAmbiente(); });
 function iniciarAmbiente(tipo) {
   if (somValido(tipo) === 'nenhum') return pararAmbiente();
-  const url = `sons/${tipo}.m4a`, novo = !somEl.src.endsWith(url);
+  const url = urlSom(tipo), novo = !somEl.src.endsWith(url);
   ambiente = tipo;
   if (novo) {
     somEl.src = url;
     somEl.addEventListener('loadedmetadata', () => { try { somEl.currentTime = Math.random() * somEl.duration * .8; } catch {} }, { once: true });   // começa num ponto diferente
   }
-  if (somEl.paused || novo) marcarCarregando(tipo);
+  if (somEl.paused || novo) {
+    marcarCarregando(tipo);
+    clearTimeout(avisoDemora);
+    avisoDemora = setTimeout(() => { if (somCarregando === tipo) toast('O som está demorando para carregar. Confira a internet.'); }, 8000);
+  }
   const p = somEl.play();
   if (p) p.catch(() => { if (ambiente === tipo) { marcarCarregando(null); ambiente = null; } });
   if ('mediaSession' in navigator) {
@@ -2974,7 +2991,7 @@ function iniciarAmbiente(tipo) {
   }
 }
 function pararAmbiente() {
-  ambiente = null; marcarCarregando(null);
+  ambiente = null; marcarCarregando(null); clearTimeout(avisoDemora);
   if (!somEl.paused) somEl.pause();
 }
 let previaTimer;
@@ -2982,7 +2999,7 @@ function escolherSom(id) {
   foco.som = id;
   clearTimeout(previaTimer);
   if (foco.fim && foco.modo === 'foco') iniciarAmbiente(id);   // rodando: troca na hora
-  else { iniciarAmbiente(id); previaTimer = setTimeout(() => { if (!foco.fim) pararAmbiente(); }, 4000); }   // parado: amostra de 4 s
+  else iniciarAmbiente(id);   // parado: amostra de 4 s (o tempo conta quando o som começa a tocar)
 }
 // Alarme do fim: um sino suave tocado 3 vezes (dá pra ouvir de longe sem assustar)
 // Fim do Pomodoro: marimba suave e quente (dó mi sol), três toques com um ecozinho

@@ -1,6 +1,6 @@
 // Guarda o app no aparelho para abrir mesmo sem internet.
 // Sempre tenta a versão nova primeiro; sem conexão, usa a cópia guardada.
-const CACHE = 'agenda-v21';
+const CACHE = 'agenda-v22';
 const ARQUIVOS = ['./', './index.html', './privacidade.html'];
 
 self.addEventListener('install', (e) => {
@@ -17,6 +17,8 @@ self.addEventListener('fetch', (e) => {
   const req = e.request;
   // Só arquivos do próprio app; a secretária (outro endereço) precisa de internet de qualquer jeito
   if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
+  // Áudio vai direto ao servidor: o iPhone pede o som em pedaços e o intermediário atrapalha
+  if (new URL(req.url).pathname.includes('/sons/')) return;
   e.respondWith(
     fetch(req)
       .then((resp) => {
