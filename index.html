@@ -2949,6 +2949,15 @@ let ambiente = null;   // id do som tocando
 let somCarregando = null;
 const somEl = new Audio();
 somEl.loop = true; somEl.preload = 'auto'; somEl.setAttribute('playsinline', '');
+// No iPhone, o áudio do app inteiro fica no modo "reprodução" (o mesmo do player de música)
+try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch {}
+let pausaMinha = false;
+somEl.addEventListener('pause', () => {
+  if (pausaMinha) { pausaMinha = false; return; }
+  // pausa que não veio do app (ex.: outro som do sistema interrompeu) com o app na tela: retoma
+  if (ambiente && document.visibilityState === 'visible') setTimeout(() => { if (ambiente && somEl.paused) somEl.play().catch(() => {}); }, 250);
+});
+const somDeFundoTocando = () => !!ambiente && !somEl.paused;
 const marcarCarregando = (id) => {
   somCarregando = id;
   document.querySelectorAll('[data-som]').forEach(b => b.classList.toggle('carregando', b.dataset.som === id));
@@ -2989,14 +2998,14 @@ function iniciarAmbiente(tipo) {
     const s = SONS.find(x => x[0] === tipo);
     try {
       navigator.mediaSession.metadata = new MediaMetadata({ title: s[2], artist: 'Tap Bee · Pomodoro', artwork: [{ src: MASCOTES.bee, sizes: '180x180', type: 'image/webp' }] });
-      navigator.mediaSession.setActionHandler('pause', () => { somEl.pause(); });
+      navigator.mediaSession.setActionHandler('pause', () => { pausaMinha = true; somEl.pause(); });
       navigator.mediaSession.setActionHandler('play', () => { somEl.play(); });
     } catch {}
   }
 }
 function pararAmbiente() {
   ambiente = null; marcarCarregando(null); clearTimeout(avisoDemora);
-  if (!somEl.paused) somEl.pause();
+  if (!somEl.paused) { pausaMinha = true; somEl.pause(); }
 }
 let previaTimer;
 function escolherSom(id) {
@@ -3035,7 +3044,7 @@ function alarmeFoco() {
 setTimeout(() => document.getElementById('abertura')?.remove(), 1800);
 
 // Deixa o áudio liberado a partir de um toque (o iPhone só toca som depois de uma interação)
-function liberarAudio() { try { audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state !== 'running') audioCtx.resume(); } catch {} }
+function liberarAudio() { if (somDeFundoTocando()) return; try { audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state !== 'running') audioCtx.resume(); } catch {} }
 // No app da App Store: agenda uma notificação com som para o fim do ciclo (funciona com o app fechado)
 const ID_AVISO_FOCO = 7001;
 function agendarAvisoFoco() {
@@ -3092,7 +3101,7 @@ document.getElementById('lista').addEventListener('click', (ev) => {
   if (tarefa) foco.tarefa = tarefa.value.trim();
   if (b.dataset.som) escolherSom(b.dataset.som);
   else if (b.id === 'focoBotao') {
-    clearTimeout(previaTimer); liberarAudio(); vibrar('medio');
+    clearTimeout(previaTimer); if (somValido(foco.som) === 'nenhum') liberarAudio(); vibrar('medio');   // com som de fundo, não mexe no outro motor de áudio
     if (foco.fim) { foco.restante = foco.fim - Date.now(); foco.fim = null; pararAmbiente(); cancelarAvisoFoco(); }
     else {
       foco.fim = Date.now() + restanteMs(); foco.restante = null; agendarAvisoFoco();
@@ -5280,7 +5289,7 @@ const CALMO = matchMedia('(prefers-reduced-motion: reduce)').matches;
 // --- Sons de toque (madeira) e plop de mel
 let ultimoToc = 0;
 function somCurto(f1, f2, dur, vol, tipo = 'sine') {
-  if (lerPref('agenda.sonsToque', '1') !== '1') return;
+  if (lerPref('agenda.sonsToque', '1') !== '1' || somDeFundoTocando()) return;   // não disputa o áudio com o som do Pomodoro
   try {
     audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
     if (audioCtx.state !== 'running') audioCtx.resume();
@@ -5293,7 +5302,7 @@ function somCurto(f1, f2, dur, vol, tipo = 'sine') {
 const toc = () => { const a = performance.now(); if (a - ultimoToc < 70) return; ultimoToc = a; somCurto(1050, 520, .045, .05, 'triangle'); };
 const plop = () => somCurto(260, 820, .11, .09);
 document.addEventListener('pointerdown', (e) => {
-  if (audioCtx && audioCtx.state !== 'running') audioCtx.resume().catch(() => {});
+  if (audioCtx && audioCtx.state !== 'running' && !somDeFundoTocando()) audioCtx.resume().catch(() => {});
   const b = e.target.closest('button, .chip-op span, [data-aba]');
   if (b && !b.closest('.mic-aba') && !b.matches('[data-check], [data-hab-check]')) toc();
 }, true);
