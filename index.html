@@ -148,6 +148,22 @@
   .fd-dia.sel { background: var(--accent); box-shadow: 0 6px 14px rgba(var(--accent-rgb),.3); color: var(--on-accent); }
   .fd-dia.sel span { color: var(--on-accent); opacity: .8; }
   .fd-dia.sel em { background: var(--on-accent); }
+  .notas-grupo { margin-top: 8px; }
+  .nota-add { height: 36px; border: 0; border-radius: 999px; padding: 0 14px 0 10px; display: inline-flex; align-items: center; gap: 4px; cursor: pointer;
+    background: color-mix(in srgb, var(--accent) 16%, var(--card)); color: var(--accent-text); font-size: 14px; font-weight: 800; }
+  .nota-add svg { width: 18px; height: 18px; }
+  .nota { display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 12px; margin-bottom: 8px; border-radius: 18px; cursor: pointer;
+    background: color-mix(in srgb, var(--card) 80%, transparent); box-shadow: inset 0 0 0 1px var(--line); }
+  .nota .check { flex: none; width: 30px; height: 30px; }
+  .nota-txt { flex: 1; min-width: 0; font-size: 16px; font-weight: 650; line-height: 1.3; overflow-wrap: anywhere; }
+  .nota-quando { flex: none; height: 32px; border: 0; border-radius: 999px; padding: 0 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
+    background: var(--field, var(--bg)); color: var(--accent-text); font-size: 13px; font-weight: 750; box-shadow: inset 0 0 0 1px var(--line); }
+  .nota-quando svg { width: 15px; height: 15px; }
+  .nota-vazia { width: 100%; border: 1.5px dashed var(--line-2, var(--line)); background: none; border-radius: 18px; padding: 14px 16px; text-align: left; cursor: pointer;
+    color: var(--muted); font-size: 14px; line-height: 1.45; }
+  .nota-vazia i { color: var(--text); }
+  .nota-marcar { width: 100%; height: 50px; margin: 14px 0 2px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .nota-marcar svg { width: 18px; height: 18px; }
   .novo-mini {
     flex: none; white-space: nowrap;
     height: 40px; border: 0; border-radius: 999px; padding: 0 16px 0 12px; background: var(--accent); color: var(--on-accent);
@@ -1773,6 +1789,10 @@ const fimDe = (ev, inicio) => new Date(inicio.getTime() + durDe(ev) * 60000);
 // ---------- Armazenamento ----------
 const CHAVE = 'agenda.eventos';
 let eventos = carregar();
+// Anotações: coisas para lembrar de fazer, ainda sem dia nem hora ([{ id, titulo, criado }])
+let notas = (() => { try { return JSON.parse(localStorage.getItem('agenda.notas')) || []; } catch { return []; } })();
+let notaParaAgendar = null;   // quando a anotação vira compromisso pelo formulário
+function salvarNotas() { try { localStorage.setItem('agenda.notas', JSON.stringify(notas)); } catch {} }
 function carregar() {
   try { return JSON.parse(localStorage.getItem(CHAVE)) || []; } catch { return []; }
 }
@@ -2134,8 +2154,61 @@ function telaHoje() {
     html = html.replace('<section class="grupo">', `<section class="grupo">`).replace(/(<div class="grupo-topo">[\s\S]*?<\/div>)/, `$1<div class="dica-gesto"><span>👉 Arraste um compromisso para a <b>direita</b> para marcar como feito, ou para a <b>esquerda</b> para excluir.</span><button data-fechar-gesto>Entendi</button></div>`);
   }
   if (feitos && !diaHoje) html += `<details class="feitos"><summary>Feitos (${feitos})</summary>${feitosL.map(o => cartao(o, agora)).join('')}</details>`;
-  return html;
+  return html + htmlNotas();
 }
+// "Pra não esquecer": anotações sem dia nem hora, no fim do Hoje
+function htmlNotas() {
+  const itens = notas.map(n => `
+    <div class="nota" data-nota="${n.id}">
+      <button class="check" data-nota-feita="${n.id}" aria-label="Marcar “${esc(n.titulo)}” como feito">${ICONE_CHECK}</button>
+      <span class="nota-txt">${esc(n.titulo)}</span>
+      <button class="nota-quando" data-nota-agendar="${n.id}">${ICO.relogio || ''}Marcar dia</button>
+    </div>`).join('');
+  return `<section class="grupo notas-grupo"><div class="grupo-topo"><h2>Pra não esquecer</h2><button class="nota-add" data-nova-nota>${ICO.mais}Anotar</button></div>
+    ${itens || '<button class="nota-vazia" data-nova-nota>Lembrou de algo e ainda não sabe quando vai fazer? Diga para a Bee <i>“anota: trocar a lâmpada”</i> ou toque aqui.</button>'}</section>`;
+}
+function abrirNota(id) {
+  const n = id ? notas.find(x => x.id === id) : null;
+  if (id && !n) return;
+  abrirFolha(`
+    <form class="editar" id="fNota">
+      <h3>${n ? 'Anotação' : 'Anotar para não esquecer'}</h3>
+      <p>${n ? 'Quando souber o dia, é só marcar. Ou diga para a Bee: “marca isso pra terça às 5”.' : 'Sem dia nem hora. Fica no fim da tela Hoje até você marcar.'}</p>
+      <label for="nTxt">O que você precisa fazer?</label>
+      <input id="nTxt" maxlength="120" value="${n ? esc(n.titulo) : ''}" placeholder="Ex.: Trocar a lâmpada da cozinha" autocomplete="off">
+      ${n ? `<button type="button" class="primario nota-marcar" id="bNotaAgendar">${ICO.relogio || ''}Marcar dia e hora</button>` : ''}
+      <div class="botoes">${n ? '<button type="button" class="perigo" id="bNotaApagar">Apagar</button>' : '<button type="button" id="bNotaCancelar">Cancelar</button>'}<button class="${n ? '' : 'primario'}" type="submit">${n ? 'Salvar' : 'Anotar'}</button></div>
+    </form>`);
+  const f = document.getElementById('fNota'), txt = document.getElementById('nTxt');
+  if (!n) setTimeout(() => txt.focus(), 80);
+  f.onsubmit = (e) => {
+    e.preventDefault();
+    const v = txt.value.trim();
+    if (!v) return fecharFolha();
+    if (n) n.titulo = v; else notas.push({ id: novoId(), titulo: maiuscula(v), criado: new Date().toISOString() });
+    salvarNotas(); fecharFolha(); render(); vibrar('sucesso'); if (!n) toast('Anotado! Está no fim da tela Hoje.');
+  };
+  if (n) {
+    document.getElementById('bNotaAgendar').onclick = () => { if (txt.value.trim()) n.titulo = txt.value.trim(); salvarNotas(); agendarNota(n.id); };
+    document.getElementById('bNotaApagar').onclick = () => tirarNota(n.id, 'apagada');
+  } else document.getElementById('bNotaCancelar').onclick = fecharFolha;
+}
+// Abre o formulário de compromisso com o texto da anotação; ao salvar, ela sai da lista
+function agendarNota(id) {
+  const n = notas.find(x => x.id === id);
+  if (!n) return;
+  const amanha = maisDias(new Date(), 1);
+  abrirEdicao({ id: novoId(), titulo: n.titulo, inicio: dataHoraLocal(chaveDia(amanha), '09:00').toISOString(), duracaoMin: 60, lembreteMin: 15, repetir: null, excecoes: [], avisados: [], frase: '' }, true);
+  notaParaAgendar = id;
+}
+function tirarNota(id, como) {
+  const antes = JSON.stringify(notas), n = notas.find(x => x.id === id);
+  if (!n) return;
+  notas = notas.filter(x => x.id !== id); salvarNotas(); fecharFolha(); render();
+  if (como === 'feita') { vibrar('sucesso'); if (typeof plop === 'function') plop(); }
+  toast(como === 'feita' ? `“${n.titulo}” feito!` : 'Anotação apagada', 4500, { rotulo: 'Desfazer', fn: () => { notas = JSON.parse(antes); salvarNotas(); render(); } });
+}
+const notasParaIA = () => notas.map(n => `${n.id} | ${n.titulo}`).join('\n') || '(nenhuma)';
 // Faixa com os próximos dias: toca num dia para ver a agenda dele sem sair do Hoje
 function htmlFaixaDias(hoje) {
   const ocs = ocorrencias(hoje, maisDias(hoje, DIAS_FAIXA)), qtd = new Map();
@@ -2450,7 +2523,7 @@ document.getElementById('btnSons').onclick = () => { gravarPref('agenda.sonsToqu
 rotSons();
 
 // ---------- Backup: tudo o que o app guarda vira um arquivo .json ----------
-const CHAVES_BACKUP = ['agenda.eventos', 'agenda.habitos', 'agenda.xp', 'agenda.focos', 'agenda.foco', 'agenda.nome', 'agenda.tema', 'agenda.modo', 'agenda.marca', 'agenda.visao', 'agenda.boasVindas', 'agenda.dicaFechada'];
+const CHAVES_BACKUP = ['agenda.eventos', 'agenda.notas', 'agenda.habitos', 'agenda.xp', 'agenda.focos', 'agenda.foco', 'agenda.nome', 'agenda.tema', 'agenda.modo', 'agenda.marca', 'agenda.visao', 'agenda.boasVindas', 'agenda.dicaFechada'];
 function mostrarUltimoBackup() {
   const el = document.getElementById('bkUltimo'), quando = lerPref('agenda.ultimoBackup', '');
   if (!quando) { el.textContent = 'Você ainda não salvou nenhum backup.'; el.classList.add('velho'); return; }
@@ -2537,6 +2610,13 @@ document.getElementById('lista').addEventListener('click', (ev) => {
   if (ev.target.closest('[data-fechar-ontem]')) return fecharOntem();
   if (ev.target.closest('[data-fechar-gesto]')) { gravarPref('agenda.dicaGesto', '1'); return render(); }
   if (ev.target.closest('[data-fogo]')) return mostrarSequencia();
+  const nt = ev.target.closest('[data-nova-nota], [data-nota-feita], [data-nota-agendar], [data-nota]');
+  if (nt) {
+    if ('novaNota' in nt.dataset) return abrirNota(null);
+    if (nt.dataset.notaFeita) return tirarNota(nt.dataset.notaFeita, 'feita');
+    if (nt.dataset.notaAgendar) return agendarNota(nt.dataset.notaAgendar);
+    return abrirNota(nt.dataset.nota);
+  }
   const fd = ev.target.closest('[data-dia-hoje]');
   if (fd) return irDiaHoje(+fd.dataset.diaHoje);
   const alvo = ev.target.closest('[data-novo-comp], [data-falar], [data-fechar-dica], [data-desafio], [data-hab-check], [data-hab], [data-novo-hab], [data-compartilhar], [data-checkin], [data-check], [data-conselho], [data-niveis], [data-id], [data-dia], [data-nav], [data-ir]');
@@ -4083,6 +4163,7 @@ async function perguntarIA(frase) {
         agora: `${agora.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })} ${fmtHora(agora)}`,
         hoje: chaveDia(agora),
         agenda: agendaParaIA(),
+        notas: notasParaIA(),
       }),
     });
     if (!resp.ok) throw new Error('IA respondeu ' + resp.status);
@@ -4097,7 +4178,7 @@ const dataHoraLocal = (data, hora) => {
 const montarRepetir = (freq, dias) => (!freq || freq === 'nenhuma' || freq === 'manter') ? null : { freq, dias: freq === 'semanal' ? (dias || []) : [] };
 
 // ---------- Permissão para usar a IA ----------
-const TEXTO_IA = 'A Bee é sua secretária com inteligência artificial. Para entender o que você fala, sua frase e um resumo dos seus próximos compromissos são enviados à IA da Anthropic (Claude). Nada disso fica guardado nem é usado para treinar a IA.';
+const TEXTO_IA = 'A Bee é sua secretária com inteligência artificial. Para entender o que você fala, sua frase e um resumo dos seus próximos compromissos e anotações são enviados à IA da Anthropic (Claude). Nada disso fica guardado nem é usado para treinar a IA.';
 function pedirPermissaoIA() {
   return new Promise((pronto) => {
     abrirFolha(`
@@ -4149,6 +4230,13 @@ const novoId = () => String(ultimoId = Math.max(Date.now(), ultimoId + 1));
 
 // Aplica uma ação na agenda; devolve o compromisso criado/alterado (ou null)
 function aplicarAcao(a, frase) {
+  if (a.acao === 'anotar' && a.titulo) { notas.push({ id: novoId(), titulo: a.titulo, criado: new Date().toISOString() }); return null; }
+  const nota = a.notaId ? notas.find(n => n.id === a.notaId) : null;
+  if (a.acao === 'tirar_nota' && nota) { notas = notas.filter(n => n !== nota); return null; }
+  if (a.acao === 'agendar' && nota && a.data && a.hora) {
+    notas = notas.filter(n => n !== nota);
+    return aplicarAcao({ ...a, acao: 'criar', titulo: a.titulo || nota.titulo, repetir: 'nenhuma', diasSemana: [] }, frase);
+  }
   if (a.acao === 'habito' && a.titulo) {
     habitos.push({ id: novoId(), nome: a.titulo, emoji: a.emoji || emojiPara(a.titulo), dias: (a.diasSemana || []).length === 7 ? [] : (a.diasSemana || []), feitos: [] });
     return null;
@@ -4196,10 +4284,11 @@ function dicaPosCriar() {
   return true;
 }
 function executar(r, frase) {
-  const antes = JSON.stringify({ e: eventos, h: habitos });
+  const antes = JSON.stringify({ e: eventos, h: habitos, n: notas });
   const tocados = (r.tipo === 'agir' ? r.acoes : []).map(a => aplicarAcao(a, frase)).filter(Boolean);
-  const mudou = JSON.stringify({ e: eventos, h: habitos }) !== antes;
+  const mudou = JSON.stringify({ e: eventos, h: habitos, n: notas }) !== antes;
   if (habitos.length !== JSON.parse(antes).h.length) salvarHabitos();
+  if (JSON.stringify(notas) !== JSON.stringify(JSON.parse(antes).n)) salvarNotas();
   if (r.tipo === 'agir' && !mudou) r = { ...r, tipo: 'nao_entendi', resposta: r.resposta || 'Não entendi. Pode repetir?' };
   // Só mostra os que continuam na agenda (ex.: criado e depois desmarcado na mesma fala)
   const mostrar = tocados.filter((ev, i) => eventos.includes(ev) && tocados.indexOf(ev) === i);
@@ -4214,7 +4303,7 @@ function executar(r, frase) {
 const overlay = document.getElementById('overlay');
 const sheet = document.getElementById('sheet');
 function abrirFolha(html) { sheet.innerHTML = html; overlay.classList.add('show'); }
-function fecharFolha() { overlay.classList.remove('show'); pararReconhecimento(); }
+function fecharFolha() { overlay.classList.remove('show'); pararReconhecimento(); notaParaAgendar = null; }
 overlay.addEventListener('click', (e) => { if (e.target === overlay) fecharFolha(); });
 
 // 1ª linha = destaque; "Terça, 03/11:" = título do dia; "• ..." = tópico
@@ -4236,6 +4325,7 @@ function formatarResposta(texto, icone) {
 function mostrarResultado(r, frase, evs, antes) {
   const tipos = (r.acoes || []).map(a => a.acao);
   const icone = r.tipo === 'nao_entendi' ? `<span class="r-ico alerta">${ICO.duvida}</span>` : r.tipo === 'responder' ? `<span class="r-ico info">${ICO.info}</span>`
+    : tipos.length && tipos.every(t => t === 'anotar') ? `<span class="r-ico">${ICO.lapis}</span>`
     : tipos.every(t => t === 'desmarcar') ? `<span class="r-ico apagar">${ICO.lixo}</span>` : tipos.every(t => t === 'mudar') ? `<span class="r-ico info">${ICO.lapis}</span>` : `<span class="r-ico">${ICO.ok}</span>`;
   const um = evs.length === 1 ? evs[0] : null;
   const detalhes = um ? `
@@ -4252,6 +4342,7 @@ function mostrarResultado(r, frase, evs, antes) {
       ${formatarResposta(r.resposta || '', icone)}
       <div class="frase">“${esc(frase)}”</div>
       ${detalhes}
+      ${tipos.includes('anotar') && r.tipo === 'agir' ? '<div class="linha"><span>Onde fica</span><span>Em “Pra não esquecer”, no fim da tela Hoje</span></div>' : ''}
       ${r.modoSimples ? '<div class="nota-simples">Modo simples: a Bee está desligada. <button id="bAtivarIA">Ativar</button></div>' : ''}
       <div class="botoes">
         ${antes ? '<button class="perigo" id="bDesfazer">Desfazer</button>' : ''}
@@ -4265,7 +4356,7 @@ function mostrarResultado(r, frase, evs, antes) {
   if (um) document.getElementById('bEditar').onclick = () => abrirEdicao(um);
   if (r.tipo === 'nao_entendi') document.getElementById('bDeNovo').onclick = abrirVoz;
   if (antes) document.getElementById('bDesfazer').onclick = () => {
-    const a = JSON.parse(antes); eventos = a.e; habitos = a.h; salvar(); salvarHabitos(); render(); fecharFolha(); toast('Desfeito');
+    const a = JSON.parse(antes); eventos = a.e; habitos = a.h; notas = a.n || notas; salvar(); salvarHabitos(); salvarNotas(); render(); fecharFolha(); toast('Desfeito');
   };
 }
 
@@ -4351,6 +4442,7 @@ function abrirEdicao(ev, novo = false) {
     ev.avisado = false; ev.avisados = [];
     if (novo) { eventos.push(ev); diaSel = inicioDoDia(new Date(ev.inicio)); rolarParaDia = true; }
     if (novo) mostrarDiaNoHoje(ev);
+    if (novo && notaParaAgendar) { notas = notas.filter(n => n.id !== notaParaAgendar); salvarNotas(); }
     salvar(); destacarId = ev.id; render(); fecharFolha(); vibrar('sucesso'); if (!(novo && dicaPosCriar())) toast(novo ? 'Compromisso criado' : 'Alterações salvas');
   };
   if (novo) { document.getElementById('bCancelar').onclick = fecharFolha; document.getElementById('bFalarForm').onclick = abrirVoz; }

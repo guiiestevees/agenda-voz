@@ -12,8 +12,8 @@ A pessoa fala com você por voz (o texto vem de um ditado, pode ter erros de tra
 Sua tarefa: entender o pedido e devolver as ações para o app executar.
 
 tipo:
-- "agir": a pessoa quer criar, mudar ou desmarcar compromissos, ou criar hábitos. Coloque em "acoes" UMA ação para CADA compromisso citado, na ordem em que foram falados. Ex.: "médico terça às 4 e dentista quinta às 10" → duas ações "criar".
-- "responder": a pessoa quer saber algo da agenda ("o que tenho amanhã?", "que horas estou livre na sexta?"). Responda em "resposta" e deixe "acoes" vazia.
+- "agir": a pessoa quer criar, mudar ou desmarcar compromissos, criar hábitos, ou anotar/agendar/tirar anotações. Coloque em "acoes" UMA ação para CADA compromisso citado, na ordem em que foram falados. Ex.: "médico terça às 4 e dentista quinta às 10" → duas ações "criar".
+- "responder": a pessoa quer saber algo da agenda ou das anotações ("o que tenho amanhã?", "que horas estou livre na sexta?", "o que eu tenho anotado?"). Responda em "resposta" e deixe "acoes" vazia.
 - "nao_entendi": o pedido não tem nada a ver com agenda ou está incompreensível. "acoes" vazia.
 
 Cada ação:
@@ -21,12 +21,16 @@ Cada ação:
 - acao "mudar": alterar um compromisso que JÁ existe na agenda. Preencha eventoId e só os campos que mudam; os outros ficam null (repetir "manter").
 - acao "desmarcar": cancelar um compromisso que já existe. Preencha eventoId; o resto null (repetir "manter").
 - acao "habito": criar um HÁBITO, algo para fazer com frequência SEM horário marcado ("beber 2 litros de água todo dia", "ler 10 páginas", "meditar de segunda a sexta", "treinar 3 vezes por semana"). Preencha titulo (curto, ex.: "Beber 2L de água"), diasSemana ([] = todos os dias) e emoji (um emoji que combine). Se tiver horário marcado ("academia toda segunda às 7"), NÃO é hábito: é "criar" com repetição.
+- acao "anotar": a pessoa lembrou de algo que precisa fazer, mas NÃO disse dia nem hora ("preciso trocar a lâmpada", "anota aí: comprar presente da Ana", "não posso esquecer de ligar pro banco", "tenho que renovar a CNH"). Preencha só titulo (curto, inicial maiúscula, ex.: "Trocar a lâmpada"). Se ela falar dia OU hora, não é anotação: é "criar".
+- acao "agendar": a pessoa quer dar dia e hora para uma ANOTAÇÃO que já existe ("marca a lâmpada pra terça às 5", "aquela do banco, coloca amanhã de manhã"). Preencha notaId (da lista de anotações), data, hora e lembreteMin; titulo = null para manter o texto da anotação.
+- acao "tirar_nota": a pessoa já fez ou quer apagar uma anotação ("já troquei a lâmpada", "apaga a anotação do presente"). Preencha notaId.
 
 Regras:
 - titulo: só o nome do compromisso, curto e com inicial maiúscula ("Médico", "Academia", "Reunião com o João", "Tomar remédio"). Nunca inclua data, hora, lembrete ou palavras como "tenho", "marca", "me lembra".
-- data no formato AAAA-MM-DD e hora HH:MM (24h), no fuso da pessoa. Use a lista de datas abaixo para saber o dia certo de "terça", "amanhã" etc. "às 4" sem período quase sempre é 16:00; de 8 a 11 sem período é manhã. Sem dia → hoje, ou amanhã se o horário de hoje já passou. Sem hora → 09:00. Se a pessoa falar vários compromissos e só disser o dia no primeiro, os seguintes são no mesmo dia.
+- data no formato AAAA-MM-DD e hora HH:MM (24h), no fuso da pessoa. Use a lista de datas abaixo para saber o dia certo de "terça", "amanhã" etc. "às 4" sem período quase sempre é 16:00; de 8 a 11 sem período é manhã. Com hora mas sem dia → hoje, ou amanhã se o horário de hoje já passou. Com dia mas sem hora → 09:00. Sem dia E sem hora, é uma tarefa para lembrar → "anotar" (a não ser que a pessoa peça claramente para marcar agora). Se a pessoa falar vários compromissos e só disser o dia no primeiro, os seguintes são no mesmo dia.
 - lembreteMin: minutos de antecedência do aviso. "me lembre 15 min antes" → 15; "me lembra de tomar remédio às 8" → 0; "1 dia antes" → 1440. Se a pessoa não falar nada sobre aviso ao criar, use 15; para aniversário, use 0. Em "mudar", null = não mexer e -1 = tirar o aviso.
 - repetir: "nenhuma", "diaria", "semanal", "mensal" ou "anual". Para semanal, diasSemana com os dias (0=domingo, 1=segunda … 6=sábado), ex.: "toda segunda e quarta" → [1,3]; "de segunda a sexta" → [1,2,3,4,5]. Aniversário → "anual". Nos outros casos diasSemana = [].
+- notaId: só em "agendar" e "tirar_nota", escolhido na lista de anotações pelo texto; nas outras ações, null.
 - Para mudar/desmarcar, escolha o eventoId na agenda pelo nome e pela data mencionados. Se o compromisso se repete e a pessoa fala de um dia só ("desmarca a academia de amanhã"), preencha soNaData com a data daquela ocorrência; se fala da série toda ("cancela a academia"), soNaData = null.
 - Se não achar o compromisso para mudar/desmarcar, use tipo "responder" e diga isso em "resposta".
 - resposta: curta e simpática, como uma secretária falaria, confirmando tudo o que foi feito ou respondendo a pergunta. Ex.: "Anotado: médico terça às 16h, te aviso 15 minutos antes." Fale horários como "16h" ou "16h30" e dias como "terça" ou "amanhã". Sem emojis.
@@ -47,9 +51,10 @@ const ESQUEMA = {
       items: {
         type: "object",
         properties: {
-          acao: { type: "string", enum: ["criar", "mudar", "desmarcar", "habito"] },
+          acao: { type: "string", enum: ["criar", "mudar", "desmarcar", "habito", "anotar", "agendar", "tirar_nota"] },
           emoji: nulo("string"),
           eventoId: nulo("string"),
+          notaId: nulo("string"),
           soNaData: nulo("string"),
           titulo: nulo("string"),
           data: nulo("string"),
@@ -58,7 +63,7 @@ const ESQUEMA = {
           repetir: { type: "string", enum: ["nenhuma", "diaria", "semanal", "mensal", "anual", "manter"] },
           diasSemana: { type: "array", items: { type: "integer" } },
         },
-        required: ["acao", "emoji", "eventoId", "soNaData", "titulo", "data", "hora", "lembreteMin", "repetir", "diasSemana"],
+        required: ["acao", "emoji", "eventoId", "notaId", "soNaData", "titulo", "data", "hora", "lembreteMin", "repetir", "diasSemana"],
         additionalProperties: false,
       },
     },
@@ -129,6 +134,7 @@ export default {
     const agora = String(entrada.agora || "").slice(0, 80);
     const hoje = /^\d{4}-\d{2}-\d{2}$/.test(entrada.hoje) ? entrada.hoje : "";
     const agenda = String(entrada.agenda || "(vazia)").slice(0, 12000);
+    const notas = String(entrada.notas || "(nenhuma)").slice(0, 4000);
     const model = MODELOS.includes(entrada.modelo) ? entrada.modelo : MODELOS[0];
 
     const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
@@ -142,7 +148,7 @@ export default {
         system: SISTEMA,
         messages: [{
           role: "user",
-          content: `Agora: ${agora}\n\nDatas dos próximos dias:\n${proximosDias(hoje)}\n\nAgenda (próximas ocorrências, uma por linha: id | dia | hora | nome | repetição):\n${agenda}\n\nA pessoa disse: "${texto}"`,
+          content: `Agora: ${agora}\n\nDatas dos próximos dias:\n${proximosDias(hoje)}\n\nAgenda (próximas ocorrências, uma por linha: id | dia | hora | nome | repetição):\n${agenda}\n\nAnotações sem data (id | texto):\n${notas}\n\nA pessoa disse: "${texto}"`,
         }],
       });
       if (resp.stop_reason === "refusal") return responder({ tipo: "nao_entendi", resposta: "Desculpa, não consegui ajudar com isso.", acoes: [] }, 200, origem);
