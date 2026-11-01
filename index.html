@@ -5339,7 +5339,7 @@ function toast(msg, ms = 2500, acao) {
 // ---------- 2 toques atrás do iPhone (app nativo) ----------
 // O atalho "Falar com a Bee" ouve por cima de qualquer tela e abre tapbee://anotar?de=atalho&texto=...
 const NATIVO = !!window.Capacitor?.isNativePlatform?.();
-const ATALHO_URL = 'https://guiiestevees.github.io/agenda-voz/atalho/Falar%20com%20a%20Bee.shortcut';
+const ATALHO_URL = 'https://www.icloud.com/shortcuts/15bc1b9e04a344d4a12a3a687be6cde5';
 const PONTOS_DOIS_TOQUES = 20;
 const doisToquesOk = () => lerPref('agenda.doisToques', '') === 'ok';
 function htmlDoisToques() {
@@ -5395,6 +5395,7 @@ function abrirDoisToques(passo = 0) {
       <details class="dt-ajuda"><summary>Não funcionou?</summary><ul>
         <li>Dê os toques <b>mais firmes</b> e um pouco mais rápidos. Capinha grossa pode atrapalhar.</li>
         <li>Confira em Ajustes → Acessibilidade → Toque → Tocar Atrás → Toque Duplo se está marcado <b>Falar com a Bee</b>.</li>
+        <li>O microfone não abriu? Ligue o Ditado em Ajustes → Geral → Teclado → <b>Ativar Ditado</b>.</li>
         <li>Se o iPhone perguntar se o atalho pode abrir o Tap Bee, toque em <b>Permitir</b>.</li>
         <li>Ainda não? <a href="${ATALHO_URL}">Instale o atalho de novo</a>.</li>
       </ul></details>
