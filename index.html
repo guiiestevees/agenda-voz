@@ -1142,6 +1142,14 @@
   .nt-item small { font-size: 10.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
   .nt-item.atual { background: var(--accent-soft); box-shadow: inset 0 0 0 1.5px var(--accent); }
   .nt-item.atual small { color: var(--accent-ink); font-weight: 800; }
+  button.nt-item { border: 0; background: none; color: inherit; font: inherit; cursor: pointer; transition: transform .15s var(--ease); }
+  button.nt-item:active { transform: scale(.94); }
+  .nt-item.atual:not(.usando) { background: none; box-shadow: inset 0 0 0 1.5px var(--line); }
+  .nt-item.atual:not(.usando) small { color: var(--muted); }
+  .nt-item.usando { background: var(--accent-soft); box-shadow: inset 0 0 0 2px var(--accent); }
+  .nt-item.usando small { color: var(--accent-ink); font-weight: 800; }
+  .nt-escolha { margin: 14px 0 -6px; font-size: 13px; color: var(--muted); line-height: 1.4; }
+  .nt-escolha button { border: 0; background: none; padding: 0; color: var(--accent-text); font: inherit; font-weight: 750; text-decoration: underline; cursor: pointer; }
   .nt-item.bloq .badge { filter: grayscale(1); opacity: .35; }
   .nt-item.bloq > b { color: var(--muted); }
   .nt-item.secreto:not(.atual) { background: linear-gradient(145deg, #2b1a56, #0f0823); }
@@ -2285,7 +2293,7 @@ function htmlProximo(agora) {
 }
 // Faixa compacta da gamificação: título, pontos, check-in e compartilhar
 function htmlProgresso() {
-  const t = tituloAtual(), prox = xp.secreto ? null : proximoTitulo(xp.pontos), tier = tierDe(t);
+  const t = tituloAtual(), bicho = bichoUsado(), prox = xp.secreto ? null : proximoTitulo(xp.pontos), tier = tierDe(t);
   const pct = prox ? Math.round((xp.pontos - t.min) / (prox.min - t.min) * 100) : 100;
   const nivel = TITULOS.indexOf(t), jeito = nivel <= 2 ? 'lento' : nivel <= 8 ? 'animado' : 'turbo';
   const postou = (xp.postados || []).includes(chaveDia(new Date()));
@@ -2295,10 +2303,10 @@ function htmlProgresso() {
   return `
     <div class="nivel-card ${tier.cls}" style="--ta:${tier.a};--tb:${tier.b}">
       <button class="nv-titulo" data-niveis aria-label="Ver todos os títulos">
-        <span class="nv-bicho ${jeito}"><i></i><img src="${mascoteDe(t)}" alt=""></span>
+        <span class="nv-bicho ${jeito}"><i></i><img src="${mascoteDe(bicho)}" alt=""></span>
         <span class="nv-info">
           <span class="nv-rot">${t.secreto ? 'Título secreto' : `Nível ${nivel + 1} de ${TITULOS.length}`} · ${tier.nome}</span>
-          <span class="nv-nome">${t.nome}</span>
+          <span class="nv-nome">${bicho.nome}</span>
           <span class="nv-barra"><i style="width:${pct}%"></i></span>
           <span class="nv-pts">${ICO_GOTA}${prox ? `<b>${xp.pontos}</b> de ${prox.min} pts para ${prox.nome}` : t.secreto ? `${xp.pontos} pts · o maior de todos` : `${xp.pontos} pts · topo alcançado`}</span>
         </span>
@@ -2523,7 +2531,7 @@ document.getElementById('btnSons').onclick = () => { gravarPref('agenda.sonsToqu
 rotSons();
 
 // ---------- Backup: tudo o que o app guarda vira um arquivo .json ----------
-const CHAVES_BACKUP = ['agenda.eventos', 'agenda.notas', 'agenda.habitos', 'agenda.xp', 'agenda.focos', 'agenda.foco', 'agenda.nome', 'agenda.tema', 'agenda.modo', 'agenda.marca', 'agenda.visao', 'agenda.boasVindas', 'agenda.dicaFechada'];
+const CHAVES_BACKUP = ['agenda.eventos', 'agenda.notas', 'agenda.bicho', 'agenda.habitos', 'agenda.xp', 'agenda.focos', 'agenda.foco', 'agenda.nome', 'agenda.tema', 'agenda.modo', 'agenda.marca', 'agenda.visao', 'agenda.boasVindas', 'agenda.dicaFechada'];
 function mostrarUltimoBackup() {
   const el = document.getElementById('bkUltimo'), quando = lerPref('agenda.ultimoBackup', '');
   if (!quando) { el.textContent = 'Você ainda não salvou nenhum backup.'; el.classList.add('velho'); return; }
@@ -3017,7 +3025,7 @@ function avisarFoco(msg, eraFoco, qtd) {
   alarmeFoco();
   vibrar('sucesso');
   notificar('Pomodoro', msg);
-  const bicho = MASCOTES[MASCOTE_DE[idxBadge(tituloAtual())]] || MASCOTES.goat;
+  const bicho = mascoteDe(bichoUsado());
   abrirFolha(`
     <div class="fim-foco">
       <img class="ff-bicho" src="${bicho}" alt="">
@@ -3344,6 +3352,12 @@ const mascoteDe = (t) => MASCOTES[MASCOTE_DE[idxBadge(t)]] || MASCOTES.goat;
 const salvarXp = () => gravarJSON('agenda.xp', xp);
 const tituloDe = (pts) => TITULOS.filter(t => pts >= t.min).at(-1);
 const tituloAtual = () => xp.secreto ? SECRETO : tituloDe(xp.pontos);
+// O bicho que aparece no cartão: por padrão o do título atual, mas dá pra escolher qualquer um já liberado
+const liberado = (t) => t === SECRETO ? !!xp.secreto : t.min <= xp.pontos;
+function bichoUsado() {
+  const v = lerPref('agenda.bicho', ''), t = v === 'secreto' ? SECRETO : TITULOS[+v];
+  return v !== '' && t && liberado(t) ? t : tituloAtual();
+}
 const proximoTitulo = (pts) => TITULOS.find(t => t.min > pts);
 
 // Soma (ou tira) pontos e avisa se subiu ou caiu de título
@@ -3537,8 +3551,8 @@ function abrirConselho() {
       <div class="cs-intro" id="csIntro">${intro()}</div>
       <div class="cs-cena">
         <div class="cs-balao" id="csBalao">${sortearPergunta()}</div>
-        <img class="cs-bicho" src="${mascoteDe(t)}" alt="">
-        <div class="cs-nome">${esc(t.nome)}</div>
+        <img class="cs-bicho" src="${mascoteDe(bichoUsado())}" alt="">
+        <div class="cs-nome">${esc(bichoUsado().nome)}</div>
       </div>
       <div class="botoes"><button id="csOutra">Outra pergunta</button><button class="primario" id="csVirar">Anotar isso</button></div>
     </div>`);
@@ -3554,17 +3568,19 @@ function abrirNiveis() {
   const atual = tituloAtual(), tier = tierDe(atual), seq = sequencia(), prox = xp.secreto ? null : proximoTitulo(xp.pontos);
   const pct = prox ? Math.round((xp.pontos - atual.min) / (prox.min - atual.min) * 100) : 100;
   const n = xp.protetores ?? 1;
+  const usado = bichoUsado();
   const bloco = (t) => {
-    const cls = t === atual ? 'atual' : t.min > xp.pontos ? 'bloq' : '';
-    return `<div class="nt-item ${cls}">${badgeSVG(t)}<b>${t.nome}</b><small>${t === atual ? 'Você' : `${t.min} pts`}</small></div>`;
+    if (!liberado(t)) return `<div class="nt-item bloq">${badgeSVG(t)}<b>${t.nome}</b><small>${t.min} pts</small></div>`;
+    const cls = `${t === atual ? 'atual' : ''} ${t === usado ? 'usando' : ''}`;
+    return `<button class="nt-item ${cls}" data-usar-bicho="${TITULOS.indexOf(t)}" aria-label="Usar ${t.nome}">${badgeSVG(t)}<b>${t.nome}</b><small>${t === usado ? 'Usando' : t === atual ? 'Você' : 'Usar'}</small></button>`;
   };
   const secreto = xp.secreto
-    ? `<div class="nt-item atual secreto">${badgeSVG(SECRETO)}<b>${SECRETO.nome}</b><small>Você</small></div>`
+    ? `<button class="nt-item atual secreto ${usado === SECRETO ? 'usando' : ''}" data-usar-bicho="secreto">${badgeSVG(SECRETO)}<b>${SECRETO.nome}</b><small>${usado === SECRETO ? 'Usando' : 'Você'}</small></button>`
     : `<div class="nt-item secreto">${badgeSVG('bloqueado')}<b>Secreto</b><small>${seq}/${DIAS_SECRETO} dias</small></div>`;
   abrirFolha(`
     <div class="niveis" style="--ta:${tier.a};--tb:${tier.b}">
       <div class="nt-topo">
-        <img src="${mascoteDe(atual)}" alt="">
+        <img src="${mascoteDe(usado)}" alt="">
         <div class="nt-info">
           <span>${atual.secreto ? 'Título secreto' : `Nível ${TITULOS.indexOf(atual) + 1} de ${TITULOS.length}`}</span>
           <b>${atual.nome}</b>
@@ -3572,6 +3588,7 @@ function abrirNiveis() {
           <small>${prox ? `<b>${xp.pontos}</b> de ${prox.min} pts para ${prox.nome}` : `${xp.pontos} pts · topo alcançado`}</small>
         </div>
       </div>
+      <p class="nt-escolha">Toque num bicho já liberado para usá-lo no seu cartão.${usado !== atual ? ' <button id="bBichoAuto">Voltar ao automático</button>' : ''}</p>
       <div class="nt-grade">${TITULOS.map(bloco).join('')}${secreto}</div>
       ${xp.secreto ? '' : `<p class="nt-dica">O título secreto só se revela com ${DIAS_SECRETO} dias seguidos de check-in.</p>`}
       <details class="nt-mais">
@@ -3603,6 +3620,15 @@ function abrirNiveis() {
   document.getElementById('bResumoSem').onclick = abrirResumoSemana;
   document.getElementById('bRetro').onclick = () => { fecharFolha(); abrirRetrospectiva(); };
   document.getElementById('bConvites').onclick = abrirConvites;
+  const trocarBicho = (v) => {
+    const t = v === 'secreto' ? SECRETO : TITULOS[+v];
+    gravarPref('agenda.bicho', t === atual ? '' : v);   // escolher o próprio título volta ao automático
+    vibrar('selecao'); render();
+    const rolagem = sheet.scrollTop; abrirNiveis(); sheet.scrollTop = rolagem;
+    toast(t === atual ? `Automático: o bicho muda sozinho quando você sobe de título` : `Agora o seu bicho é ${t.nome}`);
+  };
+  sheet.querySelectorAll('[data-usar-bicho]').forEach(b => b.onclick = () => trocarBicho(b.dataset.usarBicho));
+  document.getElementById('bBichoAuto')?.addEventListener('click', () => trocarBicho(xp.secreto ? 'secreto' : String(TITULOS.indexOf(atual))));
 }
 
 // ---------- Desafio da semana: um por semana, muda todo domingo ----------
@@ -4758,7 +4784,7 @@ function abrirResumoSemana() {
   const frase = s.checkins >= 7 ? 'Semana perfeita. Você não falhou um dia!' : s.pontos >= 150 ? 'Que semana! Você está voando.' : s.pontos >= 60 ? 'Boa semana. Constância é tudo.' : 'Toda semana é uma chance de recomeçar. Bora!';
   abrirFolha(`
     <div class="resumo-sem" style="--ta:${tier.a};--tb:${tier.b}">
-      <div class="rs-topo"><img src="${mascoteDe(t)}" alt=""><div><span>O mel da semana</span><b>${s.ini.getDate()}/${pad(s.ini.getMonth() + 1)} a ${s.hoje.getDate()}/${pad(s.hoje.getMonth() + 1)}</b></div></div>
+      <div class="rs-topo"><img src="${mascoteDe(bichoUsado())}" alt=""><div><span>O mel da semana</span><b>${s.ini.getDate()}/${pad(s.ini.getMonth() + 1)} a ${s.hoje.getDate()}/${pad(s.hoje.getMonth() + 1)}</b></div></div>
       <p class="rs-frase">${frase}</p>
       <div class="rs-grade">
         <div><b>+${s.pontos}</b><span>pontos</span></div>
