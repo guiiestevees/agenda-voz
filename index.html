@@ -377,7 +377,7 @@
   .roda-wrap.travada .roda { pointer-events: none; opacity: .4; }
   .roda-rot { font-size: 12px; color: var(--muted); margin-top: 6px; }
   .sons-rot { margin-top: 18px; font-size: 12px; color: var(--muted); font-weight: 650; text-transform: uppercase; letter-spacing: .06em; text-align: left; }
-  .sons { display: flex; gap: 8px; overflow-x: auto; padding: 10px 20px 4px; margin: 0 -20px; scrollbar-width: none; scroll-padding: 20px; }
+  .sons { display: grid; grid-template-rows: repeat(2, auto); grid-auto-flow: column; grid-auto-columns: 86px; gap: 8px; overflow-x: auto; overflow-y: hidden; touch-action: pan-x; padding: 10px 20px 4px; margin: 0 -20px; scrollbar-width: none; scroll-padding: 20px; }
   .sons::-webkit-scrollbar { display: none; }
   .sons button { flex: none; display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 78px; padding: 10px 8px; border-radius: 14px;
     border: 1px solid var(--line); background: var(--field); color: var(--muted); font-size: 12px; font-weight: 600; cursor: pointer; transition: border-color .15s, background .15s; }
@@ -2797,7 +2797,7 @@ function telaFoco() {
       <div class="tempo-area">${travado ? `<div class="tempo" id="focoTempo">${fmtMS(restanteMs())}</div>` : rodaMinutos()}</div>
       <div class="roda-rot">${rodando ? (foco.modo === 'foco' ? 'Foco total. Quando o pote encher, acabou.' : 'Respira. Já já volta.') : pausado ? 'Pausado. Toque em Continuar quando quiser.' : (foco.modo === 'foco' && foco.duracao < FOCO_MIN_PONTOS ? `Role para escolher o tempo. A partir de ${FOCO_MIN_PONTOS} min vale pontos.` : 'Role os números para escolher o tempo')}</div>
       <div class="sons-rot">Som de fundo</div>
-      <div class="sons">${SONS.map(([id, ico, nome]) => `<button data-som="${id}" class="${(foco.som || 'nenhum') === id ? 'ativa' : ''}"><span>${ico}</span>${nome}</button>`).join('')}</div>
+      <div class="sons">${SONS.map(([id, ico, nome]) => `<button data-som="${id}" class="${somValido(foco.som) === id ? 'ativa' : ''}"><span>${ico}</span>${nome}</button>`).join('')}</div>
       <div class="botoes">
         ${rodando || pausado ? '<button id="focoParar">Parar</button>' : foco.modo === 'pausa' ? '<button id="focoPular">Pular pausa</button>' : ''}
         <button class="primario" id="focoBotao">${rodando ? 'Pausar' : pausado ? 'Continuar' : 'Começar'}</button>
@@ -2923,78 +2923,44 @@ function montarRoda() {
 }
 
 // ---------- Sons de fundo (gerados no próprio aparelho, sem baixar nada) ----------
-const SONS = [['nenhum', '🔇', 'Silêncio'], ['branco', '⚪', 'Ruído branco'], ['rosa', '🌸', 'Ruído rosa'], ['marrom', '🟤', 'Ruído marrom'],
-  ['chuva', '🌧️', 'Chuva'], ['mar', '🌊', 'Mar'], ['floresta', '🌳', 'Floresta'], ['lareira', '🔥', 'Lareira']];
-let ambiente = null;   // { saida, timers, fontes }
-function bufferRuido(ctx, tipo) {
-  const n = ctx.sampleRate * 4, buf = ctx.createBuffer(1, n, ctx.sampleRate), d = buf.getChannelData(0);
-  let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0, ultimo = 0;
-  for (let i = 0; i < n; i++) {
-    const w = Math.random() * 2 - 1;
-    if (tipo === 'branco') d[i] = w * 0.5;
-    else if (tipo === 'rosa') {
-      b0 = 0.99886 * b0 + w * 0.0555179; b1 = 0.99332 * b1 + w * 0.0750759; b2 = 0.969 * b2 + w * 0.153852;
-      b3 = 0.8665 * b3 + w * 0.3104856; b4 = 0.55 * b4 + w * 0.5329522; b5 = -0.7616 * b5 - w * 0.016898;
-      d[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * 0.5362) * 0.11; b6 = w * 0.115926;
-    } else { ultimo = (ultimo + 0.02 * w) / 1.02; d[i] = ultimo * 3.5; }   // marrom
-  }
-  return buf;
+// Sons de fundo: trechos de 5 min que emendam sem corte e repetem enquanto o foco durar
+// em 2 linhas, coluna por coluna: em cima a natureza, embaixo música e ruído
+const SONS = [['nenhum', '🔇', 'Silêncio'], ['marrom', '🟤', 'Ruído marrom'], ['chuva', '🌧️', 'Chuva'], ['tigelas', '🔔', 'Tigelas'], ['mar', '🌊', 'Mar'], ['handpan', '🥁', 'Handpan'],
+  ['floresta', '🌲', 'Floresta'], ['violoncelo', '🎻', 'Violoncelo'], ['passaros', '🐦', 'Pássaros'], ['celta', '🍀', 'Celta'], ['lareira', '🔥', 'Lareira'], ['gregoriano', '⛪', 'Gregoriano'],
+  ['432hz', '✨', '432 Hz']];
+const somValido = (id) => SONS.some(s => s[0] === id) ? id : 'nenhum';
+let ambiente = null;   // { saida, fontes }
+const somBuffers = new Map();   // guarda só o último som decodificado (cada um ocupa bastante memória)
+function carregarSom(id) {
+  if (somBuffers.has(id)) return somBuffers.get(id);
+  const p = fetch(`sons/${id}.m4a`).then(r => { if (!r.ok) throw new Error('som ' + r.status); return r.arrayBuffer(); })
+    .then(b => new Promise((ok, erro) => audioCtx.decodeAudioData(b, ok, erro)));
+  somBuffers.set(id, p); p.catch(() => somBuffers.delete(id));
+  for (const k of somBuffers.keys()) if (k !== id) somBuffers.delete(k);
+  return p;
 }
-function fonteRuido(ctx, tipo, destino) {
-  const f = ctx.createBufferSource(); f.buffer = bufferRuido(ctx, tipo); f.loop = true; f.connect(destino); f.start(); return f;
-}
-function filtro(ctx, tipo, freq, destino) { const b = ctx.createBiquadFilter(); b.type = tipo; b.frequency.value = freq; b.connect(destino); return b; }
 function iniciarAmbiente(tipo) {
   pararAmbiente();
-  if (!tipo || tipo === 'nenhum') return;
+  if (somValido(tipo) === 'nenhum') return;
   try {
     audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
     if (audioCtx.state === 'suspended') audioCtx.resume();
-    const ctx = audioCtx, saida = ctx.createGain(), t = ctx.currentTime, timers = [], fontes = [];
-    saida.gain.setValueAtTime(0, t); saida.gain.linearRampToValueAtTime(0.6, t + 1.5);
-    saida.connect(ctx.destination);
-    if (['branco', 'rosa', 'marrom'].includes(tipo)) fontes.push(fonteRuido(ctx, tipo, saida));
-    else if (tipo === 'chuva') {
-      const g = ctx.createGain(); g.gain.value = 0.55; g.connect(saida);
-      fontes.push(fonteRuido(ctx, 'rosa', filtro(ctx, 'lowpass', 7000, filtro(ctx, 'highpass', 450, g))));
-      timers.push(setInterval(() => g.gain.setTargetAtTime(0.4 + Math.random() * 0.3, ctx.currentTime, 0.2), 300));
-    } else if (tipo === 'mar') {
-      const g = ctx.createGain(); g.gain.value = 0.45; g.connect(saida);
-      fontes.push(fonteRuido(ctx, 'marrom', filtro(ctx, 'lowpass', 1000, g)));
-      const onda = ctx.createOscillator(), forca = ctx.createGain();
-      onda.frequency.value = 0.09; forca.gain.value = 0.4; onda.connect(forca); forca.connect(g.gain); onda.start(); fontes.push(onda);
-    } else if (tipo === 'floresta') {
-      const vento = ctx.createGain(); vento.gain.value = 0.3; vento.connect(saida);
-      fontes.push(fonteRuido(ctx, 'marrom', filtro(ctx, 'lowpass', 600, vento)));
-      const passaro = () => {   // canto de passarinho: assobios curtos subindo
-        const n = 2 + Math.floor(Math.random() * 4), base = 2600 + Math.random() * 1600, ini = ctx.currentTime;
-        for (let i = 0; i < n; i++) {
-          const o = ctx.createOscillator(), g = ctx.createGain(), t0 = ini + i * (0.11 + Math.random() * 0.06);
-          o.frequency.setValueAtTime(base, t0); o.frequency.exponentialRampToValueAtTime(base * 1.45, t0 + 0.07);
-          g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(0.05, t0 + 0.01); g.gain.exponentialRampToValueAtTime(0.0005, t0 + 0.09);
-          o.connect(g); g.connect(saida); o.start(t0); o.stop(t0 + 0.1);
-        }
-      };
-      timers.push(setInterval(() => { if (Math.random() < 0.45) passaro(); }, 1300));
-    } else if (tipo === 'lareira') {
-      const fogo = ctx.createGain(); fogo.gain.value = 0.55; fogo.connect(saida);
-      fontes.push(fonteRuido(ctx, 'marrom', filtro(ctx, 'lowpass', 450, fogo)));
-      const estalo = filtro(ctx, 'highpass', 1800, saida), buf = bufferRuido(ctx, 'branco');
-      timers.push(setInterval(() => {   // estalos da madeira
-        if (Math.random() > 0.35) return;
-        const f = ctx.createBufferSource(), g = ctx.createGain(), t0 = ctx.currentTime;
-        f.buffer = buf; g.gain.setValueAtTime(0.25 + Math.random() * 0.4, t0); g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.02 + Math.random() * 0.04);
-        f.connect(g); g.connect(estalo); f.start(t0, Math.random() * 3); f.stop(t0 + 0.08);
-      }, 90));
-    }
-    ambiente = { saida, timers, fontes };
+    const ctx = audioCtx, saida = ctx.createGain();
+    saida.gain.value = 0; saida.connect(ctx.destination);
+    const atual = ambiente = { saida, fontes: [] };
+    carregarSom(tipo).then(buf => {
+      if (ambiente !== atual) return;   // trocou ou parou enquanto carregava
+      const f = ctx.createBufferSource(); f.buffer = buf; f.loop = true; f.connect(saida);
+      f.start(0, Math.random() * buf.duration * .8);   // começa num ponto diferente a cada vez
+      atual.fontes.push(f);
+      const t = ctx.currentTime; saida.gain.setValueAtTime(0, t); saida.gain.linearRampToValueAtTime(0.7, t + 1.5);
+    }).catch(() => { if (ambiente === atual) toast('Não deu para carregar esse som agora. Confira a internet.'); });
   } catch {}
 }
 function pararAmbiente() {
   if (!ambiente) return;
-  const { saida, timers, fontes } = ambiente, t = audioCtx.currentTime;
+  const { saida, fontes } = ambiente, t = audioCtx.currentTime;
   ambiente = null;
-  timers.forEach(clearInterval);
   saida.gain.cancelScheduledValues(t); saida.gain.setValueAtTime(saida.gain.value, t); saida.gain.linearRampToValueAtTime(0, t + 0.6);
   setTimeout(() => { fontes.forEach(f => { try { f.stop(); } catch {} }); saida.disconnect(); }, 700);
 }
