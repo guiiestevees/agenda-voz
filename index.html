@@ -212,6 +212,13 @@
   .dt-seta { width: 8px; height: 8px; border-right: 2px solid #c7c7cc; border-top: 2px solid #c7c7cc; transform: rotate(45deg); flex: none; }
   .dt-rota li::before { content: counter(rota); width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 800; background: var(--accent); color: var(--on-accent); flex: none; }
   .dt-dica { font-size: 13px !important; }
+  .dt-busca { display: flex; align-items: center; gap: 8px; margin: 4px auto 14px; max-width: 300px; padding: 11px 14px; border-radius: 12px; background: #e9e9ee; color: #000; text-align: left; font-size: 18px; }
+  .dt-busca b { font-weight: 600; }
+  .dt-lupa { position: relative; width: 14px; height: 14px; border: 2px solid #8e8e93; border-radius: 50%; flex: none; }
+  .dt-lupa::after { content: ''; position: absolute; right: -5px; bottom: -4px; width: 6px; height: 2px; background: #8e8e93; transform: rotate(45deg); }
+  .dt-cursor { width: 2px; height: 20px; background: #0a84ff; animation: dtCursor 1s steps(1) infinite; }
+  @keyframes dtCursor { 50% { opacity: 0; } }
+  .dt-ajuda .dt-rota { margin: 10px 0 2px; }
   .dt-ajuda { text-align: left; margin: 6px 0 4px; padding: 12px 14px; border-radius: 14px; background: var(--field); }
   .dt-ajuda summary { font-weight: 750; cursor: pointer; color: var(--accent-text); }
   .dt-ajuda li { margin: 8px 0; color: var(--muted); font-size: 14px; line-height: 1.4; }
@@ -5347,15 +5354,16 @@ function marcarBotaoDoisToques() {
     ? `<span class="dt-ok">${ICO.ok}</span><span><b>2 toques ativos</b><small>Toque para refazer ou testar de novo</small></span>`
     : `<span class="dt-fone mini" aria-hidden="true"><i></i></span><span><b>Ativar os 2 toques</b><small>Anote sem abrir o app</small></span>`;
 }
-const ROTA_AJUSTES = [['⚙️', 'Ajustes', 'o ícone cinza de engrenagem'], ['♿', 'Acessibilidade', ''], ['👆', 'Toque', ''], ['📳', 'Toque Traseiro', 'fica lá no fim, role a tela'], ['✌️', 'Toque Duplo', ''], ['🐝', 'Falar com a Bee', 'na parte de Atalhos, lá embaixo']];
+const ROTA_AJUSTES = [['⚙️', 'Ajustes', 'o ícone cinza de engrenagem'], ['♿', 'Acessibilidade', ''], ['👆', 'Toque', ''], ['📳', 'Toque Traseiro', 'fica no fim da tela de Toque'], ['✌️', 'Toque Duplo', ''], ['🐝', 'Falar com a Bee', 'na parte de Atalhos, lá embaixo']];
+const rotaHtml = (itens) => `<ol class="dt-rota">${itens.map(([ico, nome, dica]) => `<li><span class="dt-ico">${ico}</span><span><b>${nome}</b>${dica ? `<small>${dica}</small>` : ''}</span><span class="dt-seta"></span></li>`).join('')}</ol>`;
 function abrirDoisToques(passo = 0) {
   const pontos = (n) => `<div class="dt-passos">${[0, 1, 2, 3].map(i => `<i class="${i === n ? 'on' : i < n ? 'feito' : ''}"></i>`).join('')}</div>`;
   const telas = [
     () => `${pontos(0)}
       <div class="dt-demo"><span class="dt-fone grande" aria-hidden="true"><i></i><b></b><b></b></span></div>
       <h3>Anote em 2 segundos</h3>
-      <p class="dt-grande">Dê <b>2 toques atrás do celular</b>, fale o compromisso e pronto. Funciona de qualquer tela, até no WhatsApp.</p>
-      <p>São 3 passos simples. A gente faz junto.</p>
+      <p class="dt-grande">Dê <b>2 toques atrás do celular</b>, fale o compromisso e pronto.</p>
+      <p>Basta o celular estar desbloqueado. São 3 passos simples e a gente faz junto.</p>
       <div class="botoes"><button id="dtDepois">Depois</button><button class="primario" id="dtProx">Vamos lá</button></div>`,
     () => `${pontos(1)}
       <div class="dt-num">1</div>
@@ -5367,8 +5375,11 @@ function abrirDoisToques(passo = 0) {
     () => `${pontos(2)}
       <div class="dt-num">2</div>
       <h3>Ligue os 2 toques</h3>
-      <p class="dt-grande">Saia do Tap Bee e abra os <b>Ajustes</b> do iPhone. Toque, em ordem:</p>
-      <ol class="dt-rota">${ROTA_AJUSTES.map(([ico, nome, dica]) => `<li><span class="dt-ico">${ico}</span><span><b>${nome}</b>${dica ? `<small>${dica}</small>` : ''}</span><span class="dt-seta"></span></li>`).join('')}</ol>
+      <p class="dt-grande">Abra os <b>Ajustes</b> do iPhone, toque na <b>busca</b> lá em cima e digite:</p>
+      <div class="dt-busca"><span class="dt-lupa"></span><b>Toque Traseiro</b><i class="dt-cursor"></i></div>
+      <p class="dt-grande">Depois toque, em ordem:</p>
+      ${rotaHtml(ROTA_AJUSTES.slice(3).map((r, i) => i ? r : [r[0], r[1], 'o resultado da busca']))}
+      <details class="dt-ajuda"><summary>Não achou pela busca? Siga o caminho completo</summary>${rotaHtml(ROTA_AJUSTES)}</details>
       <p class="dt-dica">Dica: tire um print desta tela para seguir olhando.</p>
       <div class="botoes"><button id="dtVolta">Voltar</button><button class="primario" id="dtProx">Já fiz</button></div>`,
     () => `${pontos(3)}
@@ -5402,7 +5413,7 @@ function comemorarDoisToques(frase) {
   abrirFolha(`<div class="dois-toques festa">
     <img class="bee-voz" src="${MASCOTES.bee_festa}" alt="">
     <h3>Funcionou!</h3>
-    <p class="dt-grande">Seus <b>2 toques estão ativos</b>. Agora é só tocar atrás do celular e falar, de qualquer tela.</p>
+    <p class="dt-grande">Seus <b>2 toques estão ativos</b>. Agora é só tocar atrás do celular e falar.</p>
     ${frase ? `<div class="frase">A Bee ouviu: “${esc(frase)}”</div>` : ''}
     ${primeira ? `<div class="dt-premio">${ICO_GOTA}+${PONTOS_DOIS_TOQUES} pontos de prêmio</div>` : ''}
     <div class="botoes">${frase && !/^testando/i.test(frase.trim()) ? '<button id="dtAnotar">Anotar isso</button>' : ''}<button class="primario" id="dtOk">Show!</button></div>
