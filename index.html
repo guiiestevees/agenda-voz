@@ -209,9 +209,12 @@
   .dt-rota b { font-size: 17px; font-weight: 650; } .dt-rota small { font-size: 13px; color: #6e6e73; }
   .dt-rota li:last-child { background: #fff6dc; } .dt-rota li:last-child b { color: #9a6400; }
   .dt-ico { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; background: #f2f2f7; font-size: 18px; flex: none; }
+  .dt-ico.azul { background: #0a84ff; }
+  .dt-ico svg { width: 20px; height: 20px; }
   .dt-seta { width: 8px; height: 8px; border-right: 2px solid #c7c7cc; border-top: 2px solid #c7c7cc; transform: rotate(45deg); flex: none; }
   .dt-rota li::before { content: counter(rota); width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 800; background: var(--accent); color: var(--on-accent); flex: none; }
   .dt-dica { font-size: 13px !important; }
+  .dois-toques .botoes { position: sticky; bottom: 0; z-index: 2; margin-top: 8px; padding: 10px 0 2px; background: var(--card); box-shadow: 0 -10px 12px -6px var(--card); }
   .dt-busca { display: flex; align-items: center; gap: 8px; margin: 4px auto 14px; max-width: 300px; padding: 11px 14px; border-radius: 12px; background: #e9e9ee; color: #000; text-align: left; font-size: 18px; }
   .dt-busca b { font-weight: 600; }
   .dt-lupa { position: relative; width: 14px; height: 14px; border: 2px solid #8e8e93; border-radius: 50%; flex: none; }
@@ -5354,8 +5357,10 @@ function marcarBotaoDoisToques() {
     ? `<span class="dt-ok">${ICO.ok}</span><span><b>2 toques ativos</b><small>Toque para refazer ou testar de novo</small></span>`
     : `<span class="dt-fone mini" aria-hidden="true"><i></i></span><span><b>Ativar os 2 toques</b><small>Anote sem abrir o app</small></span>`;
 }
-const ROTA_AJUSTES = [['⚙️', 'Ajustes', 'o ícone cinza de engrenagem'], ['♿', 'Acessibilidade', ''], ['👆', 'Toque', ''], ['📳', 'Toque Traseiro', 'fica no fim da tela de Toque'], ['✌️', 'Toque Duplo', ''], ['🐝', 'Falar com a Bee', 'na parte de Atalhos, lá embaixo']];
-const rotaHtml = (itens) => `<ol class="dt-rota">${itens.map(([ico, nome, dica]) => `<li><span class="dt-ico">${ico}</span><span><b>${nome}</b>${dica ? `<small>${dica}</small>` : ''}</span><span class="dt-seta"></span></li>`).join('')}</ol>`;
+// Mesmo desenho do ícone de Toque nos Ajustes: mãozinha branca em fundo azul
+const ICO_TOQUE = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 14a8 8 0 0 1-8 8"/><path d="M18 11v-1a2 2 0 0 0-2-2a2 2 0 0 0-2 2"/><path d="M14 10V9a2 2 0 0 0-2-2a2 2 0 0 0-2 2v1"/><path d="M10 9.5V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v10"/><path d="M18 11a2 2 0 1 1 4 0v3a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>';
+const ROTA_AJUSTES = [['⚙️', 'Ajustes', 'o ícone cinza de engrenagem'], ['♿', 'Acessibilidade', ''], [ICO_TOQUE, 'Toque', 'o botão azul com a mãozinha branca'], ['📳', 'Toque Traseiro', 'role a tela até lá embaixo'], ['✌️', 'Toque Duplo', ''], ['🐝', 'Falar com a Bee', 'na parte de Atalhos, lá embaixo']];
+const rotaHtml = (itens) => `<ol class="dt-rota">${itens.map(([ico, nome, dica]) => `<li><span class="dt-ico ${ico === ICO_TOQUE ? 'azul' : ''}">${ico}</span><span><b>${nome}</b>${dica ? `<small>${dica}</small>` : ''}</span><span class="dt-seta"></span></li>`).join('')}</ol>`;
 function abrirDoisToques(passo = 0) {
   const pontos = (n) => `<div class="dt-passos">${[0, 1, 2, 3].map(i => `<i class="${i === n ? 'on' : i < n ? 'feito' : ''}"></i>`).join('')}</div>`;
   const telas = [
@@ -5375,10 +5380,10 @@ function abrirDoisToques(passo = 0) {
     () => `${pontos(2)}
       <div class="dt-num">2</div>
       <h3>Ligue os 2 toques</h3>
-      <p class="dt-grande">Abra os <b>Ajustes</b> do iPhone, toque na <b>busca</b> lá em cima e digite:</p>
+      <p class="dt-grande">Abra os <b>Ajustes</b> do iPhone, toque em <b>Buscar</b>, lá embaixo na tela, e digite:</p>
       <div class="dt-busca"><span class="dt-lupa"></span><b>Toque Traseiro</b><i class="dt-cursor"></i></div>
       <p class="dt-grande">Depois toque, em ordem:</p>
-      ${rotaHtml(ROTA_AJUSTES.slice(3).map((r, i) => i ? r : [r[0], r[1], 'o resultado da busca']))}
+      ${rotaHtml(ROTA_AJUSTES.slice(2))}
       <details class="dt-ajuda"><summary>Não achou pela busca? Siga o caminho completo</summary>${rotaHtml(ROTA_AJUSTES)}</details>
       <p class="dt-dica">Dica: tire um print desta tela para seguir olhando.</p>
       <div class="botoes"><button id="dtVolta">Voltar</button><button class="primario" id="dtProx">Já fiz</button></div>`,
