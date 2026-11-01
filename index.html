@@ -135,7 +135,21 @@
   .grupo h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 24px 0 10px; font-weight: 650; }
   .grupo-topo { display: flex; align-items: center; justify-content: space-between; margin: 24px 0 10px; }
   .grupo-topo h2 { margin: 0; font-size: 20px; font-weight: 750; letter-spacing: -.015em; text-transform: none; color: var(--text); }
+  .faixa-dias { display: flex; gap: 6px; overflow-x: auto; overflow-y: hidden; touch-action: pan-x; scrollbar-width: none; margin: -2px -16px 12px; padding: 2px 16px 4px; scroll-padding: 0 16px; }
+  .faixa-dias::-webkit-scrollbar { display: none; }
+  .fd-dia { flex: none; width: 50px; height: 64px; border: 0; border-radius: 16px; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; cursor: pointer;
+    background: color-mix(in srgb, var(--card) 80%, transparent); box-shadow: inset 0 0 0 1px var(--line); color: var(--text); transition: transform .15s var(--ease), background .2s; }
+  .fd-dia:active { transform: scale(.94); }
+  .fd-dia span { font-size: 10.5px; font-weight: 750; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); }
+  .fd-dia b { font-size: 18px; font-weight: 750; font-variant-numeric: tabular-nums; line-height: 1.15; }
+  .fd-dia i { display: flex; gap: 3px; height: 5px; }
+  .fd-dia em { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+  .fd-dia.hj span { color: var(--accent-text); }
+  .fd-dia.sel { background: var(--accent); box-shadow: 0 6px 14px rgba(var(--accent-rgb),.3); color: var(--on-accent); }
+  .fd-dia.sel span { color: var(--on-accent); opacity: .8; }
+  .fd-dia.sel em { background: var(--on-accent); }
   .novo-mini {
+    flex: none; white-space: nowrap;
     height: 40px; border: 0; border-radius: 999px; padding: 0 16px 0 12px; background: var(--accent); color: var(--on-accent);
     font-size: 15px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
     box-shadow: 0 6px 16px rgba(var(--accent-rgb),.3); transition: transform .15s var(--ease);
@@ -1991,6 +2005,8 @@ const DIAS_CURTOS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 
 let aba = lerPref('agenda.aba', 'hoje');
 let diaSel = inicioDoDia(new Date());   // dia escolhido em Semana e Mês
+let diaHoje = 0;   // na tela Hoje: 0 = hoje, 1 = amanhã… (faixa de dias acima da agenda)
+const DIAS_FAIXA = 14;
 let mesVisto = new Date(diaSel.getFullYear(), diaSel.getMonth(), 1);
 let destacarId = null;
 
@@ -2107,14 +2123,43 @@ function telaHoje() {
   // Um destaque só por vez: o check-in (enquanto não feito) ou o próximo compromisso
   chaveProximo = proximoDeHoje(agora);
   let html = htmlCheckinHero() + htmlProgresso() + htmlFalaBee(total, feitos, agora) + htmlResgate();   // no fim do dia, o botão da câmera no cartão do bicho vira "Postar"
-  html += `<section class="grupo"><div class="grupo-topo"><h2>Agenda de hoje</h2><button class="novo-mini" data-novo-comp>${ICO.mais}Novo compromisso</button></div>${total && tudo ? `<div class="tudo-feito">${cenaMascote('festa')}<b>Dia fechado, pote cheio!</b><span>Pode descansar. Amanhã tem mais.</span></div>` : linhaDoTempo(hoje, agora, true)}</section>`;
+  const dia = maisDias(hoje, diaHoje);
+  const tituloDia = !diaHoje ? 'Agenda de hoje' : diaHoje === 1 ? 'Amanhã' : `${maiuscula(dia.toLocaleDateString('pt-BR', { weekday: 'long' }).replace('-feira', ''))}, ${dia.getDate()}`;
+  const corpo = diaHoje ? linhaDoTempo(dia, agora, false)
+    : total && tudo ? `<div class="tudo-feito">${cenaMascote('festa')}<b>Dia fechado, pote cheio!</b><span>Pode descansar. Amanhã tem mais.</span></div>` : linhaDoTempo(hoje, agora, true);
+  html += `<section class="grupo"><div class="grupo-topo"><h2>${tituloDia}</h2><button class="novo-mini" data-novo-comp>${ICO.mais}Novo compromisso</button></div>${htmlFaixaDias(hoje)}<div class="dia-corpo">${corpo}</div></section>`;
   // Na primeira vez com compromissos, mostra que dá pra arrastar os cartões
   if (total > feitos && !lerPref('agenda.dicaGesto', '')) {
     html = html.replace('<div class="deslize"', '<div class="deslize ensina"');
     html = html.replace('<section class="grupo">', `<section class="grupo">`).replace(/(<div class="grupo-topo">[\s\S]*?<\/div>)/, `$1<div class="dica-gesto"><span>👉 Arraste um compromisso para a <b>direita</b> para marcar como feito, ou para a <b>esquerda</b> para excluir.</span><button data-fechar-gesto>Entendi</button></div>`);
   }
-  if (feitos) html += `<details class="feitos"><summary>Feitos (${feitos})</summary>${feitosL.map(o => cartao(o, agora)).join('')}</details>`;
+  if (feitos && !diaHoje) html += `<details class="feitos"><summary>Feitos (${feitos})</summary>${feitosL.map(o => cartao(o, agora)).join('')}</details>`;
   return html;
+}
+// Faixa com os próximos dias: toca num dia para ver a agenda dele sem sair do Hoje
+function htmlFaixaDias(hoje) {
+  const ocs = ocorrencias(hoje, maisDias(hoje, DIAS_FAIXA)), qtd = new Map();
+  for (const o of ocs) { const k = chaveDia(o.inicio); qtd.set(k, (qtd.get(k) || 0) + 1); }
+  return `<div class="faixa-dias" id="faixaDias">${Array.from({ length: DIAS_FAIXA }, (_, i) => {
+    const d = maisDias(hoje, i), n = qtd.get(chaveDia(d)) || 0;
+    return `<button class="fd-dia ${i === diaHoje ? 'sel' : ''} ${i ? '' : 'hj'}" data-dia-hoje="${i}" aria-label="${i ? fmtDataLonga(d) : 'Hoje'}${n ? `, ${n} compromisso${n > 1 ? 's' : ''}` : ''}">
+      <span>${i ? i === 1 ? 'amanhã' : DIAS_CURTOS[d.getDay()] : 'hoje'}</span><b>${d.getDate()}</b><i>${'<em></em>'.repeat(Math.min(n, 3))}</i></button>`;
+  }).join('')}</div>`;
+}
+function irDiaHoje(i) {
+  diaHoje = Math.max(0, Math.min(DIAS_FAIXA - 1, i));
+  vibrar('leve');
+  const lista = document.getElementById('lista'), faixa = document.getElementById('faixaDias'), sx = faixa ? faixa.scrollLeft : 0;
+  lista.innerHTML = telaHoje(); chaveProximo = null;
+  const nova = document.getElementById('faixaDias');
+  if (nova) { nova.scrollLeft = sx; nova.querySelector('.sel')?.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'smooth' }); }
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) lista.querySelector('.dia-corpo')?.animate([{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }], { duration: 220, easing: 'ease-out' });
+}
+// Depois de criar algo para outro dia, o Hoje já mostra aquele dia
+function mostrarDiaNoHoje(ev) {
+  if (!ev) return;
+  const i = Math.round((inicioDoDia(new Date(ev.inicio)) - inicioDoDia(new Date())) / 864e5);
+  if (i >= 0 && i < DIAS_FAIXA) diaHoje = i;
 }
 // A Bee comenta o dia num balãozinho (só depois do check-in, pra não brigar com o destaque)
 function htmlFalaBee(total, feitos, agora) {
@@ -2392,7 +2437,7 @@ function navegar(passo) {
   if (passo === 'hoje' || !passo.endsWith('m')) mesVisto = new Date(diaSel.getFullYear(), diaSel.getMonth(), 1);
   render();
 }
-document.querySelectorAll('.aba').forEach(b => b.onclick = () => irPara(b.dataset.aba));
+document.querySelectorAll('.aba').forEach(b => b.onclick = () => { if (b.dataset.aba === 'hoje') diaHoje = 0; irPara(b.dataset.aba); });
 function mostrarSequencia() {
   const n = sequencia(), p = xp.protetores ?? 1;
   toast(`${n} dia${n > 1 ? 's' : ''} seguido${n > 1 ? 's' : ''} de check-in.${p ? ` Você tem ${p} protetor${p > 1 ? 'es' : ''} de sequência.` : ''} Te espero amanhã!`, 4000);
@@ -2492,9 +2537,11 @@ document.getElementById('lista').addEventListener('click', (ev) => {
   if (ev.target.closest('[data-fechar-ontem]')) return fecharOntem();
   if (ev.target.closest('[data-fechar-gesto]')) { gravarPref('agenda.dicaGesto', '1'); return render(); }
   if (ev.target.closest('[data-fogo]')) return mostrarSequencia();
+  const fd = ev.target.closest('[data-dia-hoje]');
+  if (fd) return irDiaHoje(+fd.dataset.diaHoje);
   const alvo = ev.target.closest('[data-novo-comp], [data-falar], [data-fechar-dica], [data-desafio], [data-hab-check], [data-hab], [data-novo-hab], [data-compartilhar], [data-checkin], [data-check], [data-conselho], [data-niveis], [data-id], [data-dia], [data-nav], [data-ir]');
   if (!alvo) return;
-  if ('novoComp' in alvo.dataset) novoCompromisso();
+  if ('novoComp' in alvo.dataset) aba === 'hoje' && diaHoje ? novoCompromisso(chaveDia(maisDias(new Date(), diaHoje)), '09:00') : novoCompromisso();
   else if ('falar' in alvo.dataset) abrirVoz();
   else if ('fecharDica' in alvo.dataset) { gravarPref('agenda.dicaFechada', '1'); render(); }
   else if ('desafio' in alvo.dataset) abrirDesafio();
@@ -2515,6 +2562,11 @@ document.getElementById('lista').addEventListener('click', (ev) => {
 let toqueX = null;
 document.getElementById('lista').addEventListener('touchstart', (e) => { toqueX = e.target.closest('[data-deslize]') ? null : e.touches[0].clientX; }, { passive: true });
 document.getElementById('lista').addEventListener('touchend', (e) => {
+  if (toqueX !== null && aba === 'hoje' && e.target.closest('.dia-corpo')) {
+    const dx = e.changedTouches[0].clientX - toqueX; toqueX = null;
+    if (Math.abs(dx) > 60) irDiaHoje(diaHoje + (dx < 0 ? 1 : -1));
+    return;
+  }
   if (toqueX === null || aba !== 'semana' || visao !== 'mes') return;
   const dx = e.changedTouches[0].clientX - toqueX; toqueX = null;
   if (Math.abs(dx) > 60) navegar(dx < 0 ? '1m' : '-1m');
@@ -4151,6 +4203,7 @@ function executar(r, frase) {
   if (r.tipo === 'agir' && !mudou) r = { ...r, tipo: 'nao_entendi', resposta: r.resposta || 'Não entendi. Pode repetir?' };
   // Só mostra os que continuam na agenda (ex.: criado e depois desmarcado na mesma fala)
   const mostrar = tocados.filter((ev, i) => eventos.includes(ev) && tocados.indexOf(ev) === i);
+  mostrarDiaNoHoje(mostrar.find(ev => tocados.includes(ev)));
   if (mostrar[0]) { rolarParaDia = true; diaSel = inicioDoDia(new Date(mostrar[0].inicio)); mesVisto = new Date(diaSel.getFullYear(), diaSel.getMonth(), 1); }
   if (mudou) { salvar(); destacarId = mostrar.map(e => e.id); render(); if ((r.acoes || []).some(a => a.acao === 'criar')) setTimeout(dicaPosCriar, 2500); }
   mostrarResultado(r, frase, mostrar, mudou ? antes : null);
@@ -4297,6 +4350,7 @@ function abrirEdicao(ev, novo = false) {
     ev.repetir = freq === 'nenhuma' ? null : montarRepetir(freq, freq === 'semanal' ? diasSem : []);
     ev.avisado = false; ev.avisados = [];
     if (novo) { eventos.push(ev); diaSel = inicioDoDia(new Date(ev.inicio)); rolarParaDia = true; }
+    if (novo) mostrarDiaNoHoje(ev);
     salvar(); destacarId = ev.id; render(); fecharFolha(); vibrar('sucesso'); if (!(novo && dicaPosCriar())) toast(novo ? 'Compromisso criado' : 'Alterações salvas');
   };
   if (novo) { document.getElementById('bCancelar').onclick = fecharFolha; document.getElementById('bFalarForm').onclick = abrirVoz; }
