@@ -1790,7 +1790,7 @@ function vibrar(tipo = 'leve') {
       else H.impact({ style: tipo === 'forte' ? 'HEAVY' : tipo === 'medio' ? 'MEDIUM' : 'LIGHT' });
       return;
     }
-    if (navigator.vibrate) navigator.vibrate({ selecao: 5, leve: 10, medio: 18, forte: 30, sucesso: [12, 60, 20], erro: [30, 60, 30] }[tipo] || 10);
+    if (navigator.vibrate && navigator.userActivation?.hasBeenActive !== false) navigator.vibrate({ selecao: 5, leve: 10, medio: 18, forte: 30, sucesso: [12, 60, 20], erro: [30, 60, 30] }[tipo] || 10);
   } catch {}
 }
 const durDe = (ev) => ev.duracaoMin || 60;
@@ -2036,6 +2036,7 @@ const DIAS_CURTOS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 let aba = lerPref('agenda.aba', 'hoje');
 let diaSel = inicioDoDia(new Date());   // dia escolhido em Semana e Mês
 let diaHoje = 0;   // na tela Hoje: 0 = hoje, 1 = amanhã… (faixa de dias acima da agenda)
+let diaHojeBase = '';   // de que dia a faixa partiu (se virar a meia-noite, volta para hoje)
 const DIAS_FAIXA = 14;
 let mesVisto = new Date(diaSel.getFullYear(), diaSel.getMonth(), 1);
 let destacarId = null;
@@ -2153,6 +2154,7 @@ function telaHoje() {
   // Um destaque só por vez: o check-in (enquanto não feito) ou o próximo compromisso
   chaveProximo = proximoDeHoje(agora);
   let html = htmlCheckinHero() + htmlProgresso() + htmlFalaBee(total, feitos, agora) + htmlResgate();   // no fim do dia, o botão da câmera no cartão do bicho vira "Postar"
+  if (diaHojeBase !== chaveDia(hoje)) { diaHojeBase = chaveDia(hoje); diaHoje = 0; }
   const dia = maisDias(hoje, diaHoje);
   const tituloDia = !diaHoje ? 'Agenda de hoje' : diaHoje === 1 ? 'Amanhã' : `${maiuscula(dia.toLocaleDateString('pt-BR', { weekday: 'long' }).replace('-feira', ''))}, ${dia.getDate()}`;
   const corpo = diaHoje ? linhaDoTempo(dia, agora, false)
@@ -2242,7 +2244,7 @@ function irDiaHoje(i) {
 function mostrarDiaNoHoje(ev) {
   if (!ev) return;
   const i = Math.round((inicioDoDia(new Date(ev.inicio)) - inicioDoDia(new Date())) / 864e5);
-  if (i >= 0 && i < DIAS_FAIXA) diaHoje = i;
+  if (i >= 0 && i < DIAS_FAIXA) { diaHoje = i; diaHojeBase = chaveDia(new Date()); }
 }
 // A Bee comenta o dia num balãozinho (só depois do check-in, pra não brigar com o destaque)
 function htmlFalaBee(total, feitos, agora) {
@@ -2469,16 +2471,15 @@ function render() {
   const linhaHoje = document.getElementById('hoje');
   linhaHoje.hidden = aba === 'hoje';   // na tela Hoje a data já aparece no topo; o resumo do dia era repetido
   linhaHoje.textContent = aba === 'hoje' ? '' : maiuscula(fmtDataLonga(new Date()));
+  // faixas que rolam de lado (dias do Hoje, sons do Pomodoro) ficam onde a pessoa deixou
+  const rolagens = entrouAbaAgora() ? [] : ['.faixa-dias', '.sons'].map(s => [s, document.querySelector(s)?.scrollLeft || 0]);
   comFlip(() => {
     if (aba === 'hoje') { lista.innerHTML = telaHoje(); chaveProximo = null; }
     else if (aba === 'semana' && visao === 'semana') { lista.innerHTML = telaSemana(); montarGrade(pos); }
     else if (aba === 'semana') lista.innerHTML = telaMes();
-    else if (aba === 'foco') {
-      const sx = document.querySelector('.sons')?.scrollLeft || 0;   // a lista de sons fica onde a pessoa deixou
-      lista.innerHTML = telaFoco(); montarRoda(); posicionarBicho(); prepararSom();
-      const sons = document.querySelector('.sons'); if (sons) sons.scrollLeft = sx;
-    }
+    else if (aba === 'foco') { lista.innerHTML = telaFoco(); montarRoda(); posicionarBicho(); prepararSom(); }
     else if (aba === 'habitos') lista.innerHTML = telaHabitos();
+    rolagens.forEach(([s, x]) => { const el = document.querySelector(s); if (el && x) el.scrollLeft = x; });
   });
   destacarId = null;
   atualizarWidget();
@@ -2486,6 +2487,7 @@ function render() {
 
 // Anima a lista quando ela muda: cartões que mudaram de lugar deslizam até a posição nova; os novos aparecem
 let trocouAba = false;
+const entrouAbaAgora = () => trocouAba;
 function comFlip(desenhar) {
   const calmo = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const antes = new Map();
@@ -2537,7 +2539,7 @@ document.getElementById('btnSons').onclick = () => { gravarPref('agenda.sonsToqu
 rotSons();
 
 // ---------- Backup: tudo o que o app guarda vira um arquivo .json ----------
-const CHAVES_BACKUP = ['agenda.eventos', 'agenda.notas', 'agenda.bicho', 'agenda.habitos', 'agenda.xp', 'agenda.focos', 'agenda.foco', 'agenda.nome', 'agenda.tema', 'agenda.modo', 'agenda.marca', 'agenda.visao', 'agenda.boasVindas', 'agenda.dicaFechada'];
+const CHAVES_BACKUP = ['agenda.eventos', 'agenda.notas', 'agenda.bicho', 'agenda.sonsToque', 'agenda.habitos', 'agenda.xp', 'agenda.focos', 'agenda.foco', 'agenda.nome', 'agenda.tema', 'agenda.modo', 'agenda.marca', 'agenda.visao', 'agenda.boasVindas', 'agenda.dicaFechada'];
 function mostrarUltimoBackup() {
   const el = document.getElementById('bkUltimo'), quando = lerPref('agenda.ultimoBackup', '');
   if (!quando) { el.textContent = 'Você ainda não salvou nenhum backup.'; el.classList.add('velho'); return; }
@@ -2750,7 +2752,8 @@ function marcarFeito(botao) {
   // anima no lugar e só depois redesenha a tela
   const cartaoEl = botao.closest('.evento');
   const rb = botao.getBoundingClientRect(), perto = { x: rb.left + rb.width / 2, y: rb.top };
-  ganhar(feito ? PONTOS.feito : -PONTOS.feito, perto);
+  if (dia <= chaveDia(new Date())) ganhar(feito ? PONTOS.feito : -PONTOS.feito, perto);   // dia futuro: marca, mas não vale ponto antes da hora
+  else if (feito) toast('Marcado! Pontos só valem no dia do compromisso.', 3500);
   vibrar(feito ? 'sucesso' : 'leve');
   botao.classList.toggle('on', feito);
   cartaoEl.classList.toggle('feito', feito);
@@ -4609,7 +4612,7 @@ function checarLembretes() {
   }
   if (mudou) salvar();
 }
-setInterval(() => { checarLembretes(); aplicarPenalidades(); avisoNoturno(); if (aba === 'hoje' && !overlay.classList.contains('show')) render(); }, 30000);
+setInterval(() => { checarLembretes(); aplicarPenalidades(); avisoNoturno(); if (aba === 'hoje' && !overlay.classList.contains('show') && !gesto) render(); }, 30000);
 // voltando para o app depois de um tempo: atualiza tudo (dia pode ter virado)
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { usarProtetores(); aplicarPenalidades(); render(); registrarInicioMes(); checarRetrospectiva(); checarResumoSemana(); conferirConvites(); } });
 
