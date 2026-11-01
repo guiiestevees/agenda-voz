@@ -1,0 +1,21 @@
+{
+  "name": "tap-bee",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Tap Bee: Agenda por Voz (app nativo para iPhone)",
+  "scripts": {
+    "web": "rm -rf www && mkdir -p www && cp index.html privacidade.html sw.js www/ && cp -R sons atalho www/ 2>/dev/null || true",
+    "sync": "npm run web && npx cap sync ios",
+    "abrir": "npx cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/core": "^8.6.0",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/ios": "^8.6.0",
+    "@capacitor/local-notifications": "^8.3.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.6.0"
+  }
+}

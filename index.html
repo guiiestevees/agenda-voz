@@ -164,6 +164,60 @@
   .nota-vazia i { color: var(--text); }
   .nota-marcar { width: 100%; height: 50px; margin: 14px 0 2px; display: flex; align-items: center; justify-content: center; gap: 6px; }
   .nota-marcar svg { width: 18px; height: 18px; }
+  /* 2 toques atrás */
+  .dt-card { width: 100%; display: flex; align-items: center; gap: 12px; margin: 14px 0 0; padding: 14px; border: 0; border-radius: 20px; cursor: pointer; text-align: left; color: #1d1600;
+    background: linear-gradient(135deg, #ffd761, #f5b21b); box-shadow: 0 8px 20px rgba(217,138,6,.28); }
+  .dt-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .dt-txt b { font-size: 16px; font-weight: 800; line-height: 1.25; }
+  .dt-txt small { font-size: 13px; font-weight: 600; opacity: .75; }
+  .dt-ir { flex: none; padding: 9px 14px; border-radius: 999px; background: #1d1600; color: #ffd761; font-weight: 800; font-size: 14px; }
+  .dt-fone { position: relative; flex: none; width: 34px; height: 54px; border-radius: 9px; background: #1d1600; box-shadow: inset 0 0 0 3px #3a2a06; }
+  .dt-fone i { position: absolute; left: 6px; top: 6px; width: 10px; height: 10px; border-radius: 4px; background: #555; box-shadow: 0 12px 0 #555; }
+  .dt-fone b { position: absolute; left: 50%; top: 50%; width: 26px; height: 26px; margin: -13px; border-radius: 50%; border: 2.5px solid #fff; opacity: 0; animation: dtToque 2.4s ease-out infinite; }
+  .dt-fone b + b { animation-delay: .25s; }
+  @keyframes dtToque { 0%, 8% { transform: scale(.3); opacity: .95; } 35% { transform: scale(1.5); opacity: 0; } 100% { opacity: 0; } }
+  .dt-fone.mini { width: 24px; height: 38px; border-radius: 6px; }
+  .dt-fone.mini i { left: 4px; top: 4px; width: 7px; height: 7px; box-shadow: 0 9px 0 #555; }
+  .dt-fone.grande { width: 92px; height: 150px; border-radius: 22px; box-shadow: inset 0 0 0 5px #3a2a06, 0 14px 30px rgba(0,0,0,.2); }
+  .dt-fone.grande i { left: 14px; top: 14px; width: 26px; height: 26px; border-radius: 9px; box-shadow: 0 32px 0 #555; }
+  .dt-fone.grande b { width: 70px; height: 70px; margin: -35px; border-width: 4px; border-color: #f5b21b; }
+  .dt-ajuste { width: 100%; display: flex; align-items: center; gap: 12px; padding: 14px 16px; border: 0; border-radius: 16px; background: var(--card); box-shadow: inset 0 0 0 1px var(--line);
+    color: var(--text); text-align: left; cursor: pointer; margin-bottom: 10px; }
+  .dt-ajuste > span:last-child { display: flex; flex-direction: column; gap: 2px; }
+  .dt-ajuste b { font-size: 16px; } .dt-ajuste small { color: var(--muted); font-size: 13px; }
+  .dt-ok { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: #22a35a; color: #fff; flex: none; }
+  .dt-ok svg { width: 18px; height: 18px; }
+  .dois-toques { text-align: center; }
+  .dois-toques h3 { font-size: 26px; margin: 10px 0 8px; }
+  .dois-toques p { color: var(--muted); font-size: 15px; line-height: 1.45; margin: 0 0 10px; }
+  .dois-toques .dt-grande { color: var(--text); font-size: 18px; line-height: 1.45; }
+  .dt-passos { display: flex; justify-content: center; gap: 6px; margin: 4px 0 14px; }
+  .dt-passos i { width: 26px; height: 6px; border-radius: 3px; background: var(--line); }
+  .dt-passos i.on { background: var(--accent); width: 40px; } .dt-passos i.feito { background: color-mix(in srgb, var(--accent) 50%, var(--line)); }
+  .dt-demo { display: grid; place-items: center; height: 170px; }
+  .dt-num { width: 46px; height: 46px; margin: 0 auto; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--on-accent); font-size: 22px; font-weight: 900; }
+  .dt-mock { margin: 14px auto; max-width: 260px; padding: 14px; border-radius: 18px; background: #f2f2f7; color: #000; box-shadow: 0 6px 16px rgba(0,0,0,.08); }
+  .dt-mock-tit { font-weight: 700; font-size: 15px; margin-bottom: 10px; }
+  .dt-mock-bt { padding: 12px; border-radius: 12px; background: #0a84ff; color: #fff; font-weight: 700; animation: dtPisca 1.6s ease-in-out infinite; }
+  @keyframes dtPisca { 50% { box-shadow: 0 0 0 6px rgba(10,132,255,.25); } }
+  .dt-instalar { display: flex; align-items: center; justify-content: center; height: 58px; margin: 8px 0 4px; border-radius: 16px; font-size: 18px; font-weight: 800; text-decoration: none;
+    background: var(--accent); color: var(--on-accent); }
+  .dt-rota { list-style: none; margin: 12px 0; padding: 0; border-radius: 16px; overflow: hidden; background: #fff; box-shadow: inset 0 0 0 1px var(--line); text-align: left; counter-reset: rota; }
+  .dt-rota li { display: flex; align-items: center; gap: 12px; padding: 12px 14px; color: #000; border-top: 1px solid #e5e5ea; counter-increment: rota; }
+  .dt-rota li:first-child { border-top: 0; }
+  .dt-rota li > span:nth-child(2) { flex: 1; display: flex; flex-direction: column; }
+  .dt-rota b { font-size: 17px; font-weight: 650; } .dt-rota small { font-size: 13px; color: #6e6e73; }
+  .dt-rota li:last-child { background: #fff6dc; } .dt-rota li:last-child b { color: #9a6400; }
+  .dt-ico { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; background: #f2f2f7; font-size: 18px; flex: none; }
+  .dt-seta { width: 8px; height: 8px; border-right: 2px solid #c7c7cc; border-top: 2px solid #c7c7cc; transform: rotate(45deg); flex: none; }
+  .dt-rota li::before { content: counter(rota); width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 800; background: var(--accent); color: var(--on-accent); flex: none; }
+  .dt-dica { font-size: 13px !important; }
+  .dt-ajuda { text-align: left; margin: 6px 0 4px; padding: 12px 14px; border-radius: 14px; background: var(--field); }
+  .dt-ajuda summary { font-weight: 750; cursor: pointer; color: var(--accent-text); }
+  .dt-ajuda li { margin: 8px 0; color: var(--muted); font-size: 14px; line-height: 1.4; }
+  .dt-ajuda a { color: var(--accent-text); font-weight: 750; }
+  .dt-premio { display: inline-flex; align-items: center; gap: 4px; margin: 4px 0 8px; padding: 8px 14px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 18%, var(--card)); color: var(--accent-text); font-weight: 800; }
+  .dt-premio .gota { width: 16px; height: 16px; }
   .novo-mini {
     flex: none; white-space: nowrap;
     height: 40px; border: 0; border-radius: 999px; padding: 0 16px 0 12px; background: var(--accent); color: var(--on-accent);
@@ -1688,7 +1742,8 @@
     <input type="file" id="arqBackup" accept=".json,application/json" hidden>
   </div>
   <h2 class="sec">Atalho do iPhone</h2>
-  <details class="ajuda">
+  <button class="dt-ajuste" id="btnDoisToques" hidden></button>
+  <details class="ajuda" id="ajudaAtalhoWeb">
     <summary>Abrir com 2 toques atrás do iPhone</summary>
     <ol>
       <li>Toque no botão abaixo e depois em <b>Adicionar Atalho</b>.
@@ -2153,7 +2208,7 @@ function telaHoje() {
   const tudo = total > 0 && feitos === total;
   // Um destaque só por vez: o check-in (enquanto não feito) ou o próximo compromisso
   chaveProximo = proximoDeHoje(agora);
-  let html = htmlCheckinHero() + htmlProgresso() + htmlFalaBee(total, feitos, agora) + htmlResgate();   // no fim do dia, o botão da câmera no cartão do bicho vira "Postar"
+  let html = htmlCheckinHero() + htmlDoisToques() + htmlProgresso() + htmlFalaBee(total, feitos, agora) + htmlResgate();   // no fim do dia, o botão da câmera no cartão do bicho vira "Postar"
   if (diaHojeBase !== chaveDia(hoje)) { diaHojeBase = chaveDia(hoje); diaHoje = 0; }
   const dia = maisDias(hoje, diaHoje);
   const tituloDia = !diaHoje ? 'Agenda de hoje' : diaHoje === 1 ? 'Amanhã' : `${maiuscula(dia.toLocaleDateString('pt-BR', { weekday: 'long' }).replace('-feira', ''))}, ${dia.getDate()}`;
@@ -2626,6 +2681,7 @@ document.getElementById('lista').addEventListener('click', (ev) => {
   if (ev.target.closest('[data-fechar-ontem]')) return fecharOntem();
   if (ev.target.closest('[data-fechar-gesto]')) { gravarPref('agenda.dicaGesto', '1'); return render(); }
   if (ev.target.closest('[data-fogo]')) return mostrarSequencia();
+  if (ev.target.closest('[data-dois-toques]')) return abrirDoisToques();
   const nt = ev.target.closest('[data-nova-nota], [data-nota-feita], [data-nota-agendar], [data-nota]');
   if (nt) {
     if ('novaNota' in nt.dataset) return abrirNota(null);
@@ -5269,6 +5325,113 @@ function toast(msg, ms = 2500, acao) {
   t.classList.add('show');
   clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), ms);
 }
+
+// ---------- 2 toques atrás do iPhone (app nativo) ----------
+// O atalho "Falar com a Bee" ouve por cima de qualquer tela e abre tapbee://anotar?de=atalho&texto=...
+const NATIVO = !!window.Capacitor?.isNativePlatform?.();
+const ATALHO_URL = 'https://guiiestevees.github.io/agenda-voz/atalho/Falar%20com%20a%20Bee.shortcut';
+const PONTOS_DOIS_TOQUES = 20;
+const doisToquesOk = () => lerPref('agenda.doisToques', '') === 'ok';
+function htmlDoisToques() {
+  if (!NATIVO || doisToquesOk()) return '';
+  return `<button class="dt-card" data-dois-toques>
+    <span class="dt-fone" aria-hidden="true"><i></i><b></b><b></b></span>
+    <span class="dt-txt"><b>Anote com 2 toques atrás do celular</b><small>Sem abrir o app. Ativar leva 1 minuto.</small></span>
+    <span class="dt-ir">Ativar</span></button>`;
+}
+function marcarBotaoDoisToques() {
+  const b = document.getElementById('btnDoisToques'), web = document.getElementById('ajudaAtalhoWeb');
+  if (!b) return;
+  b.hidden = !NATIVO; if (web) web.hidden = NATIVO;
+  b.innerHTML = doisToquesOk()
+    ? `<span class="dt-ok">${ICO.ok}</span><span><b>2 toques ativos</b><small>Toque para refazer ou testar de novo</small></span>`
+    : `<span class="dt-fone mini" aria-hidden="true"><i></i></span><span><b>Ativar os 2 toques</b><small>Anote sem abrir o app</small></span>`;
+}
+const ROTA_AJUSTES = [['⚙️', 'Ajustes', 'o ícone cinza de engrenagem'], ['♿', 'Acessibilidade', ''], ['👆', 'Toque', ''], ['📳', 'Toque Traseiro', 'fica lá no fim, role a tela'], ['✌️', 'Toque Duplo', ''], ['🐝', 'Falar com a Bee', 'na parte de Atalhos, lá embaixo']];
+function abrirDoisToques(passo = 0) {
+  const pontos = (n) => `<div class="dt-passos">${[0, 1, 2, 3].map(i => `<i class="${i === n ? 'on' : i < n ? 'feito' : ''}"></i>`).join('')}</div>`;
+  const telas = [
+    () => `${pontos(0)}
+      <div class="dt-demo"><span class="dt-fone grande" aria-hidden="true"><i></i><b></b><b></b></span></div>
+      <h3>Anote em 2 segundos</h3>
+      <p class="dt-grande">Dê <b>2 toques atrás do celular</b>, fale o compromisso e pronto. Funciona de qualquer tela, até no WhatsApp.</p>
+      <p>São 3 passos simples. A gente faz junto.</p>
+      <div class="botoes"><button id="dtDepois">Depois</button><button class="primario" id="dtProx">Vamos lá</button></div>`,
+    () => `${pontos(1)}
+      <div class="dt-num">1</div>
+      <h3>Instale o atalho da Bee</h3>
+      <p class="dt-grande">Toque no botão amarelo. Vai abrir o app <b>Atalhos</b>. Lá, toque em <b>Adicionar Atalho</b>.</p>
+      <div class="dt-mock"><div class="dt-mock-tit">Falar com a Bee</div><div class="dt-mock-bt">Adicionar Atalho</div></div>
+      <a class="primario dt-instalar" id="dtInstalar" href="${ATALHO_URL}">Instalar o atalho</a>
+      <div class="botoes"><button id="dtVolta">Voltar</button><button class="primario" id="dtProx">Já adicionei</button></div>`,
+    () => `${pontos(2)}
+      <div class="dt-num">2</div>
+      <h3>Ligue os 2 toques</h3>
+      <p class="dt-grande">Saia do Tap Bee e abra os <b>Ajustes</b> do iPhone. Toque, em ordem:</p>
+      <ol class="dt-rota">${ROTA_AJUSTES.map(([ico, nome, dica]) => `<li><span class="dt-ico">${ico}</span><span><b>${nome}</b>${dica ? `<small>${dica}</small>` : ''}</span><span class="dt-seta"></span></li>`).join('')}</ol>
+      <p class="dt-dica">Dica: tire um print desta tela para seguir olhando.</p>
+      <div class="botoes"><button id="dtVolta">Voltar</button><button class="primario" id="dtProx">Já fiz</button></div>`,
+    () => `${pontos(3)}
+      <div class="dt-demo"><span class="dt-fone grande tocando" aria-hidden="true"><i></i><b></b><b></b></span></div>
+      <h3>Agora, o teste!</h3>
+      <p class="dt-grande">Segure o celular e dê <b>2 toques firmes</b> atrás, perto da câmera. Quando o microfone aparecer, diga: <b>“testando a Bee”</b>.</p>
+      <p>Pode testar daqui mesmo. A Bee vai te avisar quando funcionar.</p>
+      <details class="dt-ajuda"><summary>Não funcionou?</summary><ul>
+        <li>Dê os toques <b>mais firmes</b> e um pouco mais rápidos. Capinha grossa pode atrapalhar.</li>
+        <li>Confira em Ajustes → Acessibilidade → Toque → Toque Traseiro → Toque Duplo se está marcado <b>Falar com a Bee</b>.</li>
+        <li>Se o iPhone perguntar se o atalho pode abrir o Tap Bee, toque em <b>Permitir</b>.</li>
+        <li>Ainda não? <a href="${ATALHO_URL}">Instale o atalho de novo</a>.</li>
+      </ul></details>
+      <div class="botoes"><button id="dtVolta">Voltar</button><button id="dtDepois">Testo depois</button></div>`,
+  ];
+  if (passo === 3) gravarPref('agenda.doisToquesTeste', '1');
+  abrirFolha(`<div class="dois-toques">${telas[passo]()}</div>`);
+  const on = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
+  on('dtProx', () => { vibrar('selecao'); abrirDoisToques(passo + 1); });
+  on('dtVolta', () => abrirDoisToques(passo - 1));
+  on('dtDepois', fecharFolha);
+}
+// Chegou pelo atalho: a primeira vez (ou o teste do assistente) vira comemoração
+function comemorarDoisToques(frase) {
+  const primeira = !doisToquesOk(), teste = lerPref('agenda.doisToquesTeste', '') === '1';
+  gravarPref('agenda.doisToques', 'ok'); gravarPref('agenda.doisToquesTeste', '');
+  marcarBotaoDoisToques();
+  if (!primeira && !teste) return false;
+  if (primeira) ganhar(PONTOS_DOIS_TOQUES);
+  vibrar('sucesso'); somFogo();
+  abrirFolha(`<div class="dois-toques festa">
+    <img class="bee-voz" src="${MASCOTES.bee_festa}" alt="">
+    <h3>Funcionou!</h3>
+    <p class="dt-grande">Seus <b>2 toques estão ativos</b>. Agora é só tocar atrás do celular e falar, de qualquer tela.</p>
+    ${frase ? `<div class="frase">A Bee ouviu: “${esc(frase)}”</div>` : ''}
+    ${primeira ? `<div class="dt-premio">${ICO_GOTA}+${PONTOS_DOIS_TOQUES} pontos de prêmio</div>` : ''}
+    <div class="botoes">${frase && !/^testando/i.test(frase.trim()) ? '<button id="dtAnotar">Anotar isso</button>' : ''}<button class="primario" id="dtOk">Show!</button></div>
+  </div>`);
+  setTimeout(() => confete(innerWidth / 2, innerHeight * .35, true), 250);
+  document.getElementById('dtOk').onclick = () => { fecharFolha(); render(); };
+  const an = document.getElementById('dtAnotar'); if (an) an.onclick = () => criarDeFrase(frase);
+  render();
+  return true;
+}
+// tapbee://anotar?texto=...  |  tapbee://falar
+let ultimoLink = '';
+function abrirLink(url) {
+  if (!url || url === ultimoLink) return;
+  ultimoLink = url;
+  let u; try { u = new URL(url); } catch { return; }
+  if (u.protocol !== 'tapbee:') return;
+  const texto = (u.searchParams.get('texto') || '').trim(), doAtalho = u.searchParams.get('de') === 'atalho';
+  if (aba !== 'hoje') irPara('hoje');
+  if (doAtalho && comemorarDoisToques(texto)) return;
+  if (texto) criarDeFrase(texto); else abrirVoz();
+}
+const CapApp = window.Capacitor?.Plugins?.App;
+if (CapApp) {
+  CapApp.addListener('appUrlOpen', (e) => abrirLink(e.url));
+  CapApp.getLaunchUrl?.().then(r => { if (r?.url) abrirLink(r.url); }).catch(() => {});
+}
+marcarBotaoDoisToques();
+document.getElementById('btnDoisToques').onclick = () => abrirDoisToques(doisToquesOk() ? 3 : 0);
 
 // ---------- Entrada vinda do atalho do iPhone ----------
 // ?texto=...  → cria o compromisso direto (Atalho "Ditar Texto")

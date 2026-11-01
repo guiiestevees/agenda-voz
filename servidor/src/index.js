@@ -2,7 +2,8 @@
 // pergunta ao Claude o que fazer e devolve as ações em JSON para o app aplicar.
 import Anthropic from "@anthropic-ai/sdk";
 
-const ORIGENS = ["https://guiiestevees.github.io", "http://localhost:8000", "http://127.0.0.1:8000"];
+// capacitor://localhost = o app nativo do iPhone (Capacitor)
+const ORIGENS = ["https://guiiestevees.github.io", "capacitor://localhost", "http://localhost:8000", "http://127.0.0.1:8000"];
 
 // Haiku é o padrão (rápido e barato). Sonnet fica liberado para comparar a qualidade.
 const MODELOS = ["claude-haiku-5-5", "claude-sonnet-5-5"];

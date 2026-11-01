@@ -1,0 +1,13 @@
+{
+  "appId": "com.guiiestevees.tapbee",
+  "appName": "Tap Bee",
+  "webDir": "www",
+  "ios": {
+    "contentInset": "never"
+  },
+  "plugins": {
+    "LocalNotifications": {
+      "iconColor": "#F2B01E"
+    }
+  }
+}
