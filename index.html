@@ -1758,7 +1758,7 @@
     <ol>
       <li>Toque no botão abaixo e depois em <b>Adicionar Atalho</b>.
         <a class="instalar" href="https://www.icloud.com/shortcuts/7935ee07c5ac46bea2381cffcf53d948"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>Instalar atalho “Anotar Compromisso”</a></li>
-      <li>Vá em <b>Ajustes → Acessibilidade → Toque → Toque Traseiro → Toque Duplo</b> e escolha <b>Anotar Compromisso</b> (lá embaixo, em Atalhos).</li>
+      <li>Vá em <b>Ajustes → Acessibilidade → Toque → Tocar Atrás → Toque Duplo</b> e escolha <b>Anotar Compromisso</b> (lá embaixo, em Atalhos).</li>
       <li>Na primeira vez que usar, o iPhone pede permissão para o atalho abrir a agenda: toque em <b>Permitir</b>.</li>
     </ol>
     <p class="ajuda-rodape">Pronto: 2 toques atrás, fale com calma, toque em “Concluído” e o compromisso aparece aqui já salvo. Também funciona dizendo “E aí Siri, Anotar Compromisso”.</p>
@@ -5359,7 +5359,7 @@ function marcarBotaoDoisToques() {
 }
 // Mesmo desenho do ícone de Toque nos Ajustes: mãozinha branca em fundo azul
 const ICO_TOQUE = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 14a8 8 0 0 1-8 8"/><path d="M18 11v-1a2 2 0 0 0-2-2a2 2 0 0 0-2 2"/><path d="M14 10V9a2 2 0 0 0-2-2a2 2 0 0 0-2 2v1"/><path d="M10 9.5V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v10"/><path d="M18 11a2 2 0 1 1 4 0v3a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>';
-const ROTA_AJUSTES = [['⚙️', 'Ajustes', 'o ícone cinza de engrenagem'], ['♿', 'Acessibilidade', ''], [ICO_TOQUE, 'Toque', 'o botão azul com a mãozinha branca'], ['📳', 'Toque Traseiro', 'role a tela até lá embaixo'], ['✌️', 'Toque Duplo', ''], ['🐝', 'Falar com a Bee', 'na parte de Atalhos, lá embaixo']];
+const ROTA_AJUSTES = [['⚙️', 'Ajustes', 'o ícone cinza de engrenagem'], ['♿', 'Acessibilidade', ''], [ICO_TOQUE, 'Toque', 'o botão azul com a mãozinha branca'], ['📳', 'Tocar Atrás', 'role a tela até lá embaixo'], ['✌️', 'Toque Duplo', ''], ['🐝', 'Falar com a Bee', 'na parte de Atalhos, lá embaixo']];
 const rotaHtml = (itens) => `<ol class="dt-rota">${itens.map(([ico, nome, dica]) => `<li><span class="dt-ico ${ico === ICO_TOQUE ? 'azul' : ''}">${ico}</span><span><b>${nome}</b>${dica ? `<small>${dica}</small>` : ''}</span><span class="dt-seta"></span></li>`).join('')}</ol>`;
 function abrirDoisToques(passo = 0) {
   const pontos = (n) => `<div class="dt-passos">${[0, 1, 2, 3].map(i => `<i class="${i === n ? 'on' : i < n ? 'feito' : ''}"></i>`).join('')}</div>`;
@@ -5381,9 +5381,9 @@ function abrirDoisToques(passo = 0) {
       <div class="dt-num">2</div>
       <h3>Ligue os 2 toques</h3>
       <p class="dt-grande">Abra os <b>Ajustes</b> do iPhone, toque em <b>Buscar</b>, lá embaixo na tela, e digite:</p>
-      <div class="dt-busca"><span class="dt-lupa"></span><b>Toque Traseiro</b><i class="dt-cursor"></i></div>
+      <div class="dt-busca"><span class="dt-lupa"></span><b>Toque Duplo</b><i class="dt-cursor"></i></div>
       <p class="dt-grande">Depois toque, em ordem:</p>
-      ${rotaHtml(ROTA_AJUSTES.slice(2))}
+      ${rotaHtml([[ICO_TOQUE, 'Toque Duplo', 'o primeiro da lista, com o botão azul'], ROTA_AJUSTES[5]])}
       <details class="dt-ajuda"><summary>Não achou pela busca? Siga o caminho completo</summary>${rotaHtml(ROTA_AJUSTES)}</details>
       <p class="dt-dica">Dica: tire um print desta tela para seguir olhando.</p>
       <div class="botoes"><button id="dtVolta">Voltar</button><button class="primario" id="dtProx">Já fiz</button></div>`,
@@ -5394,7 +5394,7 @@ function abrirDoisToques(passo = 0) {
       <p>Pode testar daqui mesmo. A Bee vai te avisar quando funcionar.</p>
       <details class="dt-ajuda"><summary>Não funcionou?</summary><ul>
         <li>Dê os toques <b>mais firmes</b> e um pouco mais rápidos. Capinha grossa pode atrapalhar.</li>
-        <li>Confira em Ajustes → Acessibilidade → Toque → Toque Traseiro → Toque Duplo se está marcado <b>Falar com a Bee</b>.</li>
+        <li>Confira em Ajustes → Acessibilidade → Toque → Tocar Atrás → Toque Duplo se está marcado <b>Falar com a Bee</b>.</li>
         <li>Se o iPhone perguntar se o atalho pode abrir o Tap Bee, toque em <b>Permitir</b>.</li>
         <li>Ainda não? <a href="${ATALHO_URL}">Instale o atalho de novo</a>.</li>
       </ul></details>
