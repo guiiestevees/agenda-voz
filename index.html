@@ -1710,6 +1710,8 @@
   .qz-corpo::-webkit-scrollbar { display: none; }
   .qz-corpo > * { flex: none; }
   .qz-t-abertura .qz-corpo, .qz-t-pagamento .qz-corpo { justify-content: flex-start; }
+  .qz-t-pagamento .qz-corpo > :first-child { margin-top: auto; }   /* centraliza em telas grandes sem cortar o topo nas pequenas */
+  .qz-t-pagamento .qz-corpo > :last-child { margin-bottom: auto; }
   #quiz h2 { margin: 0 0 12px; font-size: 28px; line-height: 1.15; font-weight: 800; letter-spacing: -.025em; color: #1d1a12; font-family: inherit; }
   .qz-c { text-align: center; }
   .qz-sub { margin: 0; color: #5d5646; font-size: 16px; line-height: 1.4; }
@@ -1975,6 +1977,35 @@
   .qz-rodape a { color: #5d5646; }
   @media (max-height: 700px) { .qz-fone { width: min(40vw, 150px); } .qz-pag-fones { height: 170px; } .qz-pf-hoje { width: 85px; margin-left: -42px !important; } .qz-pf-semana, .qz-pf-habitos { width: 72px; } .qz-pf-semana { margin-left: -94px !important; } .qz-pf-habitos { margin-left: 22px !important; } .qz-cena { width: 128px; } .qz-cenas { padding-inline: calc(50% - 64px); } .qz-balao { font-size: 18px; } .qz-fala img { width: 58px; height: 58px; } .qz-op { min-height: 56px; } .qz-pote { width: 170px; } }
   @media (prefers-reduced-motion: reduce) { .qz-tela, .qz-sobe, .qz-op, .qz-mic, .qz-fala img, .qz-favo, .qz-seguir::after, .qz-bee-grande, .qz-cartao-ouro img, .qz-ouro-luz, .qz-pote-bee, .qz-prog img { animation: none; } }
+
+  /* Vidro líquido: barras e botões flutuam sobre o conteúdo */
+  :root {
+    --vidro: rgba(255,255,255,.5); --vidro-borda: rgba(255,255,255,.75); --vidro-filtro: blur(20px) saturate(1.9);
+    --vidro-brilho: inset 0 1px 0 rgba(255,255,255,.9), inset 0 -1px 1px rgba(255,255,255,.3);
+    --vidro-sombra: 0 8px 26px rgba(70,45,10,.16), 0 1px 3px rgba(70,45,10,.08);
+    --vidro-ativo: rgba(var(--accent-rgb),.14);
+  }
+  :root[data-modo="escuro"] {
+      --vidro: rgba(60,60,70,.42); --vidro-borda: rgba(255,255,255,.16);
+      --vidro-brilho: inset 0 1px 0 rgba(255,255,255,.2), inset 0 -1px 1px rgba(255,255,255,.05);
+      --vidro-sombra: 0 8px 26px rgba(0,0,0,.42); --vidro-ativo: rgba(255,255,255,.14);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root[data-modo="auto"] {
+      --vidro: rgba(60,60,70,.42); --vidro-borda: rgba(255,255,255,.16);
+      --vidro-brilho: inset 0 1px 0 rgba(255,255,255,.2), inset 0 -1px 1px rgba(255,255,255,.05);
+      --vidro-sombra: 0 8px 26px rgba(0,0,0,.42); --vidro-ativo: rgba(255,255,255,.14);
+    }
+  }
+  .abas, #barraTopo, .engrenagem, header.ceu .engrenagem, :root[data-modo="escuro"] header.ceu .engrenagem, .icon-btn, .navega button {
+    background: var(--vidro); border: 1px solid var(--vidro-borda); box-shadow: var(--vidro-brilho), var(--vidro-sombra);
+    -webkit-backdrop-filter: var(--vidro-filtro); backdrop-filter: var(--vidro-filtro);
+  }
+  .abas { left: 12px; right: 12px; bottom: max(10px, calc(env(safe-area-inset-bottom) - 8px)); align-items: center; padding: 6px 4px; border-radius: 32px; }
+  .aba.ativa .aba-ic { background: var(--vidro-ativo); }
+  #barraTopo { border-width: 0 0 1px; }
+  .engrenagem:active, .icon-btn:active, .navega button:active { transform: scale(.94); }
+  .icon-btn, .navega button { transition: transform .15s var(--ease); }
 </style>
 </head>
 <body>
@@ -5992,7 +6023,8 @@ agendarLembretes();
 
 // ---------- Quiz de entrada e tela de pagamento (só quem assina entra no app) ----------
 // A Bee conversa, a pessoa faz um teste por voz, vê o pote encher e assina.
-const RC_CHAVE = '';   // chave pública do RevenueCat (appl_...). Vazia = MODO DE TESTE: o botão de assinar entra sem cobrar
+const RC_CHAVE = 'appl_nbAkIjJJOZRhgWUnGfzzhIPElcv';   // chave pública do RevenueCat (pode ficar no app). Fora do iPhone, a compra continua em modo de teste
+const RC_PRODUTO = { anual: 'tapbee_anual', oferta: 'tapbee_anual_oferta' };
 const QUIZ_VERSAO = '17';   // no modo de teste, uma versão nova do quiz aparece de novo no aparelho
 const PRECO_ANO = 'R$ 129,90', PRECO_MES = 'R$ 10,83', PRECO_DIA = 'R$ 0,36';
 const OFERTA_ANO = 'R$ 99,90', OFERTA_MES = 'R$ 8,33', OFERTA_DIA = 'R$ 0,28', OFERTA_OFF = '23%';   // desconto de verdade, oferecido uma vez a quem desiste da compra
@@ -6369,18 +6401,71 @@ function qzEntrar() {
   // Só agora, depois da compra, vem a configuração dos 2 toques
   if (NATIVO && !doisToquesOk()) setTimeout(() => abrirDoisToques(0), 900);
 }
+const rcPlugin = () => RC_CHAVE ? pluginNativo('Purchases') : null;
+let rcIniciado;
+const rcIniciar = (rc) => rcIniciado ||= rc.configure({ apiKey: RC_CHAVE });
+const rcAtivo = (info) => Object.keys(info?.entitlements?.active || {}).length > 0 || (info?.activeSubscriptions || []).some(id => Object.values(RC_PRODUTO).includes(id));
+// true = comprou, false = desistiu na tela da Apple, null = deu erro (quem teve erro não desistiu, então não vê a oferta)
+async function rcComprar(rc, plano) {
+  try {
+    await rcIniciar(rc);
+    await rc.purchaseStoreProduct({ product: { identifier: RC_PRODUTO[plano] } });
+    return true;
+  } catch (e) {
+    if (String(e?.code) === '1' || e?.userCancelled || e?.data?.userCancelled) return false;
+    console.error('[Compra]', e);
+    toast('Não deu para concluir a compra. Confira sua internet e tente de novo.', 3500);
+    return null;
+  }
+}
+async function rcRestaurar() {
+  const rc = rcPlugin();
+  if (!rc) return toast('Restaurar compra funciona no iPhone.', 3000);
+  try {
+    await rcIniciar(rc);
+    const { customerInfo } = await rc.restorePurchases();
+    if (!qz) return;
+    if (rcAtivo(customerInfo)) return qzEntrar();
+    toast('Não encontramos uma assinatura ativa nesta conta Apple.', 3500);
+  } catch (e) {
+    console.error('[Compra]', e);
+    toast('Não deu para restaurar agora. Confira sua internet e tente de novo.', 3500);
+  }
+}
+// Ao abrir: se a assinatura acabou, volta para a tela de pagamento. Sem internet ou com erro, a pessoa continua usando
+async function rcConferir() {
+  const rc = rcPlugin();
+  if (!rc) return;
+  try {
+    await rcIniciar(rc);
+    if (!quizLiberado()) return;
+    const { customerInfo } = await rc.getCustomerInfo();
+    if (rcAtivo(customerInfo) || qz) return;
+    gravarPref('agenda.assinante', '');
+    abrirQuiz();
+    qz.i = TELAS_QUIZ.findIndex(t => t.id === 'pagamento');
+    qzDesenhar();
+  } catch (e) { console.error('[Compra]', e); }
+}
 async function qzComprar(plano = 'anual') {
+  if (qz.comprando) return;
+  qz.comprando = true;
   funil('tentou_comprar');
-  if (await qzPedirCompra(plano)) {
+  const comprou = await qzPedirCompra(plano);
+  if (!qz) return;
+  qz.comprando = false;
+  if (comprou) {
     gravarPref('agenda.plano', plano);
     funil(plano === 'oferta' ? 'comprou_oferta' : 'comprou');
     return qzEntrar();
   }
   // Desistiu da compra: a oferta aparece uma única vez
-  if (plano === 'anual' && !qz.ofertaVista && (!RC_CHAVE || !lerPref('agenda.ofertaVista', ''))) qzJogo();
+  if (comprou === false && plano === 'anual' && !qz.ofertaVista && (!RC_CHAVE || !lerPref('agenda.ofertaVista', ''))) qzJogo();
 }
-// MODO DE TESTE: ainda sem RevenueCat, esta folha faz o papel da tela de compra da Apple
+// No iPhone abre a compra da Apple. Fora dele (MODO DE TESTE), esta folha faz o papel dessa tela
 function qzPedirCompra(plano) {
+  const rc = rcPlugin();
+  if (rc) return rcComprar(rc, plano);
   return new Promise((pronto) => {
     const el = document.createElement('div');
     el.className = 'qz-oferta qz-loja';
@@ -6553,7 +6638,7 @@ function qzDesenhar() {
     qzAvancar();
   });
   on('qzSemAviso', () => { qz.i += 2; qzDesenhar(); });
-  on('qzRestaurar', () => { if (!RC_CHAVE) toast('Restaurar compra entra junto com o pagamento.', 3000); });
+  on('qzRestaurar', rcRestaurar);
   const nome = document.getElementById('qzNome');
   if (nome) nome.oninput = () => { qz.r.nome = nome.value; qzAtualizarBotao(); };
   palco.querySelectorAll('[data-qz-op]').forEach(b => b.onclick = () => {
@@ -6597,6 +6682,7 @@ else if (params.get('texto')) criarDeFrase(params.get('texto'));
 else if (params.has('voz')) abrirVoz();
 else if (!lerPref('agenda.boasVindas', '')) boasVindas();
 if (params.toString()) history.replaceState(null, '', location.pathname);
+rcConferir();
 
 // ================= Ambiente imersivo: favo, pólen, Bee viva, topo, puxar =================
 const CALMO = matchMedia('(prefers-reduced-motion: reduce)').matches;

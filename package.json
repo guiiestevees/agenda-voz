@@ -13,7 +13,8 @@
     "@capacitor/core": "^8.6.0",
     "@capacitor/haptics": "^8.0.2",
     "@capacitor/ios": "^8.6.0",
-    "@capacitor/local-notifications": "^8.3.1"
+    "@capacitor/local-notifications": "^8.3.1",
+    "@revenuecat/purchases-capacitor": "^14.0.0"
   },
   "devDependencies": {
     "@capacitor/cli": "^8.6.0"
