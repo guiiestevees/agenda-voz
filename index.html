@@ -1855,6 +1855,8 @@
   /* Avisos */
   .qz-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
   .qz-chip { padding: 13px 16px; border: 2.5px solid transparent; border-radius: 999px; background: #fff; color: #1d1a12; font-size: 15.5px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(120,80,10,.1); font-family: inherit; transition: transform .15s; }
+  .qz-chips-ver { justify-content: center; margin: 14px 0 0; }
+  .qz-chips-ver .qz-chip { padding: 9px 13px; font-size: 14px; cursor: default; }
   .qz-chip:active { transform: scale(.95); }
   .qz-chip.on { border-color: #f2a313; background: #fff3cf; }
   .qz-aviso { display: flex; align-items: center; gap: 12px; padding: 13px 15px; border-radius: 24px; background: #fff; box-shadow: 0 12px 30px rgba(120,80,10,.18); }
@@ -5991,7 +5993,7 @@ agendarLembretes();
 // ---------- Quiz de entrada e tela de pagamento (só quem assina entra no app) ----------
 // A Bee conversa, a pessoa faz um teste por voz, vê o pote encher e assina.
 const RC_CHAVE = '';   // chave pública do RevenueCat (appl_...). Vazia = MODO DE TESTE: o botão de assinar entra sem cobrar
-const QUIZ_VERSAO = '16';   // no modo de teste, uma versão nova do quiz aparece de novo no aparelho
+const QUIZ_VERSAO = '17';   // no modo de teste, uma versão nova do quiz aparece de novo no aparelho
 const PRECO_ANO = 'R$ 129,90', PRECO_MES = 'R$ 10,83', PRECO_DIA = 'R$ 0,36';
 const OFERTA_ANO = 'R$ 99,90', OFERTA_MES = 'R$ 8,33', OFERTA_DIA = 'R$ 0,28', OFERTA_OFF = '23%';   // desconto de verdade, oferecido uma vez a quem desiste da compra
 const SECRETARIA_MES = 'R$ 1.700', SECRETARIA_ANO = 'R$ 20.400';
@@ -6087,8 +6089,7 @@ const TELAS_QUIZ = [
       const m = qz.r.aviso ?? lembretePadrao(), rot = AVISOS_QUIZ.find(a => a[0] === m)?.[1] || '';
       return `${qzFala('Vou te mandar um aviso para você não esquecer. Quando prefere receber?')}
       <div class="qz-chips qz-sobe" style="--i:1">${AVISOS_QUIZ.map(([v, t]) => `<button class="qz-chip ${v === m ? 'on' : ''}" data-qz-aviso="${v}">${t}</button>`).join('')}</div>
-      <div class="qz-aviso qz-sobe" style="--i:2"><img src="${MASCOTES.bee}" alt=""><span><b>${esc(qz.feito?.titulo || 'Seu compromisso')}</b><small id="qzAvisoRot">${rot}</small></span></div>
-      <p class="qz-texto qz-c qz-menor qz-sobe" style="--i:3">Depois é só falar: <i>“me lembra 1 hora antes”</i>.</p>`;
+      <div class="qz-aviso qz-sobe" style="--i:2"><img src="${MASCOTES.bee}" alt=""><span><b>${esc(qz.feito?.titulo || 'Seu compromisso')}</b><small id="qzAvisoRot">${rot}</small></span></div>`;
     },
     aoAbrir: () => document.querySelectorAll('[data-qz-aviso]').forEach(b => b.onclick = () => {
       qz.r.aviso = +b.dataset.qzAviso; vibrar('selecao');
@@ -6115,7 +6116,9 @@ const TELAS_QUIZ = [
   { id: 'chegou', semBotaoAte: () => !!qz.chegou, bt: 'Continuar', html: () => qz.chegou ? `
       <div class="qz-brilho"><span class="qz-ok qz-ok-grande qz-pula">${ICONE_CHECK}</span></div>
       <h2 class="qz-c qz-sobe" style="--i:1">Chegou!</h2>
-      <p class="qz-texto qz-c qz-sobe" style="--i:2">É assim que a Bee te avisa, no tempo que você escolher. Dá até para pedir falando.</p>` : `
+      <p class="qz-texto qz-c qz-sobe" style="--i:2">É assim que a Bee te avisa. E você escolhe com quanto tempo de antecedência:</p>
+      <div class="qz-chips qz-chips-ver qz-sobe" style="--i:3">${AVISOS_QUIZ.map(([v, x]) => `<span class="qz-chip ${v === (qz.r.aviso ?? lembretePadrao()) ? 'on' : ''}">${x}</span>`).join('')}</div>
+      <p class="qz-texto qz-c qz-menor qz-sobe" style="--i:4">Quer outro tempo em um compromisso? É só falar: <b>“me lembra 1 hora antes”</b>.</p>` : `
       <div class="qz-brilho"><img class="qz-bee-grande" src="${MASCOTES.bee}" alt=""></div>
       <h2 class="qz-c qz-sobe" style="--i:1">Olha o aviso chegando…</h2>
       <p class="qz-texto qz-c qz-sobe" style="--i:2">Fique de olho no topo da tela.</p>`, aoAbrir: qzAvisoTeste },
@@ -6156,7 +6159,7 @@ function qzDemoHtml() {
   if (qz.feito) return `
       <div class="qz-brilho"><span class="qz-ok qz-ok-grande qz-pula">${ICONE_CHECK}</span></div>
       <h2 class="qz-c qz-sobe" style="--i:1">Prontinho, ${qzNome()}!</h2>
-      <div class="qz-salvo grande qz-sobe" style="--i:2"><span><small>${esc(qz.feito.tipo)}</small><b>${esc(qz.feito.titulo)}</b><em>${esc(qz.feito.quando)}</em></span></div><p class="qz-texto qz-c qz-menor qz-sobe" style="--i:3">Em segundos, sem escrever nada. Foi só um teste: não salvei na sua agenda.</p>`;
+      <div class="qz-salvo grande qz-sobe" style="--i:2"><span><small>${esc(qz.feito.tipo)}</small><b>${esc(qz.feito.titulo)}</b><em>${esc(qz.feito.quando)}</em></span></div><p class="qz-texto qz-c qz-menor qz-sobe" style="--i:3">Em segundos, sem escrever nada. Você fala, e a Bee entende.</p>`;
   return `
       ${qzFala('Vamos fazer um teste? Toque no microfone e fale esta frase:')}
       <div class="qz-frase-teste qz-sobe" style="--i:1"><small>Compromisso de teste</small><b>“${esc(qzFraseTeste())}”</b></div>
@@ -6220,7 +6223,7 @@ function qzDemoLigar() {
   if (qz.feito) return;
   qzLigarMic((frase) => {
     const p = interpretar(frase), d = new Date(p.inicio);
-    qz.feito = { tipo: 'Compromisso de teste', titulo: p.titulo, hora: d.getHours(), quando: `${maiuscula(fmtDataLonga(d))}, às ${fmtHora(d)}` };
+    qz.feito = { tipo: 'Anotado', titulo: p.titulo, hora: d.getHours(), quando: `${maiuscula(fmtDataLonga(d))}, às ${fmtHora(d)}` };
     tocarSom(true); vibrar('sucesso'); qzDesenhar();
     confete(innerWidth / 2, innerHeight * .32, true);
   }, qzFraseTeste);
