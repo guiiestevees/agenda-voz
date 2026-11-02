@@ -128,6 +128,28 @@ export class ContadorUso extends DurableObject {
     await this.ctx.storage.put("uso", uso);
     return uso.n;
   }
+  async contarFunil(chave) {
+    const n = (await this.ctx.storage.get(chave)) || 0;
+    await this.ctx.storage.put(chave, n + 1);
+  }
+  async lerFunil() {
+    return Object.fromEntries(await this.ctx.storage.list());
+  }
+}
+// Quantas pessoas chegam a cada tela do quiz: só um total por tela, sem identificar ninguém
+const TELAS_FUNIL = new Set(["abertura", "nome", "parabens", "frases", "mente", "desejo", "trava", "existe", "demo", "avisos", "chegou", "pote", "plano", "pagamento", "oferta", "comprou", "comprou_oferta"]);
+async function funil(req, env, origem) {
+  const contador = env.USO.get(env.USO.idFromName("funil"));
+  if (req.method === "GET") {
+    if (!env.FUNIL_CHAVE || req.headers.get("x-chave") !== env.FUNIL_CHAVE) return responder({ erro: "não autorizado" }, 401, origem);
+    return responder(await contador.lerFunil(), 200, origem);
+  }
+  if (!ORIGENS.includes(origem)) return responder({ erro: "origem não permitida" }, 403, origem);
+  let e;
+  try { e = await req.json(); } catch { return responder({ erro: "JSON inválido" }, 400, origem); }
+  if (!TELAS_FUNIL.has(e.tela) || !/^\d{1,3}$/.test(e.versao)) return responder({ erro: "tela inválida" }, 400, origem);
+  await contador.contarFunil(`v${e.versao}|${e.tela}`);
+  return responder({ ok: true }, 200, origem);
 }
 const ID_APARELHO = /^[a-z0-9-]{8,40}$/;
 // Se o contador falhar, deixa passar: a pessoa não pode ficar sem a Bee por um problema nosso
@@ -149,6 +171,7 @@ export default {
   async fetch(req, env) {
     const origem = req.headers.get("Origin") || "";
     if (req.method === "OPTIONS") return new Response(null, { headers: cabecalhos(origem) });
+    if (new URL(req.url).pathname === "/funil") return funil(req, env, origem);
     if (new URL(req.url).pathname === "/convite") {
       if (!ORIGENS.includes(origem)) return responder({ erro: "origem não permitida" }, 403, origem);
       return convite(req, env, origem);
