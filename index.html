@@ -1743,7 +1743,7 @@
   </div>
   <h2 class="sec">Backup</h2>
   <div class="dicas backup">
-    <p class="bk-txt">Seus dados ficam só neste aparelho. Salve um backup no iCloud ou no Arquivos para não perder nada se trocar de celular.</p>
+    <p class="bk-txt" id="txtNuvem">Seus dados ficam só neste aparelho. Salve um backup no iCloud ou no Arquivos para não perder nada se trocar de celular.</p>
     <p class="bk-ultimo" id="bkUltimo"></p>
     <div class="bk-botoes">
       <button class="icon-btn" id="btnBackup"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M7 10l5 5 5-5M5 21h14"/></svg>Salvar</button>
@@ -1844,6 +1844,8 @@ const ICO = {
   timer: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9.5 2h5M12 2v3"/></svg>',
   broto: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20h10M12 20v-8M12 12C12 8 9 6 5 6c0 4 3 6 7 6ZM12 12c0-4 3-6 7-6 0 4-3 6-7 6Z"/></svg>'
 };
+// Plugins do app nativo (no navegador, nenhum existe)
+const pluginNativo = (nome) => window.Capacitor?.isNativePlatform?.() ? (window.Capacitor.Plugins?.[nome] || window.Capacitor.registerPlugin?.(nome)) : null;
 // ---------- Vibração (no app da App Store usa o Haptics do Capacitor; no navegador, navigator.vibrate) ----------
 function vibrar(tipo = 'leve') {
   try {
@@ -1873,6 +1875,34 @@ function carregar() {
 }
 function salvar() {
   try { localStorage.setItem(CHAVE, JSON.stringify(eventos)); } catch {}
+  agendarLembretes();
+}
+// Lembretes de verdade no app nativo: o próprio iPhone avisa, mesmo com o app fechado.
+// O iOS guarda até 64 avisos por app, então vão os próximos 60 (o resto entra quando o app abrir de novo).
+let timerLembretes;
+const idLembrete = (txt) => { let h = 0; for (const c of txt) h = (h * 31 + c.charCodeAt(0)) | 0; return Math.abs(h) % 2000000000 + 10000; };
+function agendarLembretes() {
+  clearTimeout(timerLembretes);
+  timerLembretes = setTimeout(async () => {
+    const LN = pluginNativo('LocalNotifications');
+    if (!LN) return;
+    try {
+      const agora = Date.now();
+      const proximos = ocorrencias(new Date(agora), new Date(agora + 30 * 86400000))
+        .filter(o => o.ev.lembreteMin !== null && o.ev.lembreteMin !== undefined && !estaFeito(o.ev, o.inicio) && !o.ev.avisado && !(o.ev.avisados || []).includes(chaveDia(o.inicio)))
+        .map(o => ({ ...o, quando: o.inicio.getTime() - o.ev.lembreteMin * 60000 }))
+        .filter(o => o.quando > agora)
+        .sort((a, b) => a.quando - b.quando).slice(0, 60);
+      let perm = await LN.checkPermissions();
+      if (perm.display !== 'granted' && proximos.length) perm = await LN.requestPermissions();
+      const antigos = JSON.parse(localStorage.getItem('agenda.lembretesIds') || '[]');
+      if (antigos.length) await LN.cancel({ notifications: antigos.map(id => ({ id })) });
+      if (perm.display !== 'granted') return;
+      const avisos = proximos.map(o => ({ id: idLembrete(`${o.ev.id}|${chaveDia(o.inicio)}`), title: o.ev.titulo, body: o.ev.lembreteMin ? `${fmtLembrete(o.ev.lembreteMin)} · às ${fmtHora(o.inicio)}` : `Agora, às ${fmtHora(o.inicio)}`, schedule: { at: new Date(o.quando), allowWhileIdle: true } }));
+      if (avisos.length) await LN.schedule({ notifications: avisos });
+      localStorage.setItem('agenda.lembretesIds', JSON.stringify(avisos.map(a => a.id)));
+    } catch (e) { console.warn('Lembretes', e); }
+  }, 600);
 }
 
 // ---------- Repetição ----------
@@ -2075,6 +2105,7 @@ const fmtHora = (d) => d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: 
 const fmtDataLonga = (d) => d.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
 function fmtLembrete(min) {
   if (min === null || min === undefined) return 'Sem lembrete';
+  if (min === 0) return 'Na hora';
   if (min % 1440 === 0) return `${min / 1440} dia${min > 1440 ? 's' : ''} antes`;
   if (min % 60 === 0) return `${min / 60} hora${min > 60 ? 's' : ''} antes`;
   return `${min} min antes`;
@@ -2607,10 +2638,12 @@ rotSons();
 const CHAVES_BACKUP = ['agenda.eventos', 'agenda.notas', 'agenda.bicho', 'agenda.sonsToque', 'agenda.habitos', 'agenda.xp', 'agenda.focos', 'agenda.foco', 'agenda.nome', 'agenda.tema', 'agenda.modo', 'agenda.marca', 'agenda.visao', 'agenda.boasVindas', 'agenda.dicaFechada'];
 function mostrarUltimoBackup() {
   const el = document.getElementById('bkUltimo'), quando = lerPref('agenda.ultimoBackup', '');
+  if (window.iCloudAtivo && !quando) { el.textContent = 'Backup manual é opcional: o iCloud já cuida disso.'; el.classList.remove('velho'); return; }
+  if (window.iCloudAtivo) el.classList.remove('velho');
   if (!quando) { el.textContent = 'Você ainda não salvou nenhum backup.'; el.classList.add('velho'); return; }
   const dias = Math.floor((Date.now() - new Date(quando)) / 86400000);
   el.textContent = `Último backup: ${dias === 0 ? 'hoje' : dias === 1 ? 'ontem' : `há ${dias} dias`}`;
-  el.classList.toggle('velho', dias > 14);
+  el.classList.toggle('velho', dias > 14 && !window.iCloudAtivo);
 }
 async function salvarBackup() {
   const dados = {};
@@ -4246,6 +4279,12 @@ function agendaParaIA() {
   return [...linhas, ...longe].join('\n') || '(vazia)';
 }
 
+// Número aleatório só para contar o uso diário; não identifica a pessoa
+function idAparelho() {
+  let id = lerPref('agenda.aparelho', '');
+  if (!id) { id = crypto.randomUUID?.() || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`; gravarPref('agenda.aparelho', id); }
+  return id;
+}
 async function perguntarIA(frase) {
   const agora = new Date();
   const ctrl = new AbortController();
@@ -4260,8 +4299,10 @@ async function perguntarIA(frase) {
         hoje: chaveDia(agora),
         agenda: agendaParaIA(),
         notas: notasParaIA(),
+        aparelho: idAparelho(),
       }),
     });
+    if (resp.status === 429) return { tipo: 'responder', resposta: 'Você falou bastante comigo hoje! Preciso descansar um pouco. Amanhã eu volto, e dá para anotar em “Novo compromisso” enquanto isso.', acoes: [] };
     if (!resp.ok) throw new Error('IA respondeu ' + resp.status);
     return await resp.json();
   } finally { clearTimeout(timer); }
@@ -4551,7 +4592,32 @@ function abrirEdicao(ev, novo = false) {
 
 
 // ---------- Voz ----------
-const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+// No app nativo, a voz vem do plugin Voz; a classe imita o reconhecimento do navegador para o resto do código não mudar
+class VozNativa {
+  start() {
+    const V = pluginNativo('Voz');
+    const acabar = () => {
+      if (this.acabou) return;
+      this.acabou = true; clearTimeout(this.reserva);
+      this.ouvintes.forEach(o => Promise.resolve(o).then(h => h.remove()).catch(() => {}));
+      this.onend?.();
+    };
+    this.acabar = acabar; this.voz = V;
+    this.ouvintes = [
+      V.addListener('resultado', (d) => this.onresult?.({ results: [{ isFinal: !!d.final, 0: { transcript: d.texto } }] })),
+      V.addListener('fim', acabar),
+    ];
+    V.iniciar({ idioma: this.lang }).then(() => this.onstart?.()).catch((e) => {
+      this.onerror?.({ error: e?.message === 'not-allowed' ? 'not-allowed' : 'audio-capture' });
+      acabar();
+    });
+  }
+  stop() {
+    this.voz?.parar().catch(() => {});
+    this.reserva = setTimeout(() => this.acabar?.(), 1500);   // se a resposta final não vier, encerra assim mesmo
+  }
+}
+const SR = pluginNativo('Voz') ? VozNativa : (window.SpeechRecognition || window.webkitSpeechRecognition);
 let rec = null, textoFinal = '';
 const ICONE_MIC = document.querySelector('#btnMic svg').outerHTML;
 
@@ -4619,7 +4685,7 @@ function iniciarReconhecimento() {
   };
   rec.onerror = (e) => {
     const t = document.getElementById('vTitulo');
-    if (t) t.textContent = e.error === 'not-allowed' ? 'Permita o microfone e toque de novo' : 'Não entendi, toque para tentar de novo';
+    if (t) t.textContent = e.error === 'not-allowed' ? 'Permita o microfone nos Ajustes do iPhone e toque de novo' : e.error === 'audio-capture' ? 'Não consegui abrir o microfone. Toque de novo ou escolha digitar' : 'Não entendi, toque para tentar de novo';
   };
   rec.onend = () => {
     rec = null;
@@ -4659,6 +4725,8 @@ atualizarBtnNotif();
 function notificar(titulo, corpo) {
   try { if ('Notification' in window && Notification.permission === 'granted') new Notification(titulo, { body: corpo }); } catch {}
 }
+let visivelDesde = Date.now();
+document.addEventListener('visibilitychange', () => { if (!document.hidden) visivelDesde = Date.now(); });
 function checarLembretes() {
   const agora = Date.now();
   let mudou = false;
@@ -4670,6 +4738,7 @@ function checarLembretes() {
     if (agora >= quando && agora < inicio.getTime() + 3600000) {
       if (e.repetir) e.avisados = [...(e.avisados || []).slice(-30), chave]; else e.avisado = true;
       mudou = true;
+      if (pluginNativo('LocalNotifications') && quando < visivelDesde) continue;   // o iPhone já avisou enquanto o app estava fechado
       const msg = `${e.titulo} às ${fmtHora(inicio)}`;
       toast('Lembrete: ' + msg, 8000);
       vibrar('medio');
@@ -4680,7 +4749,7 @@ function checarLembretes() {
 }
 setInterval(() => { checarLembretes(); aplicarPenalidades(); avisoNoturno(); if (aba === 'hoje' && !overlay.classList.contains('show') && !gesto) render(); }, 30000);
 // voltando para o app depois de um tempo: atualiza tudo (dia pode ter virado)
-document.addEventListener('visibilitychange', () => { if (!document.hidden) { usarProtetores(); aplicarPenalidades(); render(); registrarInicioMes(); checarRetrospectiva(); checarResumoSemana(); conferirConvites(); } });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { agendarLembretes(); usarProtetores(); aplicarPenalidades(); render(); registrarInicioMes(); checarRetrospectiva(); checarResumoSemana(); conferirConvites(); } });
 
 // ---------- Gestos: deslizar cartões (direita = feito, esquerda = excluir) ----------
 let gesto = null, ignorarClique = false;
@@ -5346,7 +5415,7 @@ function htmlDoisToques() {
   if (!NATIVO || doisToquesOk()) return '';
   return `<button class="dt-card" data-dois-toques>
     <span class="dt-fone" aria-hidden="true"><i></i><b></b><b></b></span>
-    <span class="dt-txt"><b>Anote com 2 toques atrás do celular</b><small>Sem abrir o app. Ativar leva 1 minuto.</small></span>
+    <span class="dt-txt"><b>Anote com 2 toques atrás do celular</b><small>Fale de onde estiver. Ativar leva 1 minuto.</small></span>
     <span class="dt-ir">Ativar</span></button>`;
 }
 function marcarBotaoDoisToques() {
@@ -5355,7 +5424,7 @@ function marcarBotaoDoisToques() {
   b.hidden = !NATIVO; if (web) web.hidden = NATIVO;
   b.innerHTML = doisToquesOk()
     ? `<span class="dt-ok">${ICO.ok}</span><span><b>2 toques ativos</b><small>Toque para refazer ou testar de novo</small></span>`
-    : `<span class="dt-fone mini" aria-hidden="true"><i></i></span><span><b>Ativar os 2 toques</b><small>Anote sem abrir o app</small></span>`;
+    : `<span class="dt-fone mini" aria-hidden="true"><i></i></span><span><b>Ativar os 2 toques</b><small>Anote em segundos, sem procurar o app</small></span>`;
 }
 // Mesmo desenho do ícone de Toque nos Ajustes: mãozinha branca em fundo azul
 const ICO_TOQUE = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 14a8 8 0 0 1-8 8"/><path d="M18 11v-1a2 2 0 0 0-2-2a2 2 0 0 0-2 2"/><path d="M14 10V9a2 2 0 0 0-2-2a2 2 0 0 0-2 2v1"/><path d="M10 9.5V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v10"/><path d="M18 11a2 2 0 1 1 4 0v3a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>';
@@ -5449,6 +5518,133 @@ if (CapApp) {
 }
 marcarBotaoDoisToques();
 document.getElementById('btnDoisToques').onclick = () => abrirDoisToques(doisToquesOk() ? 3 : 0);
+
+// ---------- iCloud: cada pessoa guarda os dados no próprio iCloud, sem login ----------
+// O aparelho guarda tudo no localStorage e manda uma cópia comprimida para o iCloud a cada mudança.
+// Eventos, anotações e hábitos se juntam por id; apagados ficam marcados para não voltarem de outro aparelho.
+const Nuvem = pluginNativo('Nuvem');
+const LISTAS_NUVEM = ['agenda.eventos', 'agenda.notas', 'agenda.habitos'];
+const CHAVES_NUVEM = [...CHAVES_BACKUP.filter(k => k !== 'agenda.foco'), 'agenda.sonsToque'].filter((k, i, a) => a.indexOf(k) === i);
+const lerLista = (txt) => { try { const l = JSON.parse(txt); return Array.isArray(l) ? l : []; } catch { return []; } };
+// Junta a cópia deste aparelho com a do iCloud. Aparelho novo: o iCloud manda, sem perder o que já foi criado aqui.
+function mesclarNuvem(local, nuvem, aparelhoNovo) {
+  const novo = aparelhoNovo || nuvem.em > local.em ? nuvem : local, velho = novo === nuvem ? local : nuvem;
+  const dados = { ...velho.dados, ...novo.dados }, apagados = { ...velho.apagados };
+  for (const [id, em] of Object.entries(novo.apagados || {})) apagados[id] = Math.max(em, apagados[id] || 0);
+  for (const k of LISTAS_NUVEM) {
+    const a = lerLista(novo.dados[k]), b = lerLista(velho.dados[k]), ids = new Set(a.map(x => x.id));
+    a.forEach(x => delete apagados[x.id]);
+    const lista = [...a, ...b.filter(x => !ids.has(x.id) && !apagados[x.id])];
+    if (lista.length || dados[k] != null) dados[k] = JSON.stringify(lista);
+  }
+  if (aparelhoNovo && local.dados['agenda.xp'] && nuvem.dados['agenda.xp']) {
+    try {
+      const x = JSON.parse(nuvem.dados['agenda.xp']);
+      x.pontos = Math.max(x.pontos || 0, JSON.parse(local.dados['agenda.xp']).pontos || 0);
+      dados['agenda.xp'] = JSON.stringify(x);
+    } catch {}
+  }
+  return { em: Math.max(local.em || 0, nuvem.em || 0), dados, apagados };
+}
+function copiaLocal() {
+  const dados = {};
+  CHAVES_NUVEM.forEach(k => { const v = localStorage.getItem(k); if (v !== null) dados[k] = v; });
+  return { em: +lerPref('agenda.nuvemEm', '0'), dados, apagados: lerJSON('agenda.nuvemApagados', {}) };
+}
+// O que sumiu desde a última cópia foi apagado: marca, para não voltar de outro aparelho
+function marcarApagados() {
+  const antes = lerJSON('agenda.nuvemIds', {}), apagados = lerJSON('agenda.nuvemApagados', {}), ids = {};
+  for (const k of LISTAS_NUVEM) {
+    ids[k] = lerLista(localStorage.getItem(k)).map(x => x.id);
+    (antes[k] || []).filter(id => !ids[k].includes(id)).forEach(id => { apagados[id] = Date.now(); });
+    ids[k].forEach(id => delete apagados[id]);
+  }
+  const ordem = Object.entries(apagados).sort((a, b) => b[1] - a[1]).slice(0, 500);
+  gravarJSONNuvem('agenda.nuvemApagados', Object.fromEntries(ordem));
+  gravarJSONNuvem('agenda.nuvemIds', ids);
+}
+const gravarJSONNuvem = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+let nuvemConta = false;
+function mostrarStatusNuvem(estado) {
+  const el = document.getElementById('txtNuvem');
+  if (!el || !Nuvem) return;
+  if (estado === 'ok' && !nuvemConta) estado = 'sem-conta';   // sem conta no iCloud a cópia não sai do aparelho
+  window.iCloudAtivo = estado === 'ok';
+  mostrarUltimoBackup();
+  el.textContent = estado === 'sem-conta' ? 'Entre no iCloud, nos Ajustes do iPhone, para guardar seus dados. Enquanto isso, eles ficam só neste aparelho.'
+    : estado === 'cheio' ? 'Sua agenda passou do limite do iCloud. Os dados continuam neste aparelho: salve um backup para garantir.'
+    : 'Seus dados ficam guardados no seu iCloud, sem login. Se trocar de iPhone ou reinstalar o app, com a mesma conta Apple, eles voltam sozinhos.';
+}
+let nuvemPronta = false, nuvemPendente = false, timerNuvem, aplicandoNuvem = false;
+async function enviarNuvem() {
+  clearTimeout(timerNuvem);
+  if (!Nuvem) return;
+  if (!nuvemPronta) { nuvemPendente = true; return; }   // aparelho novo: espera a cópia do iCloud chegar antes de escrever por cima
+  nuvemPendente = false;
+  try {
+    marcarApagados();
+    await Nuvem.guardar({ json: JSON.stringify(copiaLocal()) });
+    mostrarStatusNuvem('ok');
+  } catch (e) { if (e?.message === 'cheio') mostrarStatusNuvem('cheio'); else console.warn('iCloud', e); }
+}
+function aplicarNuvem(m) {
+  aplicandoNuvem = true;
+  try {
+    for (const [k, v] of Object.entries(m.dados)) if (v != null) localStorage.setItem(k, v);
+    localStorage.setItem('agenda.nuvemEm', String(m.em));
+    gravarJSONNuvem('agenda.nuvemApagados', m.apagados);
+  } catch {}
+  aplicandoNuvem = false;
+  eventos = carregar(); habitos = lerJSON('agenda.habitos', []); focos = lerJSON('agenda.focos', []); notas = lerLista(localStorage.getItem('agenda.notas'));
+  xp = lerJSON('agenda.xp', xp); xp.checkins = xp.checkins || []; xp.penalizados = xp.penalizados || []; xp.bonus = xp.bonus || [];
+  marcarApagados();
+  render(); agendarLembretes();
+}
+async function receberNuvem() {
+  let r; try { r = await Nuvem.ler(); } catch { return false; }
+  if (!r?.json) return false;
+  let nuvem; try { nuvem = JSON.parse(r.json); } catch { return false; }
+  if (!nuvem?.dados) return false;
+  const novo = !lerPref('agenda.nuvemInicial', ''), local = copiaLocal();
+  if (novo || nuvem.em > local.em) {
+    const m = mesclarNuvem(local, nuvem, novo);
+    aplicarNuvem(m);
+    if (JSON.stringify(m.dados) !== JSON.stringify(nuvem.dados)) nuvemPendente = true;
+  } else if (local.em > nuvem.em) nuvemPendente = true;
+  gravarPref('agenda.nuvemInicial', '1');
+  return true;
+}
+function prepararNuvem() {
+  nuvemPronta = true; gravarPref('agenda.nuvemInicial', '1');
+  if (nuvemPendente || lerPref('agenda.nuvemEm', '')) enviarNuvem();
+}
+if (Nuvem) {
+  // Toda mudança nos dados agenda uma cópia para o iCloud
+  const gravarOriginal = Storage.prototype.setItem;
+  Storage.prototype.setItem = function (k, v) {
+    gravarOriginal.call(this, k, v);
+    if (this === localStorage && !aplicandoNuvem && CHAVES_NUVEM.includes(k)) {
+      gravarOriginal.call(this, 'agenda.nuvemEm', String(Date.now()));
+      clearTimeout(timerNuvem); timerNuvem = setTimeout(enviarNuvem, 2500);
+    }
+  };
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { if (timerNuvem || nuvemPendente) enviarNuvem(); } else receberNuvem().then(() => { if (nuvemPendente && nuvemPronta) enviarNuvem(); });
+  });
+  Nuvem.addListener('mudou', async (d) => {
+    if (d?.cheio) return mostrarStatusNuvem('cheio');
+    await receberNuvem();
+    if (!nuvemPronta) prepararNuvem(); else if (nuvemPendente) enviarNuvem();
+  });
+  (async () => {
+    try { nuvemConta = (await Nuvem.status()).conta; } catch {}
+    mostrarStatusNuvem('ok');
+    const veio = await receberNuvem();
+    if (veio || lerPref('agenda.nuvemInicial', '')) prepararNuvem();
+    else setTimeout(() => { if (!nuvemPronta) prepararNuvem(); }, 30000);   // aparelho novo sem cópia: dá um tempo para o iCloud responder
+  })();
+}
+agendarLembretes();
 
 // ---------- Entrada vinda do atalho do iPhone ----------
 // ?texto=...  → cria o compromisso direto (Atalho "Ditar Texto")

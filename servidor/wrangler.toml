@@ -10,3 +10,12 @@ compatibility_flags = ["nodejs_compat"]
 [[kv_namespaces]]
 binding = "CONVITES"
 id = "4cba6bc7796a477693f71bb856d5a34c"
+
+# Limite diário de uso da IA por aparelho e por IP
+[[durable_objects.bindings]]
+name = "USO"
+class_name = "ContadorUso"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["ContadorUso"]

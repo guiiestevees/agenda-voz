@@ -1,6 +1,7 @@
 // Cérebro da Agenda por Voz: recebe a fala + a agenda da pessoa,
 // pergunta ao Claude o que fazer e devolve as ações em JSON para o app aplicar.
 import Anthropic from "@anthropic-ai/sdk";
+import { DurableObject } from "cloudflare:workers";
 
 // capacitor://localhost = o app nativo do iPhone (Capacitor)
 const ORIGENS = ["https://guiiestevees.github.io", "capacitor://localhost", "http://localhost:8000", "http://127.0.0.1:8000"];
@@ -117,6 +118,33 @@ async function convite(req, env, origem) {
   return responder({ ok: true }, 200, origem);
 }
 
+// Limite diário alto, só contra abuso: ninguém usando normalmente chega perto.
+// O limite por IP é bem maior porque muita gente no celular divide o mesmo IP.
+export class ContadorUso extends DurableObject {
+  async contar(dia) {
+    let uso = await this.ctx.storage.get("uso");
+    if (uso?.dia !== dia) uso = { dia, n: 0 };
+    uso.n++;
+    await this.ctx.storage.put("uso", uso);
+    return uso.n;
+  }
+}
+const ID_APARELHO = /^[a-z0-9-]{8,40}$/;
+// Se o contador falhar, deixa passar: a pessoa não pode ficar sem a Bee por um problema nosso
+async function dentroDoLimite(env, aparelho, ip) {
+  try {
+    const dia = new Date().toISOString().slice(0, 10);
+    const contar = (chave) => env.USO.get(env.USO.idFromName(chave)).contar(dia);
+    const limAparelho = +env.LIMITE_APARELHO || 300, limIp = +env.LIMITE_IP || 3000;
+    if ((await contar(`ip:${ip}`)) > limIp) return false;
+    if (ID_APARELHO.test(aparelho) && (await contar(`ap:${aparelho}`)) > limAparelho) return false;
+    return true;
+  } catch (e) {
+    console.error("Contador de uso:", e.message);
+    return true;
+  }
+}
+
 export default {
   async fetch(req, env) {
     const origem = req.headers.get("Origin") || "";
@@ -132,6 +160,7 @@ export default {
     try { entrada = await req.json(); } catch { return responder({ erro: "JSON inválido" }, 400, origem); }
     const texto = String(entrada.texto || "").slice(0, 600).trim();
     if (!texto) return responder({ erro: "texto vazio" }, 400, origem);
+    if (!(await dentroDoLimite(env, String(entrada.aparelho || ""), req.headers.get("CF-Connecting-IP") || "?"))) return responder({ erro: "limite diário" }, 429, origem);
     const agora = String(entrada.agora || "").slice(0, 80);
     const hoje = /^\d{4}-\d{2}-\d{2}$/.test(entrada.hoje) ? entrada.hoje : "";
     const agenda = String(entrada.agenda || "(vazia)").slice(0, 12000);
