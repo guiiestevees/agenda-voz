@@ -1902,14 +1902,14 @@
   .qz-banner-topo b { font-size: 15px; }
   .qz-banner-topo small { font-size: 13px; color: #6e6655; }
   /* Pagamento */
-  .qz-pag-fones { position: relative; flex: none; height: min(76vw, 300px); margin-top: 12px; overflow: hidden; }
+  .qz-pag-fones { position: relative; flex: none; height: min(62vw, 244px); margin-top: 10px; overflow: hidden; }
   .qz-pag-fones .qz-fone { position: absolute; left: 50%; top: 0; margin: 0; padding: 4px; border-radius: 22px; }
   .qz-pag-fones .qz-fone-tela { border-radius: 18px; }
   .qz-pag-fones img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
-  .qz-pf-hoje { z-index: 2; width: min(37vw, 145px); margin-left: calc(min(37vw, 145px) / -2) !important; }
-  .qz-pf-semana, .qz-pf-habitos { top: 22px !important; width: min(31vw, 122px); opacity: .92; }
-  .qz-pf-semana { margin-left: calc(min(31vw, 122px) * -1.3) !important; transform: rotate(-6deg); }
-  .qz-pf-habitos { margin-left: calc(min(31vw, 122px) * .3) !important; transform: rotate(6deg); }
+  .qz-pf-hoje { z-index: 2; width: min(31vw, 120px); margin-left: calc(min(31vw, 120px) / -2) !important; }
+  .qz-pf-semana, .qz-pf-habitos { top: 18px !important; width: min(26vw, 102px); opacity: .92; }
+  .qz-pf-semana { margin-left: calc(min(26vw, 102px) * -1.3) !important; transform: rotate(-6deg); }
+  .qz-pf-habitos { margin-left: calc(min(26vw, 102px) * .3) !important; transform: rotate(6deg); }
   .qz-oferta { position: absolute; inset: 0; z-index: 4; display: flex; align-items: flex-end; background: rgba(40,26,4,.55); animation: qzFundoOferta .25s both; }
   @keyframes qzFundoOferta { from { opacity: 0; } }
   .qz-oferta-folha { position: relative; width: 100%; box-sizing: border-box; padding: 54px 20px calc(env(safe-area-inset-bottom) + 12px); border-radius: 30px 30px 0 0; background: linear-gradient(180deg, #fff6da, #fffdf6); text-align: center; animation: qzFolhaOferta .5s cubic-bezier(.2,1.2,.4,1) both; }
@@ -1946,7 +1946,7 @@
   .qz-ultima { margin: 0 0 12px; font-size: 14.5px; font-weight: 800; color: #a8480a; }
   .qz-jogo { position: absolute; inset: 0; z-index: 4; display: flex; flex-direction: column; justify-content: center; padding: calc(env(safe-area-inset-top) + 16px) 20px calc(env(safe-area-inset-bottom) + 16px); text-align: center; background: linear-gradient(170deg, #ffd978, #fff0c4 55%, #fff9ea); animation: qzFundoOferta .3s both; }
   .qz-jogo .qz-texto { min-height: 76px; }
-  .qz-mesa { position: relative; height: 190px; margin: 26px 0 30px; }
+  .qz-mesa { position: relative; height: 190px; margin: 26px 0 24px; }
   .qz-copo { position: absolute; left: 0; bottom: 0; width: 28%; max-width: 104px; height: 150px; padding: 0; border: 0; background: none; cursor: pointer; }
   .qz-copo::after { content: ''; position: absolute; left: 4%; right: 4%; bottom: -8px; height: 14px; border-radius: 50%; background: rgba(120,80,10,.2); }
   .qz-copo:disabled { cursor: default; color: inherit; }
@@ -2172,6 +2172,10 @@ function fmtFalta(m) {
   if (m % 60 === 0) return m === 60 ? 'Em 1 hora' : `Em ${m / 60} horas`;
   return m === 1 ? 'Em 1 minuto' : `Em ${m} minutos`;
 }
+const EMOJI_CAT = { treino: '💪', saude: '🩺', trabalho: '💼', estudo: '📚', social: '🎉', casa: '🏠' };
+const tituloAviso = (titulo) => `${EMOJI_CAT[categoria(titulo)?.id] || '🐝'} ${titulo}`;
+const corpoAviso = (m, hora) => `${fmtFalta(m)} · às ${hora}`;
+const TIPO_AVISO = 'AVISO_BEE';
 function agendarLembretes() {
   clearTimeout(timerLembretes);
   timerLembretes = setTimeout(async () => {
@@ -2189,11 +2193,45 @@ function agendarLembretes() {
       const antigos = JSON.parse(localStorage.getItem('agenda.lembretesIds') || '[]');
       if (antigos.length) await LN.cancel({ notifications: antigos.map(id => ({ id })) });
       if (perm.display !== 'granted') return;
-      const avisos = proximos.map(o => ({ id: idLembrete(`${o.ev.id}|${chaveDia(o.inicio)}`), title: o.ev.titulo, body: o.ev.lembreteMin ? `${fmtFalta(o.ev.lembreteMin)} · às ${fmtHora(o.inicio)}` : `Agora, às ${fmtHora(o.inicio)}`, schedule: { at: new Date(o.quando), allowWhileIdle: true } }));
+      const avisos = proximos.map(o => ({ id: idLembrete(`${o.ev.id}|${chaveDia(o.inicio)}`), title: tituloAviso(o.ev.titulo), body: corpoAviso(o.ev.lembreteMin, fmtHora(o.inicio)), actionTypeId: TIPO_AVISO, extra: { ev: o.ev.id, dia: chaveDia(o.inicio) }, schedule: { at: new Date(o.quando), allowWhileIdle: true } }));
       if (avisos.length) await LN.schedule({ notifications: avisos });
       localStorage.setItem('agenda.lembretesIds', JSON.stringify(avisos.map(a => a.id)));
     } catch (e) { console.warn('Lembretes', e); }
   }, 600);
+}
+
+// Toque no aviso: abre o compromisso no dia certo, em destaque. Os botões fazem o resto
+function abrirDoAviso(acao, { ev: id, dia } = {}) {
+  const ev = eventos.find(e => e.id === id);
+  if (!ev || !dia || !quizLiberado()) return;
+  const [a, m, d] = dia.split('-').map(Number), base = new Date(ev.inicio), inicio = new Date(a, m - 1, d, base.getHours(), base.getMinutes());
+  mostrarDiaNoHoje({ inicio }); destacarId = ev.id; irPara('hoje');
+  setTimeout(() => document.querySelector(`[data-check="${id}|${dia}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 150);
+  if (acao === 'feito' && !estaFeito(ev, inicio)) {
+    setTimeout(() => {
+      const b = document.querySelector(`[data-check="${id}|${dia}"]`);
+      if (b) return marcarFeito(b);
+      ev.feitos = [...(ev.feitos || []).slice(-200), dia]; salvar(); render(); toast('Marcado como feito.');
+    }, 500);
+  }
+  if (acao === 'adiar') {
+    const LN = pluginNativo('LocalNotifications'), quando = Date.now() + 600000;
+    LN?.schedule({ notifications: [{ id: idLembrete(`${id}|adiar|${quando}`), title: tituloAviso(ev.titulo), body: corpoAviso(Math.max(0, Math.round((inicio - quando) / 60000)), fmtHora(inicio)), actionTypeId: TIPO_AVISO, extra: { ev: id, dia }, schedule: { at: new Date(quando), allowWhileIdle: true } }] }).catch(e => console.warn('Adiar aviso', e));
+    toast('Te aviso de novo em 10 minutos.');
+  }
+  if (acao === 'mudar') {
+    setTimeout(() => {
+      abrirVoz();
+      const ex = document.querySelector('.ouvindo .exemplos');
+      if (ex) ex.innerHTML = `<span>“passa ${esc(ev.titulo.toLowerCase())} para as 15h”</span>`;
+    }, 500);
+  }
+}
+function ligarAcoesDoAviso() {
+  const LN = pluginNativo('LocalNotifications');
+  if (!LN) return;
+  LN.registerActionTypes({ types: [{ id: TIPO_AVISO, actions: [{ id: 'feito', title: 'Feito', foreground: true }, { id: 'adiar', title: 'Adiar 10 min', foreground: true }, { id: 'mudar', title: 'Mudar horário', foreground: true }] }] }).catch(e => console.warn('Botões do aviso', e));
+  LN.addListener('localNotificationActionPerformed', (a) => abrirDoAviso(a.actionId, a.notification?.extra));
 }
 
 // ---------- Repetição ----------
@@ -5947,12 +5985,13 @@ if (Nuvem) {
     else setTimeout(() => { if (!nuvemPronta) prepararNuvem(); }, 30000);   // aparelho novo sem cópia: dá um tempo para o iCloud responder
   })();
 }
+ligarAcoesDoAviso();
 agendarLembretes();
 
 // ---------- Quiz de entrada e tela de pagamento (só quem assina entra no app) ----------
 // A Bee conversa, a pessoa faz um teste por voz, vê o pote encher e assina.
 const RC_CHAVE = '';   // chave pública do RevenueCat (appl_...). Vazia = MODO DE TESTE: o botão de assinar entra sem cobrar
-const QUIZ_VERSAO = '14';   // no modo de teste, uma versão nova do quiz aparece de novo no aparelho
+const QUIZ_VERSAO = '16';   // no modo de teste, uma versão nova do quiz aparece de novo no aparelho
 const PRECO_ANO = 'R$ 129,90', PRECO_MES = 'R$ 10,83', PRECO_DIA = 'R$ 0,36';
 const OFERTA_ANO = 'R$ 99,90', OFERTA_MES = 'R$ 8,33', OFERTA_DIA = 'R$ 0,28', OFERTA_OFF = '23%';   // desconto de verdade, oferecido uma vez a quem desiste da compra
 const SECRETARIA_MES = 'R$ 1.700', SECRETARIA_ANO = 'R$ 20.400';
@@ -6066,7 +6105,7 @@ const TELAS_QUIZ = [
         try {
           const perm = await LN.requestPermissions();
           if (perm.display === 'granted') {
-            await LN.schedule({ notifications: [{ id: ID_AVISO_TESTE, title: qz.feito?.titulo || 'Tap Bee', body: qzTextoAviso(m), schedule: { at: new Date(Date.now() + 2000), allowWhileIdle: true } }] });
+            await LN.schedule({ notifications: [{ id: ID_AVISO_TESTE, title: tituloAviso(qz.feito?.titulo || 'Reunião com o cliente'), body: qzTextoAviso(m), schedule: { at: new Date(Date.now() + 2000), allowWhileIdle: true } }] });
             qz.avisoReal = true;
           }
         } catch (e) { console.warn('Quiz: aviso de teste', e); }
@@ -6100,8 +6139,7 @@ const TELAS_QUIZ = [
           <div><small>Agenda de ${qzNome()}</small><b>${d ? `Mais energia para ${esc(d[3])}` : 'Sua vida organizada'}</b></div>
           <img src="${MASCOTES.bee_festa}" alt=""></div>
         ${foco ? `<div class="qz-foco qz-sobe" style="--i:1"><em>${foco[1]}</em><span><small>Seu foco principal</small><b>${foco[2]}</b></span></div>` : ''}
-        <div class="qz-tiles">${tiles.map(([, , , e, tit, lin], i) => `<div class="qz-tile qz-sobe" style="--i:${i + 2}"><em>${e}</em><b>${tit}</b><small>${lin}</small></div>`).join('')}</div>
-        <div class="qz-compara qz-sobe" style="--i:6"><div><small>Uma secretária</small><b>${SECRETARIA_ANO}/ano</b><small>${SECRETARIA_MES} por mês</small></div><div class="bee"><small>A Bee</small><b>${PRECO_ANO}/ano</b><small>o ano inteiro</small></div></div>`;
+        <div class="qz-tiles">${tiles.map(([, , , e, tit, lin], i) => `<div class="qz-tile qz-sobe" style="--i:${i + 2}"><em>${e}</em><b>${tit}</b><small>${lin}</small></div>`).join('')}</div>`;
     } },
   { id: 'pagamento', semTopo: true, bt: 'Quero minha secretária', html: () => {
       return `<div class="qz-logo"><img src="${MASCOTES.bee}" alt=""><b>Tap Bee</b></div>
@@ -6109,7 +6147,8 @@ const TELAS_QUIZ = [
       <h1 class="qz-capa qz-capa2"><span>Uma secretária no seu bolso,</span><br>o ano inteiro.</h1>
       <div class="qz-pag-fones">${['semana', 'habitos', 'hoje'].map(k => `<div class="qz-fone qz-pf-${k}"><div class="qz-fone-tela"><img src="${PRINTS_QUIZ[k]}" alt=""></div></div>`).join('')}</div>
       <div class="qz-preco"><b>${PRECO_MES}</b><span>/mês</span></div>
-      <p class="qz-preco-sub">${PRECO_ANO} cobrado por ano,<br>menos de ${PRECO_DIA} por dia</p>`;
+      <p class="qz-preco-sub">${PRECO_ANO} cobrado por ano,<br>menos de ${PRECO_DIA} por dia</p>
+      <div class="qz-compara"><div><small>Uma secretária</small><b>${SECRETARIA_ANO}/ano</b><small>${SECRETARIA_MES} por mês</small></div><div class="bee"><small>A Bee</small><b>${PRECO_ANO}/ano</b><small>o ano inteiro</small></div></div>`;
     },
     extra: () => `<p class="qz-legal">Renova automaticamente. Cancele quando quiser.</p><div class="qz-rodape"><button id="qzRestaurar">Restaurar compra</button><a href="${URL_TERMOS}">Termos</a><a href="${URL_PRIVACIDADE}">Privacidade</a></div>` },
 ];
@@ -6129,7 +6168,7 @@ function qzDemoHtml() {
       <form id="qzDigita" class="qz-digita" ${SR ? 'hidden' : ''}><input id="qzFrase" class="qz-campo" value="${esc(qzFraseTeste())}" autocomplete="off" enterkeyhint="send"><button class="qz-enviar" type="submit" aria-label="Enviar">${ICO.ok}</button></form>
       ${SR ? '<button class="qz-link" id="qzPrefiro">Prefiro escrever</button>' : ''}`;
 }
-const qzTextoAviso = (m) => fmtFalta(m);
+const qzTextoAviso = (m) => corpoAviso(m, `${pad(qz.feito?.hora ?? 10)}:00`);
 const qzEstado = (t) => { const e = document.getElementById('qzEstado'); if (e) e.textContent = t; };
 // Microfone do quiz: abre, ouve e entrega a frase; se não der, oferece escrever
 function qzLigarMic(aoFalar, fraseEsperada) {
@@ -6365,6 +6404,7 @@ function qzJogo() {
   el.innerHTML = `<h2>Espera, ${qzNome()}!</h2>
     <p class="qz-texto" id="qzJogoTxt">A Bee se escondeu em um destes copos. Ache ela e ganhe um desconto.</p>
     <div class="qz-mesa" id="qzMesa">${[0, 1, 2].map(i => `<button class="qz-copo" data-copo="${i}" aria-label="Copo ${i + 1}" disabled>${i === 1 ? `<img src="${MASCOTES.bee}" alt="">` : ''}${COPO_QUIZ}</button>`).join('')}</div>
+    <button class="qz-seguir" id="qzEmbaralhar">Embaralhar</button>
     <button class="qz-link" id="qzJogoNao">Não quero desconto</button>`;
   document.querySelector('.qz-tela').appendChild(el);
   const copos = [...el.querySelectorAll('.qz-copo')], txt = document.getElementById('qzJogoTxt'), vivo = () => document.body.contains(el);
@@ -6393,13 +6433,15 @@ function qzJogo() {
     txt.textContent = 'Onde está a Bee?';
     liberar(true);
   };
-  let tentativa = 0;
-  const comeco = async () => {
-    await espera(500);
-    copos[1].classList.add('aberto');
-    await espera(1300);
-    if (vivo()) rodada(7, 340);
+  // Os copos só se mexem quando a pessoa pede, depois de ler com calma
+  const btn = document.getElementById('qzEmbaralhar');
+  const pedirRodada = (rotulo, n, ms) => {
+    btn.textContent = rotulo; btn.style.visibility = 'visible';
+    btn.onclick = () => { btn.style.visibility = 'hidden'; rodada(n, ms); };
   };
+  let tentativa = 0;
+  copos[1].classList.add('aberto');
+  pedirRodada('Embaralhar', 7, 340);
   copos.forEach((c, i) => c.onclick = async () => {
     liberar(false);
     c.classList.add('aberto');
@@ -6416,11 +6458,9 @@ function qzJogo() {
     copos[1].classList.add('aberto');
     tentativa++;
     txt.textContent = 'Quase! Ela estava aqui. Vamos de novo, mais devagar.';
-    await espera(1700);
-    if (vivo()) rodada(tentativa > 1 ? 3 : 5, tentativa > 1 ? 620 : 480);
+    pedirRodada('Embaralhar de novo', tentativa > 1 ? 3 : 5, tentativa > 1 ? 620 : 480);
   });
   document.getElementById('qzJogoNao').onclick = () => el.remove();
-  comeco();
 }
 function qzOferta() {
   funil('oferta');
@@ -6451,7 +6491,7 @@ function qzAvisoTeste() {
     if (qz.avisoReal) return;
     const b = document.createElement('div');
     b.className = 'qz-banner qz-banner-topo';
-    b.innerHTML = `<img src="${MASCOTES.bee}" alt=""><span><b>${esc(qz.feito?.titulo || 'Tap Bee')}</b><small>${esc(qzTextoAviso(qz.r.aviso ?? lembretePadrao()))}</small></span>`;
+    b.innerHTML = `<img src="${MASCOTES.bee}" alt=""><span><b>${esc(tituloAviso(qz.feito?.titulo || 'Reunião com o cliente'))}</b><small>${esc(qzTextoAviso(qz.r.aviso ?? lembretePadrao()))}</small></span>`;
     document.querySelector('.qz-tela')?.appendChild(b);
   }, 2300);
 }
