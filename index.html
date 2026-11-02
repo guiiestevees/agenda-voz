@@ -2171,6 +2171,13 @@ function salvar() {
 // O iOS guarda até 64 avisos por app, então vão os próximos 60 (o resto entra quando o app abrir de novo).
 let timerLembretes;
 const idLembrete = (txt) => { let h = 0; for (const c of txt) h = (h * 31 + c.charCodeAt(0)) | 0; return Math.abs(h) % 2000000000 + 10000; };
+// Quanto falta, no texto do aviso: "Em 15 minutos"
+function fmtFalta(m) {
+  if (!m) return 'Agora';
+  if (m % 1440 === 0) return m === 1440 ? 'Amanhã' : `Em ${m / 1440} dias`;
+  if (m % 60 === 0) return m === 60 ? 'Em 1 hora' : `Em ${m / 60} horas`;
+  return m === 1 ? 'Em 1 minuto' : `Em ${m} minutos`;
+}
 function agendarLembretes() {
   clearTimeout(timerLembretes);
   timerLembretes = setTimeout(async () => {
@@ -2188,7 +2195,7 @@ function agendarLembretes() {
       const antigos = JSON.parse(localStorage.getItem('agenda.lembretesIds') || '[]');
       if (antigos.length) await LN.cancel({ notifications: antigos.map(id => ({ id })) });
       if (perm.display !== 'granted') return;
-      const avisos = proximos.map(o => ({ id: idLembrete(`${o.ev.id}|${chaveDia(o.inicio)}`), title: o.ev.titulo, body: o.ev.lembreteMin ? `${fmtLembrete(o.ev.lembreteMin)} · às ${fmtHora(o.inicio)}` : `Agora, às ${fmtHora(o.inicio)}`, schedule: { at: new Date(o.quando), allowWhileIdle: true } }));
+      const avisos = proximos.map(o => ({ id: idLembrete(`${o.ev.id}|${chaveDia(o.inicio)}`), title: o.ev.titulo, body: o.ev.lembreteMin ? `${fmtFalta(o.ev.lembreteMin)} · às ${fmtHora(o.inicio)}` : `Agora, às ${fmtHora(o.inicio)}`, schedule: { at: new Date(o.quando), allowWhileIdle: true } }));
       if (avisos.length) await LN.schedule({ notifications: avisos });
       localStorage.setItem('agenda.lembretesIds', JSON.stringify(avisos.map(a => a.id)));
     } catch (e) { console.warn('Lembretes', e); }
@@ -5951,7 +5958,7 @@ agendarLembretes();
 // ---------- Quiz de entrada e tela de pagamento (só quem assina entra no app) ----------
 // A Bee conversa, a pessoa faz um teste por voz, vê o pote encher e assina.
 const RC_CHAVE = '';   // chave pública do RevenueCat (appl_...). Vazia = MODO DE TESTE: o botão de assinar entra sem cobrar
-const QUIZ_VERSAO = '12';   // no modo de teste, uma versão nova do quiz aparece de novo no aparelho
+const QUIZ_VERSAO = '13';   // no modo de teste, uma versão nova do quiz aparece de novo no aparelho
 const PRECO_ANO = 'R$ 129,90', PRECO_MES = 'R$ 10,83', PRECO_DIA = 'R$ 0,36';
 const OFERTA_ANO = 'R$ 99,90', OFERTA_MES = 'R$ 8,33', OFERTA_DIA = 'R$ 0,28', OFERTA_OFF = '23%';   // desconto de verdade, oferecido uma vez a quem desiste da compra
 const SECRETARIA_MES = 'R$ 1.700', SECRETARIA_ANO = 'R$ 20.400';
@@ -6066,7 +6073,7 @@ const TELAS_QUIZ = [
         try {
           const perm = await LN.requestPermissions();
           if (perm.display === 'granted') {
-            await LN.schedule({ notifications: [{ id: ID_AVISO_TESTE, title: qz.feito?.titulo || 'Tap Bee', body: qzTextoAviso(m), schedule: { at: new Date(Date.now() + 4000), allowWhileIdle: true } }] });
+            await LN.schedule({ notifications: [{ id: ID_AVISO_TESTE, title: qz.feito?.titulo || 'Tap Bee', body: qzTextoAviso(m), schedule: { at: new Date(Date.now() + 2000), allowWhileIdle: true } }] });
             qz.avisoReal = true;
           }
         } catch (e) { console.warn('Quiz: aviso de teste', e); }
@@ -6133,7 +6140,7 @@ function qzDemoHtml() {
       <form id="qzDigita" class="qz-digita" ${SR ? 'hidden' : ''}><input id="qzFrase" class="qz-campo" value="${esc(qzFraseTeste())}" autocomplete="off" enterkeyhint="send"><button class="qz-enviar" type="submit" aria-label="Enviar">${ICO.ok}</button></form>
       ${SR ? '<button class="qz-link" id="qzPrefiro">Prefiro escrever</button>' : ''}`;
 }
-const qzTextoAviso = (m) => { const h = `${pad(qz.feito?.hora ?? 10)}:00`; return m ? `${fmtLembrete(m)} · às ${h}` : `Agora, às ${h}`; };
+const qzTextoAviso = (m) => fmtFalta(m);
 const qzEstado = (t) => { const e = document.getElementById('qzEstado'); if (e) e.textContent = t; };
 // Microfone do quiz: abre, ouve e entrega a frase; se não der, oferece escrever
 function qzLigarMic(aoFalar) {
@@ -6453,7 +6460,7 @@ function qzAvisoTeste() {
     b.className = 'qz-banner qz-banner-topo';
     b.innerHTML = `<img src="${MASCOTES.bee}" alt=""><span><b>${esc(qz.feito?.titulo || 'Tap Bee')}</b><small>${esc(qzTextoAviso(qz.r.aviso ?? lembretePadrao()))}</small></span>`;
     document.querySelector('.qz-tela')?.appendChild(b);
-  }, 4300);
+  }, 2300);
 }
 // Som dos cliques do quiz: uma nota de madeira bem suave, que nunca repete a anterior e sobe com o progresso
 const ESCALA_QUIZ = [392, 440, 523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1174.66];
