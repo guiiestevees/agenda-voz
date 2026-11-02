@@ -80,12 +80,24 @@ public class VozPlugin: CAPPlugin, CAPBridgedPlugin {
             AVAudioSession.sharedInstance().requestRecordPermission { microfone in
                 DispatchQueue.main.async {
                     guard fala == .authorized, microfone else { return call.reject("not-allowed") }
+                    let idioma = call.getString("idioma") ?? "pt-BR"
                     do {
-                        try self.comecar(idioma: call.getString("idioma") ?? "pt-BR")
+                        try self.comecar(idioma: idioma)
                         call.resolve()
                     } catch {
+                        // O áudio do iPhone às vezes ainda está sendo trocado: tenta de novo em seguida
+                        print("[Voz] primeira tentativa falhou: \(error)")
                         self.encerrar()
-                        call.reject("indisponivel")
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                            do {
+                                try self.comecar(idioma: idioma)
+                                call.resolve()
+                            } catch {
+                                print("[Voz] segunda tentativa falhou: \(error)")
+                                self.encerrar()
+                                call.reject("indisponivel: \(error.localizedDescription)")
+                            }
+                        }
                     }
                 }
             }
@@ -125,6 +137,7 @@ public class VozPlugin: CAPPlugin, CAPBridgedPlugin {
             if let resultado = resultado {
                 self.notifyListeners("resultado", data: ["texto": resultado.bestTranscription.formattedString, "final": resultado.isFinal])
             }
+            if let erro = erro { print("[Voz] reconhecimento terminou com erro: \(erro)") }
             if erro != nil || resultado?.isFinal == true {
                 DispatchQueue.main.async {
                     self.encerrar()

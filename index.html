@@ -1686,51 +1686,51 @@
   .cena.relax.bee img { animation: relaxaBee 4s ease-in-out infinite; transform: translateX(-50%); }
   @keyframes relaxaBee { 0%, 100% { transform: translateX(-50%) rotate(-3deg); } 50% { transform: translateX(-50%) rotate(1deg) translateY(-2px); } }
 
-  /* ===== Quiz de entrada e pagamento: escuro e dourado, sempre igual, com qualquer tema ===== */
-  #quiz { position: fixed; inset: 0; z-index: 50000; color: #f7f2e6; background: #0c0a06; font-family: var(--fonte, inherit); overflow: hidden; transition: opacity .4s; -webkit-user-select: none; user-select: none; }
+  /* ===== Quiz de entrada e pagamento: a Bee conversando, nas cores de mel do Tap Bee ===== */
+  #quiz { position: fixed; inset: 0; z-index: 50000; color: #1d1a12; background: linear-gradient(180deg, #ffe9ad 0, #fdf4dc 34%, #fbf6e9 100%); font-family: var(--fonte-display, inherit); overflow: hidden; transition: opacity .4s; -webkit-user-select: none; user-select: none; }
   #quiz.saindo { opacity: 0; pointer-events: none; }
-  #quiz::before { content: ''; position: absolute; inset: 0 0 auto; height: 240px; background: radial-gradient(70% 100% at 50% 0, rgba(245,178,27,.3), transparent 72%); pointer-events: none; }
-  .qz-tela { position: relative; height: 100%; display: flex; flex-direction: column; padding: calc(env(safe-area-inset-top) + 8px) 22px calc(env(safe-area-inset-bottom) + 14px); box-sizing: border-box; animation: qzEntra .34s var(--ease, ease) both; }
+  .qz-tela { position: relative; height: 100%; display: flex; flex-direction: column; padding: calc(env(safe-area-inset-top) + 8px) 20px calc(env(safe-area-inset-bottom) + 14px); box-sizing: border-box; animation: qzEntra .3s var(--ease, ease) both; }
   @keyframes qzEntra { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
-  .qz-topo { position: relative; flex: none; height: 46px; display: flex; align-items: center; justify-content: center; }
-  .qz-topo > span { font-size: 11px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: rgba(247,242,230,.55); }
-  .qz-volta { position: absolute; left: -8px; top: 3px; width: 40px; height: 40px; border: 0; background: none; cursor: pointer; }
-  .qz-volta::after { content: ''; position: absolute; left: 16px; top: 14px; width: 11px; height: 11px; border-left: 2px solid #f7f2e6; border-bottom: 2px solid #f7f2e6; transform: rotate(45deg); }
-  .qz-prog { position: absolute; left: 34px; right: 0; bottom: 2px; height: 3px; border-radius: 3px; background: rgba(247,242,230,.1); overflow: hidden; }
-  .qz-prog i { display: block; height: 100%; background: #f5b21b; border-radius: 3px; transition: width .4s; }
-  .qz-corpo { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; justify-content: center; padding: 8px 0 14px; scrollbar-width: none; }
+  .qz-topo { position: relative; flex: none; height: 44px; display: flex; align-items: center; }
+  .qz-volta { flex: none; width: 36px; height: 40px; margin-left: -8px; border: 0; background: none; position: relative; cursor: pointer; }
+  .qz-volta::after { content: ''; position: absolute; left: 14px; top: 14px; width: 11px; height: 11px; border-left: 2.5px solid #1d1a12; border-bottom: 2.5px solid #1d1a12; transform: rotate(45deg); }
+  .qz-prog { flex: 1; height: 7px; border-radius: 7px; background: rgba(29,26,18,.1); overflow: hidden; }
+  .qz-prog i { display: block; height: 100%; background: #f2a313; border-radius: 7px; transition: width .4s; }
+  .qz-corpo { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; justify-content: center; padding: 10px 0 14px; scrollbar-width: none; }
   .qz-corpo::-webkit-scrollbar { display: none; }
   .qz-corpo > * { flex: none; }
-  .qz-t-plano .qz-corpo, .qz-t-meta .qz-corpo { justify-content: flex-start; }
-  #quiz h2 { margin: 0 0 18px; font-size: 29px; line-height: 1.16; font-weight: 400; letter-spacing: -.02em; color: #f7f2e6; font-family: var(--fonte-display, inherit); }
-  #quiz h2 b { font-weight: 800; }
+  .qz-t-dores .qz-corpo, .qz-t-areas .qz-corpo, .qz-t-muda .qz-corpo, .qz-t-demo .qz-corpo { justify-content: flex-start; }
+  #quiz h2 { margin: 0 0 16px; font-size: 26px; line-height: 1.18; font-weight: 800; letter-spacing: -.02em; color: #1d1a12; font-family: inherit; }
   .qz-c { text-align: center; }
-  .qz-sub { margin: -8px 0 18px; color: rgba(247,242,230,.6); font-size: 15px; line-height: 1.4; }
-  .qz-grafico + .qz-sub { margin: 12px 0 0; }
-  .qz-nota { margin: 8px 0 0; font-size: 12px; color: rgba(247,242,230,.4); text-align: center; }
-  .qz-pe { flex: none; display: flex; flex-direction: column; gap: 6px; }
-  .qz-seguir { width: 100%; height: 56px; border: 1.5px solid #f5b21b; border-radius: 999px; background: rgba(245,178,27,.08); color: #fff3cf; font-size: 14px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; cursor: pointer; box-shadow: 0 0 22px rgba(245,178,27,.3), inset 0 0 12px rgba(245,178,27,.12); transition: opacity .2s, transform .12s; }
+  .qz-sub { margin: 0; color: #6e6655; font-size: 16px; line-height: 1.4; }
+  .qz-texto { margin: 0; color: #5d5646; font-size: 17px; line-height: 1.45; }
+  .qz-dica { margin: 0 0 10px; color: #6e6655; font-size: 14px; }
+  .qz-pe { flex: none; display: flex; flex-direction: column; gap: 4px; }
+  .qz-seguir { width: 100%; min-height: 58px; padding: 0 14px; border: 0; border-radius: 18px; background: linear-gradient(180deg, #ffc93f, #f2a313); color: #1d1600; font-size: 18px; font-weight: 800; cursor: pointer; box-shadow: 0 8px 20px rgba(217,138,6,.32), inset 0 -3px 0 rgba(120,70,0,.2); transition: opacity .2s, transform .12s; font-family: inherit; }
   .qz-seguir:active { transform: scale(.98); }
-  .qz-seguir:disabled { opacity: .3; box-shadow: none; }
+  .qz-seguir:disabled { opacity: .35; box-shadow: none; }
   .qz-seguir[hidden] { display: none; }
-  .qz-link { border: 0; background: none; padding: 8px; color: rgba(247,242,230,.55); font-size: 13.5px; cursor: pointer; }
+  .qz-link { border: 0; background: none; padding: 8px; color: #6e6655; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; }
   .qz-link[hidden] { display: none; }
-  .qz-campo { width: 100%; box-sizing: border-box; height: 56px; padding: 0 18px; border: 1px solid rgba(247,242,230,.14); border-radius: 16px; background: rgba(247,242,230,.06); color: #fff; font-size: 18px; text-align: center; outline: 0; -webkit-user-select: text; user-select: text; }
-  .qz-campo:focus { border-color: #f5b21b; }
+  .qz-campo { width: 100%; box-sizing: border-box; height: 58px; padding: 0 18px; border: 1.5px solid #e6dcc3; border-radius: 18px; background: #fff; color: #1d1a12; font-size: 18px; outline: 0; -webkit-user-select: text; user-select: text; font-family: inherit; }
+  .qz-campo:focus { border-color: #f2a313; }
+  /* A Bee falando */
+  .qz-fala { display: flex; align-items: flex-end; gap: 10px; margin-bottom: 18px; }
+  .qz-fala img { flex: none; width: 62px; height: 62px; object-fit: contain; animation: pulinho 3s ease-in-out infinite; }
+  .qz-balao { flex: 1; min-width: 0; padding: 14px 16px; border-radius: 20px 20px 20px 6px; background: #fff; box-shadow: 0 4px 16px rgba(120,80,10,.1); font-size: 19px; font-weight: 700; line-height: 1.28; animation: qzPop .35s ease both; }
+  @keyframes qzPop { from { opacity: 0; transform: scale(.92); } to { opacity: 1; transform: none; } }
+  .qz-bee-grande { display: block; width: 130px; height: 130px; object-fit: contain; margin: 0 auto 14px; }
+  .qz-bee-grande.voando { animation: pulinho 1.6s ease-in-out infinite; }
   .qz-logo { display: flex; align-items: center; justify-content: center; gap: 8px; flex: none; }
-  .qz-logo img { width: 30px; height: 30px; object-fit: contain; }
-  .qz-logo b { font-size: 15px; font-weight: 800; letter-spacing: .14em; }
-  .qz-logo em { padding: 2px 7px; border-radius: 999px; background: #f5b21b; color: #1d1600; font-size: 10px; font-style: normal; font-weight: 800; }
-  .qz-capa { margin: 16px 0 6px; font-size: 30px; line-height: 1.1; text-align: center; letter-spacing: -.02em; font-weight: 800; color: #f7f2e6; font-family: var(--fonte-display, inherit); }
-  .qz-capa2 { margin-top: 6px; font-size: 25px; font-weight: 400; }
-  .qz-capa2 b { font-weight: 800; }
+  .qz-logo img { width: 34px; height: 34px; object-fit: contain; }
+  .qz-logo b { font-size: 20px; font-weight: 800; letter-spacing: -.01em; }
+  .qz-capa { margin: 18px 0 6px; font-size: 31px; line-height: 1.12; text-align: center; letter-spacing: -.025em; font-weight: 800; color: #1d1a12; font-family: inherit; }
+  .qz-capa2 { margin: 12px 0 0; font-size: 25px; }
   .qz-t-abertura .qz-corpo, .qz-t-pagamento .qz-corpo { justify-content: flex-start; }
-  .qz-t-abertura .qz-sub { margin: 0; }
-  .qz-t-pagamento .qz-sub { margin: 8px 0 0; }
   /* Celular demonstrando o app */
-  .qz-fone { width: min(55vw, 215px); aspect-ratio: 9 / 18; margin: 14px auto 0; padding: 7px; border-radius: 34px; background: linear-gradient(145deg, #3b3528, #15120b); box-shadow: 0 16px 50px rgba(245,178,27,.2), inset 0 0 0 1px rgba(255,255,255,.14); box-sizing: border-box; }
-  .qz-fone-tela { height: 100%; border-radius: 27px; overflow: hidden; background: #fbf6e9; color: #1d1a12; }
-  .qz-pag-fone .qz-fone { width: min(38vw, 150px); }
+  .qz-fone { width: min(52vw, 205px); aspect-ratio: 9 / 18; margin: 14px auto 0; padding: 6px; border-radius: 32px; background: #1d1a12; box-shadow: 0 18px 40px rgba(120,80,10,.28); box-sizing: border-box; }
+  .qz-fone-tela { height: 100%; border-radius: 26px; overflow: hidden; background: #fbf6e9; color: #1d1a12; }
+  .qz-pag-fone .qz-fone { width: min(42vw, 165px); }
   .qz-sl { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 12px; text-align: center; box-sizing: border-box; animation: qzSlide .5s ease both; }
   @keyframes qzSlide { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: none; } }
   .qz-sl img { width: 74px; height: 74px; object-fit: contain; }
@@ -1738,135 +1738,100 @@
   .qz-sl p { margin: 0; font-size: 14px; line-height: 1.3; }
   .qz-sl small { font-size: 11.5px; color: #6e6655; }
   .qz-onda { display: flex; align-items: center; gap: 3px; height: 26px; }
-  .qz-onda i { width: 4px; height: 8px; border-radius: 3px; background: #f2b01e; animation: qzOnda .8s ease-in-out infinite; }
+  .qz-onda i { width: 4px; height: 8px; border-radius: 3px; background: #f2a313; animation: qzOnda .8s ease-in-out infinite; }
   .qz-onda i:nth-child(2n) { animation-delay: .15s; } .qz-onda i:nth-child(3n) { animation-delay: .3s; }
   @keyframes qzOnda { 50% { height: 26px; } }
   .qz-ok { display: grid; place-items: center; flex: none; width: 44px; height: 44px; border-radius: 50%; background: #22a35a; }
   .qz-ok svg { width: 24px; height: 24px; fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
-  .qz-sl-lista { justify-content: flex-start; align-items: stretch; padding-top: 30px; text-align: left; gap: 6px; }
-  .qz-sl-tit { font-size: 18px; font-weight: 800; margin-bottom: 2px; }
-  .qz-sl-ev { display: flex; align-items: center; gap: 6px; padding: 8px; border-radius: 10px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.08); font-size: 11px; }
+  .qz-sl-lista { justify-content: flex-start; align-items: stretch; padding-top: 30px; text-align: left; gap: 7px; }
+  .qz-sl-tit { font-size: 19px; font-weight: 800; margin-bottom: 2px; }
+  .qz-sl-ev { display: flex; align-items: center; gap: 6px; padding: 9px 8px; border-radius: 11px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.08); font-size: 10.5px; }
   .qz-sl-ev i { width: 12px; height: 12px; border: 1.5px solid #c9c0ab; border-radius: 50%; flex: none; }
-  .qz-sl-ev b { font-size: 11.5px; }
-  .qz-sl-nv { display: flex; align-items: center; gap: 6px; margin-top: auto; padding: 6px; border-radius: 12px; background: #fff3cf; font-size: 13px; font-weight: 800; }
-  .qz-sl-nv img { width: 36px; height: 36px; }
-  .qz-sl-nv small { display: block; font-weight: 600; }
+  .qz-sl-ev b { font-size: 11px; }
   /* Aceite */
-  .qz-aceite { display: flex; gap: 12px; padding: 14px 0; border-top: 1px solid rgba(247,242,230,.1); }
-  .qz-aceite i { display: grid; place-items: center; flex: none; width: 24px; height: 24px; border-radius: 50%; background: #f5b21b; }
+  .qz-aceite { display: flex; gap: 12px; padding: 14px 0; border-top: 1px solid rgba(29,26,18,.1); }
+  .qz-aceite i { display: grid; place-items: center; flex: none; width: 24px; height: 24px; border-radius: 50%; background: #f2a313; }
   .qz-aceite svg { width: 15px; height: 15px; fill: none; stroke: #1d1600; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
-  .qz-aceite p { margin: 0; font-size: 14px; line-height: 1.42; color: rgba(247,242,230,.72); }
-  .qz-aceite a, .qz-rodape a { color: #f5b21b; }
-  /* Gráfico */
-  .qz-grafico { position: relative; margin: 4px 0; padding: 14px 14px 10px; border-radius: 20px; background: rgba(247,242,230,.05); box-shadow: inset 0 0 0 1px rgba(247,242,230,.08); }
-  .qz-gr-top { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: rgba(247,242,230,.65); }
-  .qz-gr-meta { color: #f5b21b; text-align: right; }
-  .qz-grafico svg { display: block; width: 100%; height: auto; margin-top: 6px; overflow: visible; }
-  .qz-grafico circle { fill: #0c0a06; stroke: #f7f2e6; stroke-width: 3; }
-  .qz-gr-linha { fill: none; stroke: #f5b21b; stroke-width: 4; stroke-linecap: round; stroke-dasharray: 420; animation: qzLinha 1.3s ease-out both; filter: drop-shadow(0 0 7px rgba(245,178,27,.6)); }
-  @keyframes qzLinha { from { stroke-dashoffset: 420; } to { stroke-dashoffset: 0; } }
-  .qz-gr-img { position: absolute; right: 2px; top: 34px; width: 64px; height: 64px; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(0,0,0,.5)); animation: qzPop .5s ease 1s both; }
-  .qz-gr-estrela { position: absolute; right: 26px; top: 38px; width: 22px; height: 22px; border-radius: 50%; background: #f5b21b; box-shadow: 0 0 18px #f5b21b; animation: qzPop .5s ease 1s both; }
-  @keyframes qzPop { from { opacity: 0; transform: scale(.4); } to { opacity: 1; transform: none; } }
-  /* Trilha de como funciona */
-  .qz-trilha { display: flex; flex-direction: column; gap: 2px; }
-  .qz-tr-it { position: relative; display: flex; gap: 14px; padding: 0 0 20px calc(var(--n) * 14px); animation: qzEntra .45s ease both; animation-delay: calc(var(--n) * .16s); }
-  .qz-tr-it i { display: grid; place-items: center; flex: none; width: 36px; height: 36px; border-radius: 50%; background: #f5b21b; color: #1d1600; font-style: normal; font-weight: 800; box-shadow: 0 0 16px rgba(245,178,27,.45); }
-  .qz-tr-it span, .qz-lista span { display: flex; flex-direction: column; gap: 2px; }
-  .qz-tr-it b, .qz-lista b { font-size: 16px; }
-  .qz-tr-it small, .qz-lista small { font-size: 13px; color: rgba(247,242,230,.55); }
+  .qz-aceite p { margin: 0; font-size: 14.5px; line-height: 1.42; color: #5d5646; }
+  .qz-aceite a { color: #9a6400; font-weight: 700; }
   /* Opções */
-  .qz-op { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: 58px; margin-bottom: 9px; padding: 10px 16px; border: 1px solid transparent; border-radius: 16px; background: rgba(247,242,230,.07); color: rgba(247,242,230,.85); text-align: left; cursor: pointer; transition: background .15s, color .15s; }
+  .qz-op { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: 58px; margin-bottom: 9px; padding: 10px 16px; border: 2px solid transparent; border-radius: 18px; background: #fff; color: #1d1a12; text-align: left; cursor: pointer; box-shadow: 0 2px 8px rgba(120,80,10,.07); transition: background .15s, border-color .15s; font-family: inherit; }
   .qz-op span { display: flex; flex-direction: column; gap: 2px; }
-  .qz-op b { font-size: 15.5px; font-weight: 650; }
-  .qz-op small { font-size: 12.5px; opacity: .6; }
-  .qz-op i { flex: none; width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid rgba(247,242,230,.3); box-sizing: border-box; }
-  .qz-op[data-varios] i { border-radius: 6px; }
-  .qz-op.on { background: #f7f2e6; color: #1d1600; }
-  .qz-op.on i { border: 6px solid #1d1600; }
-  .qz-grade { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .qz-cartao { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 12px 8px; border: 1.5px solid transparent; border-radius: 18px; background: rgba(247,242,230,.07); color: #f7f2e6; cursor: pointer; }
-  .qz-cartao img { width: min(24vw, 96px); height: min(24vw, 96px); object-fit: contain; }
-  .qz-cartao b { font-size: 15px; font-weight: 800; letter-spacing: .02em; text-transform: uppercase; font-style: italic; }
-  .qz-cartao small { font-size: 12px; color: rgba(247,242,230,.55); }
-  .qz-cartao.on { border-color: #f5b21b; background: rgba(245,178,27,.13); box-shadow: 0 0 18px rgba(245,178,27,.22); }
-  /* Roda de números */
-  .qz-roda { position: relative; height: 270px; }
-  .qz-roda-lista { height: 100%; overflow-y: auto; scroll-snap-type: y mandatory; padding: 105px 0; box-sizing: border-box; scrollbar-width: none; -webkit-mask-image: linear-gradient(transparent, #000 30%, #000 70%, transparent); mask-image: linear-gradient(transparent, #000 30%, #000 70%, transparent); }
-  .qz-roda-lista::-webkit-scrollbar { display: none; }
-  .qz-roda-it { height: 60px; display: grid; place-items: center; scroll-snap-align: center; font-size: 34px; font-weight: 800; font-style: italic; color: rgba(247,242,230,.28); transition: color .15s, transform .15s; cursor: pointer; }
-  .qz-roda-it.sel { color: #fff; transform: scale(1.5); }
-  .qz-roda-rot { position: absolute; left: calc(50% + 52px); top: 50%; transform: translateY(-50%); font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(247,242,230,.5); pointer-events: none; }
-  .qz-roda-faixa { display: none; }
+  .qz-op b { font-size: 16px; font-weight: 650; line-height: 1.25; }
+  .qz-op small { font-size: 13px; color: #6e6655; }
+  .qz-op i { flex: none; width: 22px; height: 22px; border-radius: 50%; border: 2px solid #d8cdb2; box-sizing: border-box; }
+  .qz-op[data-varios] i { border-radius: 7px; }
+  .qz-op.on { border-color: #f2a313; background: #fff3cf; }
+  .qz-op.on i { border: 7px solid #f2a313; }
   /* Comparação */
-  .qz-barras p { margin: 6px 0 18px; font-size: 13.5px; line-height: 1.35; color: rgba(247,242,230,.55); }
-  .qz-barra { display: flex; justify-content: space-between; align-items: center; height: 52px; padding: 0 16px; border-radius: 14px; font-weight: 700; font-size: 15px; box-sizing: border-box; animation: qzCresce .8s ease both; }
+  .qz-barras p { margin: 6px 0 18px; font-size: 14.5px; line-height: 1.35; color: #5d5646; }
+  .qz-barra { display: flex; justify-content: space-between; align-items: center; height: 56px; padding: 0 16px; border-radius: 16px; font-weight: 700; font-size: 16px; box-sizing: border-box; animation: qzCresce .8s ease both; }
   @keyframes qzCresce { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0); } }
-  .qz-barra.dig { background: rgba(247,242,230,.13); }
-  .qz-barra.voz { width: 62%; background: linear-gradient(90deg, #d98a06, #f5b21b); color: #1d1600; }
+  .qz-barra.dig { background: #ebe3cf; }
+  .qz-barra.voz { width: 62%; background: linear-gradient(90deg, #ffc93f, #f2a313); color: #1d1600; }
   /* Fala com a Bee */
-  .qz-t-demo h2 { font-size: 25px; }
-  .qz-demo { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-  .qz-demo-bee { width: 84px; height: 84px; object-fit: contain; }
-  .qz-mic { display: grid; place-items: center; width: 96px; height: 96px; border: 0; border-radius: 50%; background: linear-gradient(160deg, #ffd25c, #f5b21b 55%, #d98a06); color: #1d1600; cursor: pointer; box-shadow: 0 0 34px rgba(245,178,27,.55); animation: qzPulsa 1.8s ease-in-out infinite; }
-  .qz-mic svg { width: 40px; height: 40px; }
-  .qz-mic.ativo { animation-duration: .7s; }
+  .qz-exemplos { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; margin-bottom: 14px; }
+  .qz-exemplos small { font-size: 13px; color: #6e6655; font-weight: 600; }
+  .qz-exemplos span { padding: 7px 12px; border-radius: 12px; background: rgba(255,255,255,.75); font-size: 14.5px; font-style: italic; color: #5d5646; }
+  .qz-demo { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 4px; }
+  .qz-mic { display: grid; place-items: center; width: 92px; height: 92px; border: 0; border-radius: 50%; background: linear-gradient(160deg, #ffd25c, #f5b21b 55%, #d98a06); color: #1d1600; cursor: pointer; box-shadow: 0 10px 28px rgba(217,138,6,.45); animation: qzPulsa 1.8s ease-in-out infinite; }
+  .qz-mic svg { width: 38px; height: 38px; }
+  .qz-mic.ativo { animation-duration: .7s; background: linear-gradient(160deg, #ff8a5c, #ea580c); color: #fff; }
   .qz-mic.pensando { animation: none; opacity: .5; pointer-events: none; }
-  @keyframes qzPulsa { 50% { transform: scale(1.07); box-shadow: 0 0 50px rgba(245,178,27,.8); } }
-  .qz-demo-est { font-size: 14px; font-weight: 700; color: #f5b21b; text-align: center; }
-  .qz-demo-txt { min-height: 44px; font-size: 18px; line-height: 1.3; text-align: center; font-style: italic; }
-  .qz-digita { display: flex; gap: 8px; margin-top: 8px; }
+  @keyframes qzPulsa { 50% { transform: scale(1.07); box-shadow: 0 12px 40px rgba(217,138,6,.65); } }
+  .qz-demo-est { font-size: 15px; font-weight: 700; color: #9a6400; text-align: center; }
+  .qz-demo-txt { min-height: 26px; font-size: 18px; font-weight: 600; line-height: 1.3; text-align: center; }
+  .qz-digita { display: flex; gap: 8px; margin-top: 10px; }
   .qz-digita[hidden] { display: none; }
-  .qz-digita .qz-campo { flex: 1; min-width: 0; font-size: 16px; text-align: left; }
-  .qz-enviar { flex: none; width: 56px; border: 0; border-radius: 16px; background: #f5b21b; color: #1d1600; cursor: pointer; }
+  .qz-digita .qz-campo { flex: 1; min-width: 0; font-size: 16px; }
+  .qz-enviar { flex: none; width: 58px; border: 0; border-radius: 18px; background: #f2a313; color: #1d1600; cursor: pointer; }
   .qz-enviar svg { width: 24px; height: 24px; }
-  .qz-salvo { display: flex; align-items: center; gap: 14px; margin: 6px 0 14px; padding: 16px; border-radius: 20px; background: rgba(247,242,230,.07); box-shadow: inset 0 0 0 1px rgba(245,178,27,.35); }
+  .qz-salvo { display: flex; align-items: center; gap: 14px; margin: 6px 0 14px; padding: 16px; border-radius: 20px; background: #fff; box-shadow: 0 4px 16px rgba(120,80,10,.1); }
   .qz-salvo > span:last-child { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-  .qz-salvo small { font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: #f5b21b; }
-  .qz-salvo b { font-size: 19px; line-height: 1.2; overflow-wrap: anywhere; }
-  .qz-salvo em { font-style: normal; font-size: 14px; color: rgba(247,242,230,.65); }
+  .qz-salvo small { font-size: 12.5px; font-weight: 700; color: #9a6400; }
+  .qz-salvo b { font-size: 20px; line-height: 1.2; overflow-wrap: anywhere; }
+  .qz-salvo em { font-style: normal; font-size: 14.5px; color: #5d5646; }
   .qz-salvo.grande { animation: qzPop .45s ease both; }
   /* Avisos */
   .qz-sino { display: flex; flex-direction: column; align-items: center; gap: 22px; margin-top: 8px; }
-  .qz-sino-it { color: #f5b21b; animation: qzBalanca 1.6s ease-in-out infinite; transform-origin: 50% 10%; }
+  .qz-sino-it { color: #f2a313; animation: qzBalanca 1.6s ease-in-out infinite; transform-origin: 50% 10%; }
   .qz-sino-it svg { width: 70px; height: 70px; }
   @keyframes qzBalanca { 25% { transform: rotate(11deg); } 75% { transform: rotate(-11deg); } }
-  .qz-aviso { display: flex; align-items: center; gap: 12px; width: 100%; box-sizing: border-box; padding: 12px 14px; border-radius: 22px; background: rgba(247,242,230,.13); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+  .qz-aviso { display: flex; align-items: center; gap: 12px; width: 100%; box-sizing: border-box; padding: 12px 14px; border-radius: 22px; background: #fff; box-shadow: 0 6px 20px rgba(120,80,10,.12); }
   .qz-aviso img { width: 42px; height: 42px; object-fit: contain; }
   .qz-aviso span { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-  .qz-aviso b { font-size: 15px; overflow-wrap: anywhere; }
-  .qz-aviso small { font-size: 12.5px; color: rgba(247,242,230,.65); }
-  /* Compromisso com o dedo */
-  .qz-jura { position: relative; height: min(42vh, 280px); border-radius: 20px; background: rgba(247,242,230,.05); box-shadow: inset 0 0 0 1px rgba(247,242,230,.14); overflow: hidden; }
-  .qz-jura canvas { display: block; width: 100%; height: 100%; touch-action: none; }
-  .qz-jura span { position: absolute; left: 0; right: 0; bottom: 16px; text-align: center; font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: rgba(247,242,230,.5); pointer-events: none; }
-  .qz-jura span[hidden] { display: none; }
-  /* Cálculo */
-  .qz-calc { position: relative; width: 150px; height: 150px; margin: 0 auto 22px; display: grid; place-items: center; }
-  .qz-calc svg { position: absolute; inset: 0; transform: rotate(-90deg); }
-  .qz-calc circle { fill: none; stroke: rgba(247,242,230,.1); stroke-width: 5; }
-  .qz-calc #qzArco { stroke: #f5b21b; stroke-linecap: round; filter: drop-shadow(0 0 5px rgba(245,178,27,.8)); }
-  .qz-calc b { font-size: 34px; font-weight: 800; font-style: italic; }
-  /* Plano */
-  .qz-resumo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-  .qz-resumo > div { display: flex; flex-direction: column; gap: 1px; padding: 14px; border-radius: 18px; background: rgba(247,242,230,.07); }
-  .qz-resumo small { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: rgba(247,242,230,.5); }
-  .qz-resumo b { font-size: 34px; font-weight: 800; font-style: italic; color: #f5b21b; }
-  .qz-resumo span { font-size: 13px; color: rgba(247,242,230,.7); }
-  #quiz .qz-h3 { margin: 18px 0 10px; font-size: 18px; font-weight: 800; font-style: italic; text-transform: uppercase; color: #f7f2e6; }
-  .qz-lista > div { display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid rgba(247,242,230,.08); }
-  .qz-lista i { display: grid; place-items: center; flex: none; width: 24px; height: 24px; border-radius: 50%; background: rgba(245,178,27,.18); }
-  .qz-lista svg { width: 14px; height: 14px; fill: none; stroke: #f5b21b; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
+  .qz-aviso b { font-size: 15.5px; overflow-wrap: anywhere; }
+  .qz-aviso small { font-size: 13px; color: #6e6655; }
+  /* Preparando */
+  .qz-passos { display: flex; flex-direction: column; gap: 12px; margin-top: 4px; }
+  .qz-passos > div { display: flex; align-items: center; gap: 12px; font-size: 16.5px; font-weight: 600; opacity: .35; transition: opacity .3s; }
+  .qz-passos i { display: grid; place-items: center; flex: none; width: 26px; height: 26px; border-radius: 50%; background: #e6dcc3; transition: background .3s; }
+  .qz-passos svg { width: 15px; height: 15px; fill: none; stroke: #fff; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
+  .qz-passos .feito { opacity: 1; }
+  .qz-passos .feito i { background: #22a35a; }
+  /* O que muda */
+  .qz-muda { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+  .qz-muda > div { display: flex; flex-direction: column; gap: 6px; padding: 13px 14px; border-radius: 18px; background: #fff; box-shadow: 0 2px 8px rgba(120,80,10,.07); }
+  .qz-muda s { font-size: 14px; color: #8d8470; }
+  .qz-muda b { display: flex; align-items: flex-start; gap: 8px; font-size: 15.5px; line-height: 1.28; }
+  .qz-muda i { display: grid; place-items: center; flex: none; width: 20px; height: 20px; border-radius: 50%; background: #22a35a; }
+  .qz-muda svg { width: 12px; height: 12px; fill: none; stroke: #fff; stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; }
+  .qz-lista > div { display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid rgba(29,26,18,.08); }
+  .qz-lista span { display: flex; flex-direction: column; gap: 2px; }
+  .qz-lista b { font-size: 15.5px; }
+  .qz-lista small { font-size: 13.5px; color: #6e6655; }
+  .qz-lista i { display: grid; place-items: center; flex: none; width: 24px; height: 24px; border-radius: 50%; background: #ffe9ad; }
+  .qz-lista svg { width: 14px; height: 14px; fill: none; stroke: #9a6400; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
   /* Pagamento */
-  .qz-preco { display: flex; align-items: baseline; justify-content: center; gap: 4px; margin-top: 14px; color: #f5b21b; }
-  .qz-preco b { font-size: 36px; font-weight: 800; font-style: italic; }
-  .qz-preco span { font-size: 16px; font-weight: 700; }
-  .qz-preco-sub { margin: 2px 0 0; text-align: center; font-size: 13px; color: rgba(247,242,230,.6); }
-  .qz-rodape { display: flex; justify-content: center; gap: 18px; margin-top: 4px; font-size: 12.5px; }
-  .qz-rodape button { border: 0; background: none; padding: 0; color: rgba(247,242,230,.6); font-size: 12.5px; cursor: pointer; }
-  .qz-rodape a { color: rgba(247,242,230,.6); }
-  @media (max-height: 700px) { .qz-fone { width: min(42vw, 160px); } .qz-pag-fone .qz-fone { width: 110px; } #quiz h2 { font-size: 25px; } }
-  @media (prefers-reduced-motion: reduce) { .qz-tela, .qz-gr-linha, .qz-mic, .qz-sino-it { animation: none; } }
+  .qz-preco { display: flex; align-items: baseline; justify-content: center; gap: 6px; margin-top: 16px; }
+  .qz-preco b { font-size: 38px; font-weight: 800; letter-spacing: -.02em; }
+  .qz-preco span { font-size: 16px; font-weight: 700; color: #5d5646; }
+  .qz-preco-sub { margin: 2px 0 0; text-align: center; font-size: 14px; line-height: 1.35; color: #5d5646; }
+  .qz-rodape { display: flex; justify-content: center; gap: 18px; margin-top: 6px; font-size: 13px; }
+  .qz-rodape button { border: 0; background: none; padding: 0; color: #6e6655; font-size: 13px; cursor: pointer; font-family: inherit; }
+  .qz-rodape a { color: #6e6655; }
+  @media (max-height: 700px) { .qz-fone { width: min(40vw, 150px); } .qz-pag-fone .qz-fone { width: 110px; } .qz-balao { font-size: 17px; } }
+  @media (prefers-reduced-motion: reduce) { .qz-tela, .qz-mic, .qz-sino-it, .qz-fala img { animation: none; } }
 </style>
 </head>
 <body>
@@ -4785,7 +4750,8 @@ class VozNativa {
       V.addListener('fim', acabar),
     ];
     V.iniciar({ idioma: this.lang }).then(() => this.onstart?.()).catch((e) => {
-      this.onerror?.({ error: e?.message === 'not-allowed' ? 'not-allowed' : 'audio-capture' });
+      console.warn('Voz: não abriu', e?.message);
+      this.onerror?.({ error: e?.message === 'not-allowed' ? 'not-allowed' : 'audio-capture', detalhe: e?.message });
       acabar();
     });
   }
@@ -5831,134 +5797,137 @@ if (Nuvem) {
 agendarLembretes();
 
 // ---------- Quiz de entrada e tela de pagamento (só quem assina entra no app) ----------
-// Sequência: abertura → perguntas → a pessoa fala com a Bee de verdade → compromisso → plano → pagamento.
+// A Bee conversa sobre as dores de quem esquece as coisas, a pessoa fala com ela de verdade, vê o que muda e assina.
 const RC_CHAVE = '';   // chave pública do RevenueCat (appl_...). Vazia = MODO DE TESTE: o botão de assinar entra sem cobrar
+const QUIZ_VERSAO = '2';   // no modo de teste, uma versão nova do quiz aparece de novo no aparelho
 const PRECO_ANO = 'R$ 129,90', PRECO_MES = 'R$ 10,83';
 const URL_TERMOS = 'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/';
 const URL_PRIVACIDADE = 'https://guiiestevees.github.io/agenda-voz/privacidade.html';
-const quizLiberado = () => lerPref('agenda.assinante', '') === 'sim';
-let qz = null;   // { i, r: respostas, feito: { titulo, quando, lembrete } }
-const qzNome = () => esc(qz.r.nome || '');
-const qzMeta = () => TITULOS.find(t => t.nome === qz.r.meta) || TITULOS[9];
-// Conta de verdade: pontos por dia se cumprir a agenda (check-in + compromissos + dia completo)
-const qzDias = () => Math.max(1, Math.ceil(qzMeta().min / (PONTOS.checkin + (qz.r.compromissos || 3) * PONTOS.feito + PONTOS.diaCompleto)));
-const qzCurva = (rotA, rotB, img) => `
-  <div class="qz-grafico">
-    <div class="qz-gr-top"><span>${rotA}</span><span class="qz-gr-meta">${rotB}</span></div>
-    <svg viewBox="0 0 300 130" aria-hidden="true"><path class="qz-gr-linha" d="M12 118 C70 112 96 86 134 74 S214 42 276 18"/><circle cx="12" cy="118" r="6"/><circle cx="96" cy="94" r="5"/><circle cx="190" cy="52" r="5"/></svg>
-    ${img ? `<img class="qz-gr-img" src="${img}" alt="">` : '<span class="qz-gr-estrela"></span>'}
-  </div>`;
+const quizLiberado = () => lerPref('agenda.assinante', '') === 'sim' && (!!RC_CHAVE || lerPref('agenda.quizVersao', '') === QUIZ_VERSAO);
+let qz = null;   // { i, r: respostas, feito: { tipo, titulo, quando, lembrete } }
+const qzNome = () => esc((qz.r.nome || '').trim());
+const qzFala = (txt) => `<div class="qz-fala"><img src="${MASCOTES.bee}" alt=""><div class="qz-balao">${txt}</div></div>`;
 const qzCelular = (slide) => `<div class="qz-fone"><div class="qz-fone-tela">${[
-  `<div class="qz-sl"><img src="${MASCOTES.bee}" alt=""><b>Ouvindo…</b><div class="qz-onda"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><p>“dentista quinta às 3”</p></div>`,
-  `<div class="qz-sl"><span class="qz-ok">${ICONE_CHECK}</span><b>Anotado!</b><p>Dentista<br>quinta, às 15h</p><small>Te aviso 15 min antes</small></div>`,
-  `<div class="qz-sl qz-sl-lista"><div class="qz-sl-tit">Hoje</div>${[['09:00', 'Reunião'], ['15:00', 'Dentista'], ['19:00', 'Academia']].map(([h, t]) => `<div class="qz-sl-ev"><i></i><span>${h}</span><b>${t}</b></div>`).join('')}<div class="qz-sl-nv"><img src="${MASCOTES.lion}" alt=""><span>Leão<small>Nível 10</small></span></div></div>`,
+  `<div class="qz-sl"><img src="${MASCOTES.bee}" alt=""><b>Ouvindo…</b><div class="qz-onda"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><p>“pagar a luz sexta”</p></div>`,
+  `<div class="qz-sl"><span class="qz-ok">${ICONE_CHECK}</span><b>Anotado!</b><p>Pagar a luz<br>sexta, às 9h</p><small>Te aviso 15 min antes</small></div>`,
+  `<div class="qz-sl qz-sl-lista"><div class="qz-sl-tit">Hoje</div>${[['09:00', 'Pagar a luz'], ['15:00', 'Dentista'], ['19:00', 'Buscar as crianças']].map(([h, t]) => `<div class="qz-sl-ev"><i></i><span>${h}</span><b>${t}</b></div>`).join('')}</div>`,
 ][slide]}</div></div>`;
 const qzOpcao = (campo, valor, rot, sub, varios) => {
   const on = varios ? (qz.r[campo] || []).includes(valor) : qz.r[campo] === valor;
   return `<button class="qz-op ${on ? 'on' : ''}" data-qz-op="${campo}" data-valor="${esc(valor)}" ${varios ? 'data-varios' : ''}><span><b>${rot}</b>${sub ? `<small>${sub}</small>` : ''}</span><i></i></button>`;
 };
-const qzRoda = (campo, de, ate, rot) => `<div class="qz-roda" id="qzRoda" data-campo="${campo}"><div class="qz-roda-faixa"></div><div class="qz-roda-lista">${Array.from({ length: ate - de + 1 }, (_, k) => `<div class="qz-roda-it" data-v="${de + k}">${de + k}</div>`).join('')}</div><span class="qz-roda-rot">${rot}</span></div>`;
-// Cada tela: rot = seção no topo; ok = quando o botão libera; bt = texto do botão
+// O que a pessoa marcou → como fica com a Bee
+const DORES = [
+  ['consulta', 'Esqueci uma consulta ou compromisso', 'A Bee avisa antes de cada compromisso'],
+  ['conta', 'Paguei uma conta atrasada', 'Contas com dia certo e aviso no iPhone'],
+  ['aniversario', 'Esqueci o aniversário de alguém', 'Aniversários que se repetem todo ano'],
+  ['tarefa', 'Deixei passar uma tarefa importante', 'Tarefas sem data ficam em “Pra não esquecer”'],
+  ['conflito', 'Marquei duas coisas no mesmo horário', 'Pergunte “o que tenho na sexta?” antes de marcar'],
+  ['promessa', 'Prometi algo e não cumpri', 'Falou, está anotado: nada se perde'],
+];
+const AREAS = [
+  ['Saúde', 'consulta terça às 3, me lembra um dia antes'],
+  ['Casa e contas', 'pagar a luz sexta'],
+  ['Trabalho', 'reunião amanhã às 10'],
+  ['Família e filhos', 'buscar as crianças hoje às 5'],
+  ['Estudos', 'prova quinta às 8'],
+  ['Hábitos e rotina', 'beber água todo dia'],
+];
+const qzExemplos = () => {
+  const es = (qz.r.areas || []).map(a => AREAS.find(x => x[0] === a)?.[1]).filter(Boolean);
+  const base = [...es, 'dentista quinta às 3', 'preciso renovar a CNH', 'pagar a luz sexta'];
+  return base.filter((x, i) => base.indexOf(x) === i).slice(0, 3);
+};
 const TELAS_QUIZ = [
-  { id: 'abertura', semTopo: true, bt: 'Montar minha agenda', html: () => `
-      <div class="qz-logo"><img src="${MASCOTES.bee}" alt=""><b>TAP BEE</b></div>
+  { id: 'abertura', semTopo: true, bt: 'Começar', html: () => `
+      <div class="qz-logo"><img src="${MASCOTES.bee}" alt=""><b>Tap Bee</b></div>
       <div id="qzCelular">${qzCelular(0)}</div>
-      <h1 class="qz-capa">Fale. A Bee anota.</h1><p class="qz-sub qz-c">Sua agenda por voz, sem digitar nada.</p>`,
+      <h1 class="qz-capa">Tire tudo da cabeça.</h1><p class="qz-sub qz-c">Você fala, e a Bee organiza compromissos, tarefas e contas.</p>`,
     extra: () => '<button class="qz-link" id="qzRestaurar">Já tenho assinatura</button>' },
-  { id: 'nome', rot: 'Sobre você', ok: () => (qz.r.nome || '').trim().length > 0, html: () => `
-      <h2>Como posso<br><b>te chamar?</b></h2><input id="qzNome" class="qz-campo" maxlength="20" placeholder="Seu nome ou apelido" autocomplete="given-name" value="${esc(qz.r.nome || '')}">` },
-  { id: 'aceite', rot: 'Antes de começar', bt: 'Aceitar tudo e começar', html: () => `
-      <h2>Antes de começar,<br><b>só confirme:</b></h2>
+  { id: 'nome', ok: () => (qz.r.nome || '').trim().length > 0, html: () => `
+      ${qzFala('Oi! Eu sou a Bee, sua nova secretária. Como posso te chamar?')}<input id="qzNome" class="qz-campo" maxlength="20" placeholder="Seu nome ou apelido" autocomplete="given-name" value="${esc(qz.r.nome || '')}">` },
+  { id: 'aceite', bt: 'Aceitar e continuar', html: () => `
+      ${qzFala(`Prazer, ${qzNome()}! Antes de a gente conversar, só preciso que você confirme:`)}
       <div class="qz-aceite"><i>${ICONE_CHECK}</i><p>Li e aceito os <a href="${URL_TERMOS}">Termos de Uso</a> e a <a href="${URL_PRIVACIDADE}">Política de Privacidade</a>.</p></div>
       <div class="qz-aceite"><i>${ICONE_CHECK}</i><p>Para entender o que você fala, sua frase e um resumo dos seus compromissos e anotações são enviados à IA da Anthropic (Claude). Nada fica guardado nem é usado para treinar a IA.</p></div>`,
     extra: () => '<button class="qz-link" id="qzSemIA">Continuar sem a IA (só compromissos simples)</button>', aoSeguir: () => { gravarPref('agenda.iaOk', 'sim'); marcarIA(); } },
-  { id: 'cabeca', rot: 'Sua evolução', bt: 'Quero ver', html: () => `
-      <h2>${qzNome()},<br><b>sua cabeça vai descansar.</b></h2><p class="qz-sub">O que hoje fica rodando na sua mente passa a ficar com a Bee.</p>
-      ${qzCurva('Hoje', 'Com a Bee')}<p class="qz-nota">Ilustração da ideia, não uma medição.</p>` },
-  { id: 'como', rot: 'Como funciona', bt: 'Montar minha agenda', html: () => `
-      <h2>A agenda que você quer<br><b>já está a caminho.</b></h2>
-      <div class="qz-trilha">${[['2 toques atrás do celular', 'O microfone abre na hora'], ['Você fala do seu jeito', '“Dentista quinta às 3”'], ['A Bee anota e te avisa', 'Com lembrete no iPhone'], ['Você sobe de título', 'Do Bicho-preguiça ao Milionário']].map(([a, b], k) => `<div class="qz-tr-it" style="--n:${k}"><i>${k + 1}</i><span><b>${a}</b><small>${b}</small></span></div>`).join('')}</div>` },
-  { id: 'objetivo', rot: 'Sobre você', ok: () => !!qz.r.objetivo, html: () => `
-      <h2>Qual seu<br><b>objetivo?</b></h2>${[['esquecer', 'Parar de esquecer as coisas'], ['rotina', 'Organizar minha rotina'], ['cumprir', 'Cumprir o que eu planejo'], ['cabeca', 'Tirar peso da cabeça']].map(([v, t]) => qzOpcao('objetivo', v, t)).join('')}` },
-  { id: 'meta', rot: 'Sua meta', ok: () => !!qz.r.meta, html: () => `
-      <h2>Até onde você<br><b>quer chegar?</b></h2><p class="qz-sub">Você começa como Bicho-preguiça. Cada compromisso cumprido vale pontos.</p>
-      <div class="qz-grade">${[['Formiguinha', 'ant', 'Pegando o ritmo'], ['Cavalo', 'horse', 'Constância'], ['Leão', 'lion', 'Domina a rotina'], ['Milionário', 'money_bag', 'O topo']].map(([n, m, s]) => `<button class="qz-cartao ${qz.r.meta === n ? 'on' : ''}" data-qz-op="meta" data-valor="${n}"><img src="${MASCOTES[m]}" alt=""><b>${n}</b><small>${s}</small></button>`).join('')}</div>` },
-  { id: 'escapa', rot: 'Sua rotina', ok: () => (qz.r.escapa || []).length > 0, html: () => `
-      <h2>O que mais <b>escapa<br>da sua cabeça?</b></h2><p class="qz-sub">Pode marcar mais de um.</p>${[['Consultas e exames'], ['Contas e pagamentos'], ['Aniversários e datas'], ['Tarefas do trabalho'], ['Remédios'], ['Coisas da família']].map(([t]) => qzOpcao('escapa', t, t, '', true)).join('')}` },
-  { id: 'compromissos', rot: 'Sua rotina', padrao: 3, ok: () => true, html: () => `<h2>Quantos compromissos<br><b>você tem por dia?</b></h2>${qzRoda('compromissos', 1, 15, 'por dia')}` },
-  { id: 'esqueceu', rot: 'Sua rotina', padrao: 2, ok: () => true, html: () => `<h2>Quantas coisas importantes<br><b>você esqueceu no último mês?</b></h2>${qzRoda('esqueceu', 0, 20, 'coisas')}` },
-  { id: 'possivel', rot: 'Sua meta', bt: 'Quero chegar lá', html: () => `
-      <h2><b>Chegar a ${qzMeta().nome} em ${qzDias()} ${qzDias() === 1 ? 'dia' : 'dias'}</b> é possível.</h2>
-      ${qzCurva('Hoje · Bicho-preguiça', `Em ${qzDias()} dias · ${qzMeta().nome}`, mascoteDe(qzMeta()))}<p class="qz-sub qz-c">Conta feita com ${qz.r.compromissos} ${qz.r.compromissos === 1 ? 'compromisso' : 'compromissos'} por dia, cumprindo todos. A gente vai com você até lá.</p>` },
-  { id: 'hoje', rot: 'Sua rotina', ok: () => !!qz.r.organiza, html: () => `
-      <h2>Como você se organiza<br><b>hoje?</b></h2>${[['cabeca', 'De cabeça', 'E torço para lembrar'], ['papel', 'Papel e caderno', 'Quando estão por perto'], ['mensagem', 'Mensagem para mim mesmo', 'E depois se perde no meio'], ['agenda', 'Agenda do celular', 'Quando dá tempo de preencher']].map(([v, t, s]) => qzOpcao('organiza', v, t, s)).join('')}` },
-  { id: 'porque', rot: 'Sua rotina', ok: () => !!qz.r.problema, html: () => `
-      <h2>O que atrapalha<br><b>na hora de anotar?</b></h2>${[['preguica', 'Dá preguiça de abrir e digitar'], ['esqueco', 'Esqueço de anotar na hora'], ['complicado', 'É complicado demais'], ['abro', 'Anoto, mas nunca mais olho']].map(([v, t]) => qzOpcao('problema', v, t)).join('')}` },
-  { id: 'passos', rot: 'Como funciona', bt: 'E como eu faço?', html: () => `
-      <h2>Anotar é o que trava.<br><b>Falar destrava.</b></h2><p class="qz-sub">Compare o caminho até o compromisso estar salvo:</p>
-      <div class="qz-barras"><div class="qz-barra dig"><span>Agenda comum</span><b>6 passos</b></div><p>Abrir o app, novo evento, título, dia, hora, salvar.</p><div class="qz-barra voz"><span>Tap Bee</span><b>1 frase</b></div><p>Você fala, e a Bee preenche o resto.</p></div>` },
-  { id: 'demo', rot: 'Sua vez', semBotaoAte: () => !!qz.feito, bt: 'Continuar', html: qzDemoHtml, aoAbrir: qzDemoLigar },
-  { id: 'avisos', rot: 'Seus lembretes', bt: 'Quero ser avisado', html: () => `
-      <h2>Posso te avisar<br><b>${qz.feito?.titulo ? `de “${esc(qz.feito.titulo)}”?` : 'na hora certa?'}</b></h2>
-      <div class="qz-sino"><span class="qz-sino-it">${ICO.sino}</span><div class="qz-aviso"><img src="${MASCOTES.bee}" alt=""><span><b>${esc(qz.feito?.titulo || 'Dentista')}</b><small>O iPhone avisa, mesmo com o app fechado</small></span></div></div>`,
+  { id: 'dores', topoFixo: true, ok: () => (qz.r.dores || []).length > 0, html: () => `
+      ${qzFala('Sem julgamento: o que já aconteceu com você nos últimos meses?')}<p class="qz-dica">Pode marcar mais de um.</p>${DORES.map(([v, t]) => qzOpcao('dores', v, t, '', true)).join('')}` },
+  { id: 'acolhe', bt: 'Faz sentido', html: () => `
+      <img class="qz-bee-grande" src="${MASCOTES.bee}" alt="">
+      <h2 class="qz-c">${qzNome()}, isso não é falta de organização.</h2>
+      <p class="qz-texto qz-c">A cabeça serve para ter ideias, não para guardar lista. Quando tudo fica nela, você vive com a sensação de que está esquecendo alguma coisa.</p>` },
+  { id: 'sente', ok: () => !!qz.r.sente, html: () => `
+      ${qzFala('E quando fica muita coisa na sua cabeça, como você se sente?')}${[['ansioso', 'Ansioso, com medo de esquecer'], ['cansado', 'Cansado, com a mente cheia'], ['culpado', 'Culpado quando deixo algo passar'], ['controle', 'Tudo bem, mas queria ter mais controle']].map(([v, t]) => qzOpcao('sente', v, t)).join('')}` },
+  { id: 'hoje', ok: () => !!qz.r.organiza, html: () => `
+      ${qzFala('Hoje, onde você guarda o que precisa fazer?')}${[['cabeca', 'Na cabeça', 'E torço para lembrar'], ['papel', 'Papel e caderno', 'Quando estão por perto'], ['mensagem', 'Mensagem para mim mesmo', 'E depois se perde no meio'], ['agenda', 'Agenda do celular', 'Quando dá tempo de preencher']].map(([v, t, s]) => qzOpcao('organiza', v, t, s)).join('')}` },
+  { id: 'trava', ok: () => (qz.r.trava || []).length > 0, html: () => `
+      ${qzFala('O que te faz desistir de anotar?')}<p class="qz-dica">Pode marcar mais de um.</p>${[['Dá preguiça de abrir e digitar'], ['Lembro na hora errada: dirigindo, no banho'], ['Agenda é complicada demais'], ['Anoto, mas nunca mais olho']].map(([t]) => qzOpcao('trava', t, t, '', true)).join('')}` },
+  { id: 'areas', ok: () => (qz.r.areas || []).length > 0, html: () => `
+      ${qzFala('Em que parte da vida você mais precisa de ajuda agora?')}<p class="qz-dica">Pode marcar mais de um.</p>${AREAS.map(([t]) => qzOpcao('areas', t, t, '', true)).join('')}` },
+  { id: 'facil', bt: 'Quero testar', html: () => `
+      ${qzFala(`É por isso que eu existo, ${qzNome()}. Olha a diferença:`)}
+      <div class="qz-barras"><div class="qz-barra dig"><span>Agenda comum</span><b>6 passos</b></div><p>Abrir o app, novo evento, título, dia, hora, salvar.</p><div class="qz-barra voz"><span>Com a Bee</span><b>1 frase</b></div><p>Você fala do seu jeito, e eu preencho o resto.</p></div>` },
+  { id: 'demo', semBotaoAte: () => !!qz.feito, bt: 'Continuar', html: qzDemoHtml, aoAbrir: qzDemoLigar, aoSeguir: () => { try { pluginNativo('Loja')?.avaliar(); } catch {} } },
+  { id: 'avisos', bt: 'Quero ser avisado', html: () => `
+      ${qzFala(`Posso te avisar na hora certa${qz.feito?.titulo ? ` de “${esc(qz.feito.titulo)}”` : ''}?`)}
+      <div class="qz-sino"><span class="qz-sino-it">${ICO.sino}</span><div class="qz-aviso"><img src="${MASCOTES.bee}" alt=""><span><b>${esc(qz.feito?.titulo || 'Seu compromisso')}</b><small>O iPhone avisa, mesmo com o app fechado</small></span></div></div>`,
     extra: () => '<button class="qz-link" id="qzSemAviso">Agora não</button>',
     aoSeguir: async () => { const LN = pluginNativo('LocalNotifications'); if (LN) { try { await LN.requestPermissions(); } catch {} } agendarLembretes(); } },
-  { id: 'jura', rot: 'Compromisso', semBotaoAte: () => !!qz.jurou, bt: 'Confirmar', html: () => `
-      <h2><b>Você está comprometido</b> em seguir a agenda que vamos criar?</h2>
-      <div class="qz-jura"><canvas id="qzJura" width="600" height="360"></canvas><span id="qzJuraDica">Desenhe um ✓ na caixa</span></div><button class="qz-link" id="qzLimpar">Limpar</button>`,
-    aoAbrir: qzJuraLigar, aoSeguir: () => { somFogo(); vibrar('sucesso'); try { pluginNativo('Loja')?.avaliar(); } catch {} } },
-  { id: 'calculo', semTopo: true, semBotao: true, html: () => `
-      <div class="qz-calc"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44"/><circle id="qzArco" cx="50" cy="50" r="44" pathLength="100" stroke-dasharray="0 100"/></svg><b id="qzPct">0%</b></div>
-      <h2 class="qz-c"><b id="qzCalcTit">Montando sua agenda…</b></h2><p class="qz-sub qz-c">Com base no que você me contou, ${qzNome()}.</p>`, aoAbrir: qzCalcular },
-  { id: 'plano', rot: 'Seu plano', bt: 'Vamos começar!', html: () => `
-      <h2><b>${qzNome()}, sua agenda está pronta.</b></h2>
-      <div class="qz-resumo"><div><small>Seu ritmo</small><b>${qz.r.compromissos}</b><span>${qz.r.compromissos === 1 ? 'compromisso' : 'compromissos'} por dia</span></div><div><small>Sua meta</small><b>${qzDias()}</b><span>dias até ${qzMeta().nome}</span></div></div>
-      ${qz.feito ? `<div class="qz-salvo"><span class="qz-ok">${ICONE_CHECK}</span><span><small>Já está na sua agenda</small><b>${esc(qz.feito.titulo)}</b><em>${esc(qz.feito.quando)}</em></span></div>` : ''}
-      ${qzCurva('Hoje · Bicho-preguiça', qzMeta().nome, mascoteDe(qzMeta()))}
-      <h3 class="qz-h3">O que você leva</h3>
-      <div class="qz-lista">${[['2 toques atrás do celular', 'Fala e pronto, sem procurar o app'], ['A Bee entende do seu jeito', 'Anota, muda, desmarca e responde'], ['Lembretes no iPhone', 'Avisa mesmo com o app fechado'], ['Hábitos, Pomodoro e títulos', 'Com pontos a cada coisa feita']].map(([a, b]) => `<div><i>${ICONE_CHECK}</i><span><b>${a}</b><small>${b}</small></span></div>`).join('')}</div>` },
-  { id: 'pagamento', semTopo: true, bt: 'Quero minha agenda agora', html: () => `
-      <div class="qz-logo"><img src="${MASCOTES.bee}" alt=""><b>TAP BEE</b><em>PRO</em></div>
-      <p class="qz-sub qz-c">${qzNome()}, sua agenda está pronta.</p>
-      <h1 class="qz-capa qz-capa2">Desbloqueie o Tap Bee.<br><b>Tire tudo da cabeça.</b></h1>
+  { id: 'prepara', semTopo: true, semBotao: true, html: () => {
+      const itens = [...(qz.r.areas || []).slice(0, 3).map(a => `Organizando ${a.toLowerCase()}`), 'Preparando seus lembretes', 'Deixando tudo pronto'];
+      return `<img class="qz-bee-grande voando" src="${MASCOTES.bee}" alt=""><h2 class="qz-c">Só um instante, ${qzNome()}…</h2>
+        <div class="qz-passos" id="qzPassos">${itens.map(t => `<div><i>${ICONE_CHECK}</i><span>${esc(t)}</span></div>`).join('')}</div>`;
+    }, aoAbrir: qzPreparar },
+  { id: 'muda', bt: 'Quero organizar minha vida', html: () => {
+      const marcadas = DORES.filter(d => (qz.r.dores || []).includes(d[0])).slice(0, 3);
+      return `<h2>${qzNome()}, é isso que muda:</h2>
+        <div class="qz-muda">${marcadas.map(([, antes, depois]) => `<div><s>${antes}</s><b><i>${ICONE_CHECK}</i>${depois}</b></div>`).join('')}</div>
+        ${qz.feito ? `<div class="qz-salvo"><span class="qz-ok">${ICONE_CHECK}</span><span><small>Já está na sua agenda</small><b>${esc(qz.feito.titulo)}</b><em>${esc(qz.feito.quando)}</em></span></div>` : ''}
+        <div class="qz-lista">${[['2 toques atrás do celular', 'Lembrou de algo? Toca, fala e pronto'], ['A Bee entende do seu jeito', 'Anota, muda, desmarca e responde'], ['Hábitos, Pomodoro e títulos', 'Para manter o ritmo todo dia']].map(([a, b]) => `<div><i>${ICONE_CHECK}</i><span><b>${a}</b><small>${b}</small></span></div>`).join('')}</div>`;
+    } },
+  { id: 'pagamento', semTopo: true, bt: 'Assinar por ' + PRECO_ANO + ' ao ano', html: () => `
+      <div class="qz-logo"><img src="${MASCOTES.bee}" alt=""><b>Tap Bee</b></div>
+      <h1 class="qz-capa qz-capa2">${qzNome()}, sua secretária está pronta.</h1>
       <div class="qz-pag-fone">${qzCelular(2)}</div>
-      <div class="qz-preco"><b>${PRECO_ANO}</b><span>/ano</span></div>
+      <div class="qz-preco"><b>${PRECO_ANO}</b><span>por ano</span></div>
       <p class="qz-preco-sub">Equivale a ${PRECO_MES} por mês. Renova todo ano, cancele quando quiser.</p>`,
     extra: () => `<div class="qz-rodape"><button id="qzRestaurar">Restaurar compra</button><a href="${URL_TERMOS}">Termos</a><a href="${URL_PRIVACIDADE}">Privacidade</a></div>` },
 ];
 function qzDemoHtml() {
   if (qz.feito) return `
-      <h2><b>Prontinho, ${qzNome()}.</b><br>Viu como é?</h2>
-      <div class="qz-salvo grande"><span class="qz-ok">${ICONE_CHECK}</span><span><small>${esc(qz.feito.tipo)}</small><b>${esc(qz.feito.titulo)}</b><em>${esc(qz.feito.quando)}</em>${qz.feito.lembrete ? `<em>${esc(qz.feito.lembrete)}</em>` : ''}</span></div><p class="qz-sub qz-c">Essa é a sua agenda de verdade: já está salvo.</p>`;
+      ${qzFala(`Prontinho, ${qzNome()}! Viu como é?`)}
+      <div class="qz-salvo grande"><span class="qz-ok">${ICONE_CHECK}</span><span><small>${esc(qz.feito.tipo)}</small><b>${esc(qz.feito.titulo)}</b><em>${esc(qz.feito.quando)}</em>${qz.feito.lembrete ? `<em>${esc(qz.feito.lembrete)}</em>` : ''}</span></div><p class="qz-texto qz-c">Isso já está salvo na sua agenda de verdade.</p>`;
   return `
-      <h2>Agora fala comigo, ${qzNome()}:<br><b>o que você não pode esquecer esta semana?</b></h2>
+      ${qzFala('Agora é com você: o que você não pode esquecer esta semana?')}
+      <div class="qz-exemplos"><small>Você pode falar, por exemplo:</small>${qzExemplos().map(e => `<span>“${esc(e)}”</span>`).join('')}</div>
       <div class="qz-demo">
-        <img class="qz-demo-bee" src="${MASCOTES.bee}" alt="">
         <button class="qz-mic" id="qzMic" aria-label="Falar">${ICO.mic}</button>
-        <div class="qz-demo-est" id="qzEstado">Toque e fale do seu jeito</div>
-        <div class="qz-demo-txt" id="qzFala"></div>
+        <div class="qz-demo-est" id="qzEstado">Toque no microfone e fale</div>
+        <div class="qz-demo-txt" id="qzFalado"></div>
       </div>
-      <form id="qzDigita" class="qz-digita" ${SR ? 'hidden' : ''}><input id="qzFrase" class="qz-campo" placeholder="Ex.: dentista quinta às 3" autocomplete="off" enterkeyhint="send"><button class="qz-enviar" type="submit" aria-label="Enviar">${ICO.ok}</button></form>
-      ${SR ? '<button class="qz-link" id="qzPrefiro">Prefiro digitar</button>' : ''}`;
+      <form id="qzDigita" class="qz-digita" ${SR ? 'hidden' : ''}><input id="qzFrase" class="qz-campo" placeholder="Ou escreva aqui" autocomplete="off" enterkeyhint="send"><button class="qz-enviar" type="submit" aria-label="Enviar">${ICO.ok}</button></form>
+      ${SR ? '<button class="qz-link" id="qzPrefiro">Prefiro escrever</button>' : ''}`;
 }
 function qzDemoLigar() {
   if (qz.feito) return;
   const estado = (t) => { const e = document.getElementById('qzEstado'); if (e) e.textContent = t; };
-  let voz = null, ultimo = '', silencio;
+  const mostrarDigitar = () => { const d = document.getElementById('qzDigita'), p = document.getElementById('qzPrefiro'); if (d) d.hidden = false; if (p) p.hidden = true; };
+  let voz = null, ouvindo = false, ultimo = '', silencio;
   const parar = () => { clearTimeout(silencio); try { voz?.stop(); } catch {} };
   const anotar = async (frase) => {
     frase = frase.trim();
-    if (!frase) return estado('Não ouvi. Toque e fale de novo');
+    if (!frase) return estado('Não ouvi nada. Toque no microfone e tente de novo');
     estado('A Bee está anotando…');
     document.getElementById('qzMic')?.classList.add('pensando');
-    const fala = document.getElementById('qzFala'); if (fala) fala.textContent = `“${frase}”`;
+    const falado = document.getElementById('qzFalado'); if (falado) falado.textContent = `“${frase}”`;
     let r = null;
     if (lerPref('agenda.iaOk', '') === 'sim' && navigator.onLine !== false) { try { r = await perguntarIA(frase); } catch (e) { console.warn('Quiz: IA', e); } }
     if (!r || !Array.isArray(r.acoes)) {
       const p = interpretar(frase), d = new Date(p.inicio);
       r = { tipo: 'agir', acoes: [{ acao: 'criar', titulo: p.titulo, data: chaveDia(d), hora: `${pad(d.getHours())}:${pad(d.getMinutes())}`, lembreteMin: p.lembreteMin, repetir: 'nenhuma', diasSemana: [] }] };
     }
-    const notasAntes = notas.length, feitos = (r.tipo === 'agir' ? r.acoes : []).map(a => aplicarAcao(a, frase)).filter(Boolean), ev = feitos[0];
+    const notasAntes = notas.length, habitosAntes = habitos.length, feitos = (r.tipo === 'agir' ? r.acoes : []).map(a => aplicarAcao(a, frase)).filter(Boolean), ev = feitos[0];
     if (ev) {
       const d = new Date(ev.inicio);
       qz.feito = { tipo: 'Anotado', titulo: ev.titulo, quando: `${maiuscula(fmtDataLonga(d))}, às ${fmtHora(d)}`, lembrete: ev.lembreteMin === null ? '' : `Lembrete: ${fmtLembrete(ev.lembreteMin).toLowerCase()}` };
@@ -5966,59 +5935,51 @@ function qzDemoLigar() {
     } else if (notas.length > notasAntes) {
       qz.feito = { tipo: 'Anotado para não esquecer', titulo: notas[notas.length - 1].titulo, quando: 'Sem dia nem hora, até você marcar', lembrete: '' };
       salvarNotas();
+    } else if (habitos.length > habitosAntes) {
+      qz.feito = { tipo: 'Hábito criado', titulo: habitos[habitos.length - 1].nome, quando: 'Fica na aba Hábitos', lembrete: '' };
+      salvarHabitos();
     } else {
       document.getElementById('qzMic')?.classList.remove('pensando');
-      return estado('Não entendi. Tente algo como “dentista quinta às 3”');
+      return estado('Não entendi. Tente uma frase como as de cima');
     }
     tocarSom(false); vibrar('sucesso'); qzDesenhar();
   };
   document.getElementById('qzMic').onclick = () => {
+    if (voz && !ouvindo) return;   // ainda abrindo o microfone: um segundo toque não pode cancelar
     if (voz) return parar();
     if (!SR) return document.getElementById('qzFrase')?.focus();
-    ultimo = '';
+    ultimo = ''; ouvindo = false;
+    estado('Abrindo o microfone…');
+    try { if (audioCtx && audioCtx.state === 'running') audioCtx.suspend(); } catch {}   // libera o áudio para o microfone
     voz = new SR(); voz.lang = 'pt-BR'; voz.interimResults = true; voz.continuous = true;
-    voz.onstart = () => { document.getElementById('qzMic')?.classList.add('ativo'); estado('Ouvindo… pode falar'); silencio = setTimeout(parar, 8000); };
+    voz.onstart = () => { ouvindo = true; document.getElementById('qzMic')?.classList.add('ativo'); estado('Estou ouvindo. Pode falar'); silencio = setTimeout(parar, 9000); };
     voz.onresult = (e) => {
       ultimo = [...e.results].map(x => x[0].transcript).join(' ').trim();
-      const f = document.getElementById('qzFala'); if (f) f.textContent = ultimo;
-      clearTimeout(silencio); silencio = setTimeout(parar, 2500);
+      const f = document.getElementById('qzFalado'); if (f) f.textContent = ultimo;
+      clearTimeout(silencio); silencio = setTimeout(parar, 2200);
     };
-    voz.onerror = (e) => { estado(e.error === 'not-allowed' ? 'Permita o microfone nos Ajustes ou digite abaixo' : 'Não consegui ouvir. Tente de novo ou digite abaixo'); const d = document.getElementById('qzDigita'); if (d) d.hidden = false; };
-    voz.onend = () => { voz = null; clearTimeout(silencio); document.getElementById('qzMic')?.classList.remove('ativo'); if (ultimo) anotar(ultimo); };
+    voz.onerror = (e) => {
+      console.warn('Quiz: voz', e.error, e.detalhe);
+      estado(e.error === 'not-allowed' ? 'Sem permissão do microfone. Libere nos Ajustes do iPhone ou escreva abaixo' : 'Não consegui abrir o microfone. Toque de novo ou escreva abaixo');
+      mostrarDigitar();
+    };
+    voz.onend = () => {
+      const tinhaErro = !ouvindo;
+      voz = null; ouvindo = false; clearTimeout(silencio);
+      document.getElementById('qzMic')?.classList.remove('ativo');
+      if (ultimo) return anotar(ultimo);
+      if (!tinhaErro) { estado('Não ouvi nada. Toque no microfone e tente de novo'); mostrarDigitar(); }
+    };
     voz.start();
   };
   const pref = document.getElementById('qzPrefiro');
-  if (pref) pref.onclick = () => { parar(); pref.hidden = true; document.getElementById('qzDigita').hidden = false; setTimeout(() => document.getElementById('qzFrase').focus(), 50); };
+  if (pref) pref.onclick = () => { parar(); mostrarDigitar(); setTimeout(() => document.getElementById('qzFrase').focus(), 50); };
   document.getElementById('qzDigita').onsubmit = (e) => { e.preventDefault(); const v = document.getElementById('qzFrase').value; if (v.trim()) anotar(v); };
 }
-function qzJuraLigar() {
-  const c = document.getElementById('qzJura'), g = c.getContext('2d');
-  let desenhando = false, tracado = 0, ant = null;
-  g.lineWidth = 16; g.lineCap = 'round'; g.lineJoin = 'round'; g.strokeStyle = '#f5b21b';
-  const ponto = (e) => { const r = c.getBoundingClientRect(); return [(e.clientX - r.left) * c.width / r.width, (e.clientY - r.top) * c.height / r.height]; };
-  c.onpointerdown = (e) => { desenhando = true; ant = ponto(e); c.setPointerCapture(e.pointerId); document.getElementById('qzJuraDica').hidden = true; };
-  c.onpointermove = (e) => {
-    if (!desenhando) return;
-    const p = ponto(e);
-    g.beginPath(); g.moveTo(...ant); g.lineTo(...p); g.stroke();
-    tracado += Math.hypot(p[0] - ant[0], p[1] - ant[1]); ant = p;
-    if (tracado > 120 && !qz.jurou) { qz.jurou = true; vibrar('leve'); qzAtualizarBotao(); }
-  };
-  c.onpointerup = c.onpointercancel = () => { desenhando = false; };
-  document.getElementById('qzLimpar').onclick = () => { g.clearRect(0, 0, c.width, c.height); tracado = 0; qz.jurou = false; document.getElementById('qzJuraDica').hidden = false; qzAtualizarBotao(); };
-}
-function qzCalcular() {
-  const etapas = ['Montando sua agenda…', 'Calculando sua meta…', 'Preparando seus lembretes…', 'Quase lá…'];
-  const ini = performance.now(), dur = 3600, tela = qz.i;
-  const passo = (agora) => {
-    if (!qz || qz.i !== tela) return;
-    const f = Math.min(1, (agora - ini) / dur), pct = Math.round(f * 100);
-    document.getElementById('qzPct').textContent = `${pct}%`;
-    document.getElementById('qzArco').setAttribute('stroke-dasharray', `${pct} 100`);
-    document.getElementById('qzCalcTit').textContent = etapas[Math.min(etapas.length - 1, Math.floor(f * etapas.length))];
-    if (f < 1) requestAnimationFrame(passo); else setTimeout(qzAvancar, 350);
-  };
-  requestAnimationFrame(passo);
+function qzPreparar() {
+  const itens = [...document.querySelectorAll('#qzPassos > div')], tela = qz.i;
+  itens.forEach((el, k) => setTimeout(() => el.classList.add('feito'), 500 + k * 650));
+  setTimeout(() => { if (qz && qz.i === tela) qzAvancar(); }, 900 + itens.length * 650);
 }
 function qzAtualizarBotao() {
   const t = TELAS_QUIZ[qz.i], b = document.getElementById('qzSegue');
@@ -6028,7 +5989,7 @@ function qzAtualizarBotao() {
 }
 function qzAvancar() { qz.i = Math.min(qz.i + 1, TELAS_QUIZ.length - 1); qzDesenhar(); }
 function qzEntrar() {
-  gravarPref('agenda.assinante', 'sim');
+  gravarPref('agenda.assinante', 'sim'); gravarPref('agenda.quizVersao', QUIZ_VERSAO);
   if (qz.r.nome) gravarPref('agenda.nome', qz.r.nome.trim());
   gravarPref('agenda.boasVindas', '1');
   const el = document.getElementById('quiz');
@@ -6048,15 +6009,14 @@ function qzComprar() {
 function qzDesenhar() {
   const el = document.getElementById('quiz'), t = TELAS_QUIZ[qz.i];
   clearInterval(qz.slides);
-  const secao = t.rot ? maiuscula(t.rot) : '';
   el.innerHTML = `
     <div class="qz-tela qz-t-${t.id}">
-      ${t.semTopo ? '' : `<div class="qz-topo"><button class="qz-volta" id="qzVolta" aria-label="Voltar"></button><span>${esc(secao)}</span><div class="qz-prog"><i style="width:${Math.round(qz.i / (TELAS_QUIZ.length - 2) * 100)}%"></i></div></div>`}
+      ${t.semTopo ? '' : `<div class="qz-topo"><button class="qz-volta" id="qzVolta" aria-label="Voltar"></button><div class="qz-prog"><i style="width:${Math.round(qz.i / (TELAS_QUIZ.length - 1) * 100)}%"></i></div></div>`}
       <div class="qz-corpo">${t.html()}</div>
       ${t.semBotao ? '' : `<div class="qz-pe"><button class="qz-seguir" id="qzSegue">${t.bt || 'Continuar'}</button>${t.extra ? t.extra() : ''}</div>`}
     </div>`;
   const on = (id, fn) => { const b = document.getElementById(id); if (b) b.onclick = fn; };
-  on('qzVolta', () => { qz.i = Math.max(0, qz.i - (TELAS_QUIZ[qz.i - 1]?.id === 'calculo' ? 2 : 1)); qzDesenhar(); });
+  on('qzVolta', () => { qz.i = Math.max(0, qz.i - (TELAS_QUIZ[qz.i - 1]?.id === 'prepara' ? 2 : 1)); qzDesenhar(); });
   on('qzSegue', async () => {
     vibrar('selecao');
     await t.aoSeguir?.();
@@ -6075,24 +6035,6 @@ function qzDesenhar() {
     else { qz.r[c] = v; el.querySelectorAll(`[data-qz-op="${c}"]`).forEach(x => x.classList.toggle('on', x === b)); }
     qzAtualizarBotao();
   });
-  const roda = document.getElementById('qzRoda');
-  if (roda) {
-    const lista = roda.querySelector('.qz-roda-lista'), itens = [...lista.children], campo = roda.dataset.campo;
-    if (qz.r[campo] === undefined) qz.r[campo] = t.padrao;
-    const marcar = () => {
-      const meio = lista.scrollTop + lista.clientHeight / 2;
-      let perto = itens[0];
-      itens.forEach(x => { if (Math.abs(x.offsetTop + x.offsetHeight / 2 - meio) < Math.abs(perto.offsetTop + perto.offsetHeight / 2 - meio)) perto = x; });
-      const v = +perto.dataset.v;
-      itens.forEach(x => x.classList.toggle('sel', x === perto));
-      if (v !== qz.r[campo]) { qz.r[campo] = v; vibrar('selecao'); }
-    };
-    const alvo = itens.find(x => +x.dataset.v === qz.r[campo]) || itens[0];
-    lista.scrollTop = alvo.offsetTop - lista.clientHeight / 2 + alvo.offsetHeight / 2;
-    marcar();
-    lista.addEventListener('scroll', marcar, { passive: true });
-    itens.forEach(x => x.onclick = () => lista.scrollTo({ top: x.offsetTop - lista.clientHeight / 2 + x.offsetHeight / 2, behavior: 'smooth' }));
-  }
   if (t.id === 'abertura') {
     let s = 0;
     qz.slides = setInterval(() => { s = (s + 1) % 3; const c = document.getElementById('qzCelular'); if (c) c.innerHTML = qzCelular(s); }, 2600);
