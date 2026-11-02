@@ -5951,7 +5951,7 @@ agendarLembretes();
 // ---------- Quiz de entrada e tela de pagamento (só quem assina entra no app) ----------
 // A Bee conversa, a pessoa faz um teste por voz, vê o pote encher e assina.
 const RC_CHAVE = '';   // chave pública do RevenueCat (appl_...). Vazia = MODO DE TESTE: o botão de assinar entra sem cobrar
-const QUIZ_VERSAO = '11';   // no modo de teste, uma versão nova do quiz aparece de novo no aparelho
+const QUIZ_VERSAO = '12';   // no modo de teste, uma versão nova do quiz aparece de novo no aparelho
 const PRECO_ANO = 'R$ 129,90', PRECO_MES = 'R$ 10,83', PRECO_DIA = 'R$ 0,36';
 const OFERTA_ANO = 'R$ 99,90', OFERTA_MES = 'R$ 8,33', OFERTA_DIA = 'R$ 0,28', OFERTA_OFF = '23%';   // desconto de verdade, oferecido uma vez a quem desiste da compra
 const SECRETARIA_MES = 'R$ 1.700', SECRETARIA_ANO = 'R$ 20.400';
@@ -6519,7 +6519,7 @@ function qzDesenhar() {
     if ('varios' in b.dataset) { const l = qz.r[c] || []; qz.r[c] = l.includes(v) ? l.filter(x => x !== v) : [...l, v]; b.classList.toggle('on'); }
     else {
       qz.r[c] = v; palco.querySelectorAll(`[data-qz-op="${c}"]`).forEach(x => x.classList.toggle('on', x === b));
-      if (t.auto) qzTimer(qzAvancar, 220);   // uma resposta só: já segue, sem precisar de botão
+      if (t.auto) qzTimer(qzAvancar, 750);   // tempo de ver o check antes de seguir   // uma resposta só: já segue, sem precisar de botão
     }
     qzAtualizarBotao();
   });
