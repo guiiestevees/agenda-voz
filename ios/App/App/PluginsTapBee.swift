@@ -10,6 +10,10 @@ class TapBeeViewController: CAPBridgeViewController {
         bridge?.registerPluginInstance(NuvemPlugin())
         bridge?.registerPluginInstance(VozPlugin())
         bridge?.registerPluginInstance(LojaPlugin())
+        // App nativo não dá zoom: um toque duplo sem querer mudava o tamanho da tela
+        webView?.scrollView.minimumZoomScale = 1
+        webView?.scrollView.maximumZoomScale = 1
+        webView?.scrollView.bouncesZoom = false
     }
 }
 
@@ -71,7 +75,7 @@ public class VozPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "iniciar", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "parar", returnType: CAPPluginReturnPromise),
     ]
-    private let motor = AVAudioEngine()
+    private var motor: AVAudioEngine?
     private var pedido: SFSpeechAudioBufferRecognitionRequest?
     private var tarefa: SFSpeechRecognitionTask?
 
@@ -107,7 +111,7 @@ public class VozPlugin: CAPPlugin, CAPBridgedPlugin {
     @objc func parar(_ call: CAPPluginCall) {
         DispatchQueue.main.async {
             self.pedido?.endAudio()
-            if self.motor.isRunning { self.motor.stop(); self.motor.inputNode.removeTap(onBus: 0) }
+            if let motor = self.motor, motor.isRunning { motor.stop(); motor.inputNode.removeTap(onBus: 0) }
             call.resolve()
         }
     }
@@ -125,8 +129,12 @@ public class VozPlugin: CAPPlugin, CAPBridgedPlugin {
         pedido.shouldReportPartialResults = true
         self.pedido = pedido
 
+        // O áudio é criado aqui, já no modo de gravação: criado antes, a entrada fica presa em 0 Hz
+        let motor = AVAudioEngine()
+        self.motor = motor
         let entrada = motor.inputNode
         let formato = entrada.outputFormat(forBus: 0)
+        print("[Voz] entrada: \(formato.sampleRate) Hz, \(formato.channelCount) canal(is), disponível: \(sessao.isInputAvailable)")
         guard formato.sampleRate > 0, formato.channelCount > 0 else { throw NSError(domain: "Voz", code: 2) }
         entrada.installTap(onBus: 0, bufferSize: 1024, format: formato) { buffer, _ in pedido.append(buffer) }
         motor.prepare()
@@ -148,8 +156,11 @@ public class VozPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 
     private func encerrar() {
-        if motor.isRunning { motor.stop() }
-        motor.inputNode.removeTap(onBus: 0)
+        if let motor = motor {
+            if motor.isRunning { motor.stop() }
+            motor.inputNode.removeTap(onBus: 0)
+        }
+        motor = nil
         pedido?.endAudio()
         tarefa?.cancel()
         pedido = nil

@@ -96,7 +96,7 @@
     max-width: 560px; margin: 0 auto;
   }
   button { font: inherit; color: inherit; }
-  button, a, input, select { touch-action: manipulation; }
+  html, body, button, a, input, select, #quiz, #quiz * { touch-action: manipulation; }
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   input:focus-visible, select:focus-visible { outline: none; }
   .ico { width: 1em; height: 1em; flex: none; vertical-align: -.125em; }
@@ -1696,7 +1696,7 @@
   .qz-volta::after { content: ''; position: absolute; left: 14px; top: 14px; width: 11px; height: 11px; border-left: 2.5px solid #1d1a12; border-bottom: 2.5px solid #1d1a12; transform: rotate(45deg); }
   .qz-prog { flex: 1; height: 7px; border-radius: 7px; background: rgba(29,26,18,.1); overflow: hidden; }
   .qz-prog i { display: block; height: 100%; background: #f2a313; border-radius: 7px; transition: width .4s; }
-  .qz-corpo { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; justify-content: center; padding: 10px 0 14px; scrollbar-width: none; }
+  .qz-corpo { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; justify-content: center; margin: 0 -20px; padding: 10px 20px 14px; scrollbar-width: none; }
   .qz-corpo::-webkit-scrollbar { display: none; }
   .qz-corpo > * { flex: none; }
   .qz-t-dores .qz-corpo, .qz-t-areas .qz-corpo, .qz-t-muda .qz-corpo, .qz-t-demo .qz-corpo { justify-content: flex-start; }
@@ -4738,9 +4738,13 @@ function abrirEdicao(ev, novo = false) {
 class VozNativa {
   start() {
     const V = pluginNativo('Voz');
+    // Libera o áudio da página: enquanto ela segura o modo "reprodução", o iPhone não entrega o microfone
+    try { if (navigator.audioSession) navigator.audioSession.type = 'auto'; } catch {}
+    try { if (audioCtx && audioCtx.state === 'running') audioCtx.suspend(); } catch {}
     const acabar = () => {
       if (this.acabou) return;
       this.acabou = true; clearTimeout(this.reserva);
+      try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch {}
       this.ouvintes.forEach(o => Promise.resolve(o).then(h => h.remove()).catch(() => {}));
       this.onend?.();
     };
@@ -5799,7 +5803,7 @@ agendarLembretes();
 // ---------- Quiz de entrada e tela de pagamento (só quem assina entra no app) ----------
 // A Bee conversa sobre as dores de quem esquece as coisas, a pessoa fala com ela de verdade, vê o que muda e assina.
 const RC_CHAVE = '';   // chave pública do RevenueCat (appl_...). Vazia = MODO DE TESTE: o botão de assinar entra sem cobrar
-const QUIZ_VERSAO = '2';   // no modo de teste, uma versão nova do quiz aparece de novo no aparelho
+const QUIZ_VERSAO = '3';   // no modo de teste, uma versão nova do quiz aparece de novo no aparelho
 const PRECO_ANO = 'R$ 129,90', PRECO_MES = 'R$ 10,83';
 const URL_TERMOS = 'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/';
 const URL_PRIVACIDADE = 'https://guiiestevees.github.io/agenda-voz/privacidade.html';
@@ -5950,7 +5954,6 @@ function qzDemoLigar() {
     if (!SR) return document.getElementById('qzFrase')?.focus();
     ultimo = ''; ouvindo = false;
     estado('Abrindo o microfone…');
-    try { if (audioCtx && audioCtx.state === 'running') audioCtx.suspend(); } catch {}   // libera o áudio para o microfone
     voz = new SR(); voz.lang = 'pt-BR'; voz.interimResults = true; voz.continuous = true;
     voz.onstart = () => { ouvindo = true; document.getElementById('qzMic')?.classList.add('ativo'); estado('Estou ouvindo. Pode falar'); silencio = setTimeout(parar, 9000); };
     voz.onresult = (e) => {

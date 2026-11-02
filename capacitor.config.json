@@ -9,5 +9,6 @@
     "LocalNotifications": {
       "iconColor": "#F2B01E"
     }
-  }
+  },
+  "backgroundColor": "#F5B21B"
 }
