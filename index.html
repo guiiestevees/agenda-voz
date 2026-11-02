@@ -196,10 +196,6 @@
   .dt-passos i.on { background: var(--accent); width: 40px; } .dt-passos i.feito { background: color-mix(in srgb, var(--accent) 50%, var(--line)); }
   .dt-demo { display: grid; place-items: center; height: 170px; }
   .dt-num { width: 46px; height: 46px; margin: 0 auto; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--on-accent); font-size: 22px; font-weight: 900; }
-  .dt-mock { margin: 14px auto; max-width: 260px; padding: 14px; border-radius: 18px; background: #f2f2f7; color: #000; box-shadow: 0 6px 16px rgba(0,0,0,.08); }
-  .dt-mock-tit { font-weight: 700; font-size: 15px; margin-bottom: 10px; }
-  .dt-mock-bt { padding: 12px; border-radius: 12px; background: #0a84ff; color: #fff; font-weight: 700; animation: dtPisca 1.6s ease-in-out infinite; }
-  @keyframes dtPisca { 50% { box-shadow: 0 0 0 6px rgba(10,132,255,.25); } }
   .dt-instalar { display: flex; align-items: center; justify-content: center; height: 58px; margin: 8px 0 4px; border-radius: 16px; font-size: 18px; font-weight: 800; text-decoration: none;
     background: var(--accent); color: var(--on-accent); }
   .dt-rota { list-style: none; margin: 12px 0; padding: 0; border-radius: 16px; overflow: hidden; background: #fff; box-shadow: inset 0 0 0 1px var(--line); text-align: left; counter-reset: rota; }
@@ -1715,7 +1711,7 @@
 <section id="mais" hidden>
   <button class="ajuste-convite" id="btnConvites"><span class="ac-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg></span><span class="ac-txt"><b>Monte sua colmeia</b><small>Convide amigos: +100 pontos e 1 protetor por amigo</small></span></button>
   <h2 class="sec">Você</h2>
-  <button class="icon-btn linha-ajuste" id="btnSons"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg><span id="sonsRot">Sons de toque: ligados</span></button>
+  <button class="icon-btn linha-ajuste" id="btnSons"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg><span id="sonsRot">Sons de comemoração: ligados</span></button>
   <button class="icon-btn linha-ajuste" id="btnNome"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Seu nome na saudação</span></button>
   <h2 class="sec">Avisos</h2>
   <button class="icon-btn" id="btnNotif"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span>Ativar avisos</span></button>
@@ -2630,7 +2626,7 @@ function mostrarSequencia() {
 document.getElementById('btnMais').onclick = () => irPara('mais');
 document.getElementById('btnConvites').onclick = () => abrirConvites();
 document.getElementById('btnNome').onclick = () => pedirNome();
-const rotSons = () => { document.getElementById('sonsRot').textContent = `Sons de toque: ${lerPref('agenda.sonsToque', '1') === '1' ? 'ligados' : 'desligados'}`; };
+const rotSons = () => { document.getElementById('sonsRot').textContent = `Sons de comemoração: ${lerPref('agenda.sonsToque', '1') === '1' ? 'ligados' : 'desligados'}`; };
 document.getElementById('btnSons').onclick = () => { gravarPref('agenda.sonsToque', lerPref('agenda.sonsToque', '1') === '1' ? '0' : '1'); rotSons(); };
 rotSons();
 
@@ -2769,6 +2765,16 @@ document.getElementById('lista').addEventListener('touchend', (e) => {
 
 // ---------- Concluir compromissos: check, confete e som ----------
 let audioCtx = null;
+// Sons só nas comemorações. No iPhone o áudio leva um instante para ligar: as notas só são agendadas
+// depois disso, senão passam sem tocar.
+function comAudio(tocar, sempre) {
+  if (!sempre && lerPref('agenda.sonsToque', '1') !== '1') return;
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const vai = () => { try { tocar(audioCtx.currentTime + .02); } catch {} };
+    if (audioCtx.state === 'running') vai(); else audioCtx.resume().then(vai).catch(() => {});
+  } catch {}
+}
 // Zumbido de abelha bem curto e baixinho, só quando fecha o dia
 function zumbido() {
   try {
@@ -2783,10 +2789,7 @@ function zumbido() {
   } catch {}
 }
 function tocarSom(grande) {
-  try {
-    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state !== 'running') audioCtx.resume();
-    const t = audioCtx.currentTime;
+  comAudio((t) => {
     const notas = grande ? [523.25, 659.25, 783.99, 1046.5] : [783.99, 1174.66];   // dó-mi-sol-dó / sol-ré
     notas.forEach((f, i) => {
       const o = audioCtx.createOscillator(), g = audioCtx.createGain(), ini = t + i * (grande ? 0.1 : 0.08);
@@ -2798,7 +2801,7 @@ function tocarSom(grande) {
       o.start(ini); o.stop(ini + 1);
     });
     if (grande) zumbido();
-  } catch {}
+  });
 }
 function confete(x, y, grande) {
   const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -3137,11 +3140,7 @@ function tocarMarimba(ctx, destino, t0) {
   [[523.25, 0], [659.25, .2], [783.99, .4]].forEach(([f, dt]) => nota(f, t0 + dt, .24));   // três toques: dó mi sol
 }
 function alarmeFoco() {
-  try {
-    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state !== 'running') audioCtx.resume();
-    tocarMarimba(audioCtx, audioCtx.destination, audioCtx.currentTime + .05);
-  } catch {}
+  comAudio((t) => tocarMarimba(audioCtx, audioCtx.destination, t), true);
 }
 setTimeout(() => document.getElementById('abertura')?.remove(), 1800);
 
@@ -3286,10 +3285,7 @@ function fraseDoDia() {
   return FRASES_DIA[Math.floor((d - inicioAno) / 86400000) % FRASES_DIA.length];
 }
 function somFogo() {
-  try {
-    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state !== 'running') audioCtx.resume();
-    const t = audioCtx.currentTime;
+  comAudio((t) => {
     [392, 523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, i) => {   // arpejo subindo
       const o = audioCtx.createOscillator(), g = audioCtx.createGain(), ini = t + i * 0.07;
       o.type = i < 5 ? 'triangle' : 'sine'; o.frequency.value = f;
@@ -3297,7 +3293,7 @@ function somFogo() {
       g.gain.exponentialRampToValueAtTime(0.001, ini + (i === 5 ? 1.1 : 0.35));
       o.connect(g); g.connect(audioCtx.destination); o.start(ini); o.stop(ini + 1.2);
     });
-  } catch {}
+  });
 }
 function fazerCheckin(botao) {
   if (fezCheckinHoje()) return;
@@ -3524,16 +3520,14 @@ function pontosVoando(delta, x, y) {
   setTimeout(() => el.remove(), 1300);
 }
 function somTriste() {
-  try {
-    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-    const t = audioCtx.currentTime;
+  comAudio((t) => {
     [392, 349.23, 311.13].forEach((f, i) => {   // sol, fá, mi bemol descendo: "wah wah wah"
       const o = audioCtx.createOscillator(), g = audioCtx.createGain(), ini = t + i * 0.28;
       o.type = 'triangle'; o.frequency.setValueAtTime(f, ini); o.frequency.linearRampToValueAtTime(f * 0.97, ini + 0.26);
       g.gain.setValueAtTime(0.0001, ini); g.gain.linearRampToValueAtTime(0.18, ini + 0.02); g.gain.exponentialRampToValueAtTime(0.001, ini + 0.4);
       o.connect(g); g.connect(audioCtx.destination); o.start(ini); o.stop(ini + 0.45);
     });
-  } catch {}
+  });
 }
 function subiuDeTitulo(t) {
   if (TITULOS.indexOf(t) > 0) return celebrarNivel(t);
@@ -3964,12 +3958,13 @@ document.getElementById('lista').addEventListener('click', (ev) => {
 function boasVindas(passo = 0) {
   const instalado = navigator.standalone || matchMedia('(display-mode: standalone)').matches;
   const passos = [
-    [`<img class="bee-bv" src="${MASCOTES.bee}" alt="">`, 'Oi! Eu sou a Bee, sua secretária', 'Toque em <b>Falar</b>, lá embaixo, e diga do seu jeito: <i>“dentista quinta às 3, me lembra meia hora antes”</i>. Ela anota, muda, desmarca e responde o que você tem no dia.'],
+    [`<img class="bee-bv" src="${MASCOTES.bee}" alt="">`, 'Oi! Eu sou a Bee, sua secretária', 'É só falar do seu jeito, como <i>“dentista quinta às 3, me lembra meia hora antes”</i>. Eu anoto, mudo, desmarco e respondo o que você tem no dia.'],
     [spotTitulos(), 'Marque o que fez e suba de título', 'Você começa como <b>Bicho-preguiça</b>. Cada compromisso, hábito e foco concluído vale pontos, até chegar a <b>Milionário</b>. Faça o check-in todo dia para manter sua sequência.'],
-    instalado
+    // No app nativo não existe Tela de Início para ensinar, e os 2 toques têm cartão próprio na tela Hoje
+    NATIVO ? null : instalado
       ? [SPOT.celular, 'Abra com 2 toques', 'Dá pra falar com a Bee tocando 2 vezes atrás do iPhone. Veja como configurar em <b>Ajustes</b>.']
       : [SPOT.celular, 'Coloque na Tela de Início', 'No Safari, toque em <b>Compartilhar</b> e depois em <b>“Adicionar à Tela de Início”</b>. O app abre em tela cheia e seus dados ficam guardados.'],
-  ];
+  ].filter(Boolean);
   const [emoji, tit, txt] = passos[passo], ultimo = passo === passos.length - 1;
   abrirFolha(`
     <div class="boas-vindas">
@@ -4709,12 +4704,20 @@ document.getElementById('btnMic').onclick = () => { vibrar('medio'); abrirVoz();
 
 // ---------- Avisos (enquanto o app está aberto) ----------
 const btnNotif = document.getElementById('btnNotif');
-function atualizarBtnNotif() {
-  const ok = 'Notification' in window && Notification.permission === 'granted';
+async function atualizarBtnNotif() {
+  const LN = pluginNativo('LocalNotifications');
+  let ok = 'Notification' in window && Notification.permission === 'granted';
+  if (LN) { try { ok = (await LN.checkPermissions()).display === 'granted'; } catch {} }
   btnNotif.classList.toggle('on', ok);
   btnNotif.innerHTML = ICO.sino + `<span>${ok ? 'Avisos ativos' : 'Ativar avisos'}</span>`;
 }
 btnNotif.onclick = async () => {
+  const LN = pluginNativo('LocalNotifications');
+  if (LN) {
+    const r = await LN.requestPermissions().catch(() => null);
+    if (r?.display === 'granted') agendarLembretes(); else toast('Para receber lembretes, ligue as notificações do Tap Bee nos Ajustes do iPhone.', 5000);
+    return atualizarBtnNotif();
+  }
   if (!('Notification' in window)) { toast('Avisos: instale o app na tela de início (Compartilhar → Adicionar à Tela de Início)'); return; }
   await Notification.requestPermission();
   atualizarBtnNotif();
@@ -5443,7 +5446,6 @@ function abrirDoisToques(passo = 0) {
       <div class="dt-num">1</div>
       <h3>Instale o atalho da Bee</h3>
       <p class="dt-grande">Toque no botão amarelo. Vai abrir o app <b>Atalhos</b>. Lá, toque em <b>Adicionar Atalho</b>.</p>
-      <div class="dt-mock"><div class="dt-mock-tit">Falar com a Bee</div><div class="dt-mock-bt">Adicionar Atalho</div></div>
       <a class="primario dt-instalar" id="dtInstalar" href="${ATALHO_URL}">Instalar o atalho</a>
       <div class="botoes"><button id="dtVolta">Voltar</button><button class="primario" id="dtProx">Já adicionei</button></div>`,
     () => `${pontos(2)}
@@ -5665,26 +5667,21 @@ if (params.toString()) history.replaceState(null, '', location.pathname);
 
 // ================= Ambiente imersivo: favo, pólen, Bee viva, topo, puxar =================
 const CALMO = matchMedia('(prefers-reduced-motion: reduce)').matches;
-// --- Sons de toque (madeira) e plop de mel
-let ultimoToc = 0;
+// --- Plop de mel ao concluir (os botões comuns não fazem som)
 function somCurto(f1, f2, dur, vol, tipo = 'sine') {
-  if (lerPref('agenda.sonsToque', '1') !== '1' || somDeFundoTocando()) return;   // não disputa o áudio com o som do Pomodoro
-  try {
-    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state !== 'running') audioCtx.resume();
-    const t = audioCtx.currentTime, o = audioCtx.createOscillator(), g = audioCtx.createGain();
+  if (somDeFundoTocando()) return;   // não disputa o áudio com o som do Pomodoro
+  comAudio((t) => {
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
     o.type = tipo; o.frequency.setValueAtTime(f1, t); o.frequency.exponentialRampToValueAtTime(f2, t + dur);
     g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .004); g.gain.exponentialRampToValueAtTime(.0004, t + dur);
     o.connect(g); g.connect(audioCtx.destination); o.start(t); o.stop(t + dur + .02);
-  } catch {}
+  });
 }
-const toc = () => { const a = performance.now(); if (a - ultimoToc < 70) return; ultimoToc = a; somCurto(1050, 520, .045, .05, 'triangle'); };
 const plop = () => somCurto(260, 820, .11, .09);
-document.addEventListener('pointerdown', (e) => {
-  if (audioCtx && audioCtx.state !== 'running' && !somDeFundoTocando()) audioCtx.resume().catch(() => {});
-  const b = e.target.closest('button, .chip-op span, [data-aba]');
-  if (b && !b.closest('.mic-aba') && !b.matches('[data-check], [data-hab-check]')) toc();
-}, true);
+// Liga o áudio em silêncio no toque, para a comemoração tocar na hora
+const ligarAudio = () => { if (!somDeFundoTocando()) liberarAudio(); };
+document.addEventListener('touchend', ligarAudio, { capture: true, passive: true });
+document.addEventListener('click', ligarAudio, true);
 
 // --- Fundo: favo com parallax e pólen (vaga-lumes à noite)
 const amb = document.createElement('div');
