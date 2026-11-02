@@ -1699,19 +1699,13 @@
   @keyframes qzEntra { from { opacity: 0; transform: translateX(26px) scale(.985); } to { opacity: 1; transform: none; } }
   .qz-sobe { animation: qzSobe .55s cubic-bezier(.2,1.3,.4,1) both; animation-delay: calc(var(--i, 0) * .09s + .08s); }
   @keyframes qzSobe { from { opacity: 0; transform: translateY(18px) scale(.97); } to { opacity: 1; transform: none; } }
-  /* Topo: Bee voando pela barra e potinho de gotas */
+  /* Topo: Bee voando pela barra */
   .qz-topo { flex: none; height: 50px; display: flex; align-items: center; gap: 8px; }
   .qz-volta { flex: none; width: 32px; height: 40px; margin-left: -8px; border: 0; background: none; position: relative; cursor: pointer; }
   .qz-volta::after { content: ''; position: absolute; left: 12px; top: 14px; width: 11px; height: 11px; border-left: 2.5px solid #1d1a12; border-bottom: 2.5px solid #1d1a12; transform: rotate(45deg); }
   .qz-prog { position: relative; flex: 1; height: 10px; border-radius: 10px; background: rgba(120,80,10,.16); }
   .qz-prog i { display: block; height: 100%; border-radius: 10px; background: linear-gradient(90deg, #ffc93f, #f2a313); box-shadow: 0 0 10px rgba(242,163,19,.7); transition: width .55s cubic-bezier(.2,1,.3,1); }
   .qz-prog img { position: absolute; top: 50%; width: 32px; height: 32px; margin: -19px 0 0 -14px; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0,0,0,.25)); transition: left .55s cubic-bezier(.2,1,.3,1); animation: pulinho 1.8s ease-in-out infinite; }
-  .qz-potinho { flex: none; display: flex; align-items: center; gap: 3px; height: 34px; padding: 0 11px 0 8px; border-radius: 999px; background: #fff; box-shadow: 0 3px 10px rgba(120,80,10,.16); font-weight: 800; font-size: 16px; }
-  .qz-potinho .gota { width: 18px; height: 18px; margin: 0; }
-  .qz-potinho.bate { animation: qzBate .45s cubic-bezier(.2,1.6,.4,1); }
-  @keyframes qzBate { 40% { transform: scale(1.32); background: #ffe08a; } }
-  .qz-gota-voa { position: fixed; left: 0; top: 0; z-index: 60001; width: 24px; height: 24px; pointer-events: none; }
-  .qz-gota-voa .gota { width: 24px; height: 24px; margin: 0; filter: drop-shadow(0 2px 6px rgba(217,138,6,.7)); }
   .qz-corpo { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; justify-content: center; margin: 0 -20px; padding: 10px 20px 16px; scrollbar-width: none; }
   .qz-corpo::-webkit-scrollbar { display: none; }
   .qz-corpo > * { flex: none; }
@@ -1800,7 +1794,7 @@
   .qz-cena.ativa { opacity: 1; transform: none; }
   .qz-cena .qz-fone { width: 100%; margin: 0; }
   .qz-cena:not(.ativa) * { animation-play-state: paused; }
-  .qz-legenda { min-height: 54px; text-align: center; font-size: 21px; font-weight: 800; letter-spacing: -.015em; line-height: 1.2; }
+  .qz-legenda { min-height: 74px; text-align: center; font-size: 21px; font-weight: 800; letter-spacing: -.015em; line-height: 1.2; }
   .qz-legenda small { display: block; margin-bottom: 2px; font-size: 13px; font-weight: 700; letter-spacing: 0; color: #8a5a00; }
   .qz-pontos { display: flex; justify-content: center; margin-top: 2px; }
   .qz-pontos button { display: grid; place-items: center; width: 34px; height: 30px; padding: 0; border: 0; background: none; cursor: pointer; }
@@ -5882,15 +5876,15 @@ if (Nuvem) {
 agendarLembretes();
 
 // ---------- Quiz de entrada e tela de pagamento (só quem assina entra no app) ----------
-// A Bee conversa, a pessoa junta gotas de mel a cada resposta, fala com ela de verdade, vê o pote encher e assina.
+// A Bee conversa, a pessoa faz um teste por voz, vê o pote encher e assina.
 const RC_CHAVE = '';   // chave pública do RevenueCat (appl_...). Vazia = MODO DE TESTE: o botão de assinar entra sem cobrar
-const QUIZ_VERSAO = '6';   // no modo de teste, uma versão nova do quiz aparece de novo no aparelho
+const QUIZ_VERSAO = '7';   // no modo de teste, uma versão nova do quiz aparece de novo no aparelho
 const PRECO_ANO = 'R$ 129,90', PRECO_MES = 'R$ 10,83';
 const URL_TERMOS = 'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/';
 const URL_PRIVACIDADE = 'https://guiiestevees.github.io/agenda-voz/privacidade.html';
 const lembretePadrao = () => { const v = lerPref('agenda.lembretePadrao', ''); return v === '' ? 15 : +v; };
 const quizLiberado = () => lerPref('agenda.assinante', '') === 'sim' && (!!RC_CHAVE || lerPref('agenda.quizVersao', '') === QUIZ_VERSAO);
-let qz = null;   // { i, r: respostas, gotas, colhidas, feito, timers }
+let qz = null;   // { i, r: respostas, feito, timers }
 const qzNome = () => esc((qz.r.nome || '').trim());
 const QZ_CALMO = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const qzTimer = (fn, ms) => { const t = setTimeout(fn, ms); qz.timers.push(t); return t; };
@@ -5922,8 +5916,8 @@ const qzFraseTeste = () => qzDesejo()?.[4] || 'Reunião amanhã às 10';
 // Animação de como a Bee funciona, no celular
 const CENAS_BEE = [
   ['Dois toques atrás do celular', () => `<div class="qz-c-costas"><i class="cam"></i><i class="cam b"></i><span class="toque"></span><span class="toque b"></span></div>`],
-  ['Você fala, sem escrever nada', () => `<div class="qz-sl"><img src="${MASCOTES.bee}" alt=""><div class="qz-onda"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><p class="qz-cena-fala">“reunião amanhã às 10”</p></div>`],
-  ['A Bee organiza tudo para você', () => `<div class="qz-sl"><span class="qz-ok qz-pula">${ICONE_CHECK}</span><b>Anotado!</b><p>Reunião<br>amanhã, às 10h</p></div>`],
+  ['Você fala seu compromisso ou tarefa', () => `<div class="qz-sl"><img src="${MASCOTES.bee}" alt=""><div class="qz-onda"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><p class="qz-cena-fala">“reunião amanhã às 10”</p></div>`],
+  ['A Bee entende e organiza tudo para você', () => `<div class="qz-sl"><span class="qz-ok qz-pula">${ICONE_CHECK}</span><b>Anotado!</b><p>Reunião<br>amanhã, às 10h</p></div>`],
   ['E te avisa na hora certa', () => `<div class="qz-sl qz-sl-lista"><div class="qz-banner"><img src="${MASCOTES.bee}" alt=""><span><b>Reunião</b><small>Em 15 minutos</small></span></div><div class="qz-sl-tit">Amanhã</div><div class="qz-sl-ev novo"><i></i><span>10:00</span><b>Reunião</b></div><div class="qz-sl-ev"><i></i><span>15:00</span><b>Dentista</b></div></div>`],
 ];
 const TELAS_QUIZ = [
@@ -5933,7 +5927,7 @@ const TELAS_QUIZ = [
       <h1 class="qz-capa">Tire tudo da cabeça.</h1><p class="qz-sub qz-c">Você fala, e a Bee organiza compromissos, tarefas e contas.</p>`,
     aoAbrir: () => { let s = 0; qz.slides = setInterval(() => { s = (s + 1) % 3; const c = document.getElementById('qzCelular'); if (c) c.innerHTML = qzCelular(s); }, 2400); },
     extra: () => '<button class="qz-link" id="qzRestaurar">Já tenho assinatura</button>' },
-  { id: 'nome', vale: true, ok: () => (qz.r.nome || '').trim().length > 0, html: () => `
+  { id: 'nome', ok: () => (qz.r.nome || '').trim().length > 0, html: () => `
       ${qzFala('Oi! Eu sou a Bee, sua nova secretária. Como posso te chamar?')}<input id="qzNome" class="qz-campo qz-sobe" maxlength="20" placeholder="Seu nome ou apelido" autocomplete="given-name" value="${esc(qz.r.nome || '')}">` },
   { id: 'aceite', bt: 'Aceitar e continuar', html: () => `
       ${qzFala(`Que bom te conhecer, ${qzNome()}! Só preciso que você confirme duas coisinhas:`)}
@@ -5950,17 +5944,17 @@ const TELAS_QUIZ = [
       qz.parabensVisto = true;
       qzTimer(() => { tocarSom(true); vibrar('sucesso'); confete(innerWidth / 2, innerHeight * .3, true); }, 350);
     } },
-  { id: 'frases', vale: true, ok: () => (qz.r.frases || []).length > 0, html: () => `
+  { id: 'frases', ok: () => (qz.r.frases || []).length > 0, html: () => `
       ${qzFala('Me conta: qual destas frases parece com você?')}<p class="qz-dica">Pode marcar mais de uma.</p>${FRASES_DOR.map(([v, e, t], i) => qzOpcao('frases', v, t, e, i, '', true)).join('')}` },
-  { id: 'quantas', vale: true, auto: true, html: () => `
+  { id: 'quantas', auto: true, html: () => `
       ${qzFala('Quantas coisas você está tentando guardar na cabeça agora?')}${[['poucas', '🙂', 'Algumas'], ['muitas', '😅', 'Muitas'], ['perdi', '🤯', 'Perdi a conta']].map(([v, e, t], i) => qzOpcao('quantas', v, t, e, i)).join('')}` },
   { id: 'mente', bt: 'Faz muito sentido', html: () => `
       <div class="qz-brilho"><img class="qz-bee-grande" src="${MASCOTES.bee}" alt=""></div>
       <h2 class="qz-c qz-sobe" style="--i:1">Sua mente nasceu para criar, não para guardar lista.</h2>
       <p class="qz-texto qz-c qz-sobe" style="--i:2">Quando os compromissos saem da cabeça, sobra energia e foco para o que te leva ao resultado que você quer.</p>` },
-  { id: 'desejo', vale: true, auto: true, html: () => `
+  { id: 'desejo', auto: true, html: () => `
       ${qzFala('Com a cabeça livre, onde você quer colocar essa energia?')}${DESEJOS.map(([v, e, t], i) => qzOpcao('desejo', v, t, e, i)).join('')}` },
-  { id: 'trava', vale: true, ok: () => (qz.r.trava || []).length > 0, html: () => `
+  { id: 'trava', ok: () => (qz.r.trava || []).length > 0, html: () => `
       ${qzFala('E o que você mais queria resolver na sua rotina?')}<p class="qz-dica">Pode marcar mais de um.</p>${[['🗂️', 'Organizar as coisas'], ['🎯', 'Definir quais tarefas fazer'], ['🧠', 'Parar de guardar tudo na cabeça'], ['📓', 'Largar a agenda que não ajuda']].map(([e, t], i) => qzOpcao('trava', t, t, e, i, '', true)).join('')}` },
   { id: 'existe', bt: 'Próximo', segura: () => qz.cena < CENAS_BEE.length - 1 && (qz.irCena(qz.cena + 1), true), html: () => `
       <h2 class="qz-c qz-sobe">Sua secretária, a dois toques.</h2>
@@ -5989,7 +5983,7 @@ const TELAS_QUIZ = [
       agendarLembretes();
     } },
   { id: 'pote', semTopo: true, semBotao: true, html: () => `
-      <h2 class="qz-c" id="qzPoteTit">Suas ${qz.gotas} gotas estão virando sua agenda…</h2>
+      <h2 class="qz-c" id="qzPoteTit">Preparando sua agenda…</h2>
       <div class="qz-pote" id="qzPote"><svg viewBox="0 0 170 210" aria-hidden="true">
         <defs><clipPath id="qzPoteDentro"><path d="M42 58 C22 70 16 90 16 118 C16 176 38 198 85 198 C132 198 154 176 154 118 C154 90 148 70 128 58 Z"/></clipPath>
         <linearGradient id="qzMelGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd25c"/><stop offset=".5" stop-color="#f2a313"/><stop offset="1" stop-color="#c8740a"/></linearGradient></defs>
@@ -6045,7 +6039,7 @@ function qzDemoLigar() {
     if (!frase) return estado('Não ouvi nada. Toque no microfone e tente de novo');
     const p = interpretar(frase), d = new Date(p.inicio);
     qz.feito = { tipo: 'Compromisso de teste', titulo: p.titulo, quando: `${maiuscula(fmtDataLonga(d))}, às ${fmtHora(d)}` };
-    tocarSom(true); vibrar('sucesso'); qz.gotas += 3; qzDesenhar();
+    tocarSom(true); vibrar('sucesso'); qzDesenhar();
     confete(innerWidth / 2, innerHeight * .32, true);
   };
   document.getElementById('qzMic').onclick = () => {
@@ -6112,7 +6106,7 @@ function qzFilme() {
   pontos.forEach((p, k) => p.onclick = () => qz.irCena(k));
   ativar(0);
 }
-// O pote enche com as gotas que a pessoa juntou
+// O pote enche enquanto a agenda fica pronta
 function qzEncherPote() {
   const tela = qz.i, ini = performance.now(), dur = QZ_CALMO ? 800 : 4200;
   const rotulos = ['Tirando tudo da sua cabeça', 'Organizando suas tarefas', 'Preparando seus avisos', 'Deixando tudo pronto'];
@@ -6127,8 +6121,8 @@ function qzEncherPote() {
     if (k !== visto) { visto = k; vibrar('leve'); const r = document.getElementById('qzPoteRot'); r.textContent = rotulos[k]; r.classList.remove('entra'); void r.offsetWidth; r.classList.add('entra'); }
     if (f < 1) return requestAnimationFrame(passo);
     document.getElementById('qzPote').classList.add('cheio');
-    document.getElementById('qzPoteTit').textContent = 'Pote cheio!';
-    document.getElementById('qzPoteRot').textContent = `Tudo pronto, ${(qz.r.nome || '').trim()}`;
+    document.getElementById('qzPoteTit').textContent = `Prontinho, ${(qz.r.nome || '').trim()}!`;
+    document.getElementById('qzPoteRot').textContent = 'Sua agenda está pronta';
     tocarSom(true); vibrar('sucesso'); confete(innerWidth / 2, innerHeight * .42, true);
     qzTimer(qzAvancar, 1300);
   };
@@ -6141,26 +6135,6 @@ function qzAtualizarBotao() {
   b.disabled = !liberado; b.hidden = !!t.semBotaoAte && !liberado;
 }
 function qzAvancar() { qz.i = Math.min(qz.i + 1, TELAS_QUIZ.length - 1); qzDesenhar(); }
-// Resposta dada: uma gota de mel voa até o potinho do topo
-function qzColher(t, origem) {
-  const nova = t.vale && !qz.colhidas.has(t.id);
-  const r = (origem || document.getElementById('qzSegue'))?.getBoundingClientRect();
-  if (nova) { qz.colhidas.add(t.id); qz.gotas++; }
-  qzAvancar();
-  if (!nova) return;
-  const pot = document.getElementById('qzPotinho');
-  if (!pot || QZ_CALMO || !r) return;
-  const a = pot.getBoundingClientRect(), g = document.createElement('div');
-  g.className = 'qz-gota-voa'; g.innerHTML = ICO_GOTA;
-  document.body.appendChild(g);
-  g.animate([
-    { transform: `translate(${r.left + r.width / 2}px, ${r.top + r.height / 2}px) scale(1.6)`, opacity: 1 },
-    { transform: `translate(${(r.left + a.left) / 2 + 30}px, ${(r.top + a.top) / 2}px) scale(1.9)`, opacity: 1, offset: .45 },
-    { transform: `translate(${a.left + 4}px, ${a.top + 4}px) scale(.8)`, opacity: .9 },
-  ], { duration: 560, easing: 'cubic-bezier(.4,0,.2,1)' }).onfinish = () => { g.remove(); pot.classList.remove('bate'); void pot.offsetWidth; pot.classList.add('bate'); };
-  if (typeof plop === 'function') setTimeout(plop, 480);
-  vibrar('selecao');
-}
 function qzEntrar() {
   gravarPref('agenda.assinante', 'sim'); gravarPref('agenda.quizVersao', QUIZ_VERSAO);
   if (qz.r.nome) gravarPref('agenda.nome', qz.r.nome.trim());
@@ -6195,7 +6169,7 @@ function qzDesenhar() {
   const pct = Math.round(qz.i / (TELAS_QUIZ.length - 1) * 100);
   palco.innerHTML = `
     <div class="qz-tela qz-t-${t.id}">
-      ${t.semTopo ? '' : `<div class="qz-topo"><button class="qz-volta" id="qzVolta" aria-label="Voltar"></button><div class="qz-prog"><i style="width:${pct}%"></i><img src="${MASCOTES.bee}" alt="" style="left:${pct}%"></div><div class="qz-potinho" id="qzPotinho">${ICO_GOTA}<b>${qz.gotas}</b></div></div>`}
+      ${t.semTopo ? '' : `<div class="qz-topo"><button class="qz-volta" id="qzVolta" aria-label="Voltar"></button><div class="qz-prog"><i style="width:${pct}%"></i><img src="${MASCOTES.bee}" alt="" style="left:${pct}%"></div></div>`}
       <div class="qz-corpo">${t.html()}</div>
       ${t.semBotao || t.auto ? '' : `<div class="qz-pe"><button class="qz-seguir" id="qzSegue">${t.bt || 'Continuar'}</button>${t.extra ? t.extra() : ''}</div>`}
     </div>`;
@@ -6206,7 +6180,7 @@ function qzDesenhar() {
     if (t.segura?.()) return;
     await t.aoSeguir?.();
     if (t.id === 'pagamento') return qzComprar();
-    qzColher(t);
+    qzAvancar();
   });
   on('qzSemIA', () => { gravarPref('agenda.iaOk', 'nao'); marcarIA(); qzAvancar(); });
   on('qzSemAviso', qzAvancar);
@@ -6219,7 +6193,7 @@ function qzDesenhar() {
     if ('varios' in b.dataset) { const l = qz.r[c] || []; qz.r[c] = l.includes(v) ? l.filter(x => x !== v) : [...l, v]; b.classList.toggle('on'); }
     else {
       qz.r[c] = v; palco.querySelectorAll(`[data-qz-op="${c}"]`).forEach(x => x.classList.toggle('on', x === b));
-      if (t.auto) qzTimer(() => qzColher(t, b), 340);   // uma resposta só: já segue, sem precisar de botão
+      if (t.auto) qzTimer(qzAvancar, 340);   // uma resposta só: já segue, sem precisar de botão
     }
     qzAtualizarBotao();
   });
@@ -6228,7 +6202,7 @@ function qzDesenhar() {
   t.aoAbrir?.();
 }
 function abrirQuiz() {
-  qz = { i: 0, r: { nome: lerPref('agenda.nome', '') }, gotas: 0, colhidas: new Set(), feito: null, timers: [] };
+  qz = { i: 0, r: { nome: lerPref('agenda.nome', '') }, feito: null, timers: [] };
   const el = document.createElement('div');
   el.id = 'quiz';
   el.innerHTML = `<div class="qz-fundo" aria-hidden="true"><div class="qz-favo"></div>${Array.from({ length: 10 }, (_, i) => `<i class="qz-polen" style="left:${(i * 37 + 11) % 100}%;top:${(i * 53 + 7) % 100}%;--d:${7 + (i % 5) * 2}s;--a:${(i % 7) * -1.3}s;--s:${5 + (i % 3) * 3}px"></i>`).join('')}</div><div id="qzPalco"></div>`;
