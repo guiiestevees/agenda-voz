@@ -1789,9 +1789,11 @@
   .qz-sl .qz-banner b { font-size: 11.5px; }
   .qz-sl .qz-banner small { font-size: 10px; }
   .qz-t-existe .qz-sl-lista { padding-top: 72px; }
-  .qz-cenas { position: relative; display: flex; align-items: center; gap: 6px; margin: 0 -20px; padding: 6px calc(50% - min(23vw, 88px)) 26px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .qz-cenas { position: relative; display: flex; align-items: center; gap: 6px; margin: 0 -20px; padding: 6px calc(50% - min(21vw, 80px)) 22px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
   .qz-cenas::-webkit-scrollbar { display: none; }
-  .qz-cena { flex: none; width: min(46vw, 176px); scroll-snap-align: center; scroll-snap-stop: always; opacity: .4; transform: scale(.88); transition: opacity .25s, transform .25s; cursor: pointer; }
+  .qz-so-ver { margin-bottom: 8px; font-size: 14.5px; }
+  .qz-exemplo { position: absolute; right: 10px; top: 12px; padding: 4px 9px; border-radius: 999px; background: #ffc93f; color: #1d1600; font-size: 11.5px; font-style: normal; font-weight: 800; }
+  .qz-cena { flex: none; width: min(42vw, 160px); scroll-snap-align: center; scroll-snap-stop: always; opacity: .4; transform: scale(.88); transition: opacity .25s, transform .25s; cursor: pointer; }
   .qz-cena.ativa { opacity: 1; transform: none; }
   .qz-cena .qz-fone { width: 100%; margin: 0; }
   .qz-cena:not(.ativa) * { animation-play-state: paused; }
@@ -1890,8 +1892,6 @@
   .qz-tile em { font-size: 30px; font-style: normal; line-height: 1.15; }
   .qz-tile b { font-size: 17px; font-weight: 800; letter-spacing: -.01em; }
   .qz-tile small { font-size: 13.5px; line-height: 1.25; color: #6e6655; }
-  .qz-respondendo .qz-op, .qz-respondendo .qz-seguir { pointer-events: none; }
-  .qz-respondendo .qz-op:not(.on) { opacity: .45; transition: opacity .25s; }
   .qz-foco { display: flex; align-items: center; gap: 12px; margin-top: 12px; padding: 12px 14px; border-radius: 20px; background: #fff3cf; box-shadow: inset 0 0 0 2px #f2a313; }
   .qz-foco em { font-size: 28px; font-style: normal; line-height: 1; }
   .qz-foco span { display: flex; flex-direction: column; gap: 1px; }
@@ -5951,7 +5951,7 @@ agendarLembretes();
 // ---------- Quiz de entrada e tela de pagamento (só quem assina entra no app) ----------
 // A Bee conversa, a pessoa faz um teste por voz, vê o pote encher e assina.
 const RC_CHAVE = '';   // chave pública do RevenueCat (appl_...). Vazia = MODO DE TESTE: o botão de assinar entra sem cobrar
-const QUIZ_VERSAO = '10';   // no modo de teste, uma versão nova do quiz aparece de novo no aparelho
+const QUIZ_VERSAO = '11';   // no modo de teste, uma versão nova do quiz aparece de novo no aparelho
 const PRECO_ANO = 'R$ 129,90', PRECO_MES = 'R$ 10,83', PRECO_DIA = 'R$ 0,36';
 const OFERTA_ANO = 'R$ 99,90', OFERTA_MES = 'R$ 8,33', OFERTA_DIA = 'R$ 0,28', OFERTA_OFF = '23%';   // desconto de verdade, oferecido uma vez a quem desiste da compra
 const SECRETARIA_MES = 'R$ 1.700', SECRETARIA_ANO = 'R$ 20.400';
@@ -5977,29 +5977,29 @@ const qzOpcao = (campo, valor, rot, ico, i, sub, varios) => {
   return `<button class="qz-op ${on ? 'on' : ''}" style="--i:${i}" data-qz-op="${campo}" data-valor="${esc(valor)}" ${varios ? 'data-varios' : ''}><em>${ico}</em><span><b>${rot}</b>${sub ? `<small>${sub}</small>` : ''}</span><i>${ICONE_CHECK}</i></button>`;
 };
 const FRASES_DOR = [
-  ['nao-desliga', '🌀', 'Minha cabeça não desliga, fico repassando tudo', '🧠', 'Cabeça livre', 'Falou, a Bee guardou', 'Deixa comigo! Você fala uma vez e eu guardo.', 'Você disse que a cabeça não desliga. Agora é só falar, e a Bee guarda.'],
-  ['ansiedade', '😮‍💨', 'A ansiedade bate com tudo o que preciso fazer', '😌', 'Mais calma', 'Tudo anotado e avisado', 'Pode respirar. Eu cuido de lembrar de tudo.', 'Você disse que a ansiedade bate. A Bee deixa tudo anotado e te avisa.'],
-  ['esqueco', '🫠', 'Tenho tanta coisa que acabo esquecendo', '🔔', 'Nada esquecido', 'A Bee lembra por você', 'Comigo isso acaba. Eu lembro por você.', 'Você disse que acaba esquecendo. A Bee lembra por você.'],
-  ['automatico', '🤖', 'Vivo no automático e o dia passa voando', '🎯', 'Dia com direção', 'Você sabe o que fazer', 'Vamos mudar isso. Eu te mostro o que fazer.', 'Você disse que o dia passa voando. A Bee mostra o que fazer.'],
+  ['nao-desliga', '🌀', 'Minha cabeça não desliga, fico repassando tudo', '🧠', 'Cabeça livre', 'Falou, a Bee guardou', 'Você disse que a cabeça não desliga. Agora é só falar, e a Bee guarda.'],
+  ['ansiedade', '😮‍💨', 'A ansiedade bate com tudo o que preciso fazer', '😌', 'Mais calma', 'Tudo anotado e avisado', 'Você disse que a ansiedade bate. A Bee deixa tudo anotado e te avisa.'],
+  ['esqueco', '🫠', 'Tenho tanta coisa que acabo esquecendo', '🔔', 'Nada esquecido', 'A Bee lembra por você', 'Você disse que acaba esquecendo. A Bee lembra por você.'],
+  ['automatico', '🤖', 'Vivo no automático e o dia passa voando', '🎯', 'Dia com direção', 'Você sabe o que fazer', 'Você disse que o dia passa voando. A Bee mostra o que fazer.'],
 ];
 const DESEJOS = [
-  ['dinheiro', '💰', 'Fazer mais dinheiro', 'prosperar', 'Reunião com o cliente amanhã às 10', 'Ótimo! Eu cuido dos detalhes e você cuida de prosperar.'],
-  ['corpo', '💪', 'Emagrecer e cuidar da saúde', 'cuidar de você', 'Academia amanhã às 7 da manhã', 'Deixa comigo! Eu lembro de cada treino e consulta.'],
-  ['produtivo', '🚀', 'Render mais no trabalho', 'produzir mais', 'Entregar o relatório amanhã às 9', 'Perfeito! Eu guardo os prazos e você só produz.'],
-  ['paz', '🧘', 'Viver com mais tranquilidade', 'viver tranquilo', 'Dentista amanhã às 15', 'Que bom! Eu seguro a lista e você respira.'],
+  ['dinheiro', '💰', 'Fazer mais dinheiro', 'prosperar', 'Reunião com o cliente amanhã às 10'],
+  ['corpo', '💪', 'Emagrecer e cuidar da saúde', 'cuidar de você', 'Academia amanhã às 7 da manhã'],
+  ['produtivo', '🚀', 'Render mais no trabalho', 'produzir mais', 'Entregar o relatório amanhã às 9'],
+  ['paz', '🧘', 'Viver com mais tranquilidade', 'viver tranquilo', 'Dentista amanhã às 15'],
 ];
 const TRAVAS = [
-  ['organizar', '🗂️', 'Organizar as coisas', 'Combinado! Organizar é comigo mesma.'],
-  ['definir', '🎯', 'Definir quais tarefas fazer', 'Combinado! Todo dia você vê o que fazer.'],
-  ['guardar', '🧠', 'Parar de guardar tudo na cabeça', 'Combinado! É só falar, e sai da sua cabeça.'],
-  ['agenda', '📓', 'Largar a agenda que não ajuda', 'Combinado! Comigo é só falar, sem escrever.'],
+  ['organizar', '🗂️', 'Organizar as coisas'],
+  ['definir', '🎯', 'Definir quais tarefas fazer'],
+  ['guardar', '🧠', 'Parar de guardar tudo na cabeça'],
+  ['agenda', '📓', 'Largar a agenda que não ajuda'],
 ];
 const AVISOS_QUIZ = [[0, 'Na hora'], [15, '15 min antes'], [60, '1 hora antes'], [120, '2 horas antes'], [1440, '1 dia antes']];
 const qzDesejo = () => DESEJOS.find(d => d[0] === qz.r.desejo);
 const qzFraseTeste = () => qzDesejo()?.[4] || 'Reunião amanhã às 10';
 // Animação de como a Bee funciona, no celular
 const CENAS_BEE = [
-  ['Dois toques atrás do celular', () => `<div class="qz-c-costas"><i class="cam"></i><i class="cam b"></i><span class="toque"></span><span class="toque b"></span><span class="mao">👆</span></div>`],
+  ['Com o app configurado, dois toques atrás do iPhone chamam a Bee', () => `<div class="qz-c-costas"><i class="cam"></i><i class="cam b"></i><span class="toque"></span><span class="toque b"></span><span class="mao">👆</span><em class="qz-exemplo">Exemplo</em></div>`],
   ['Você fala seu compromisso ou tarefa', () => `<div class="qz-sl"><img src="${MASCOTES.bee}" alt=""><div class="qz-onda"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><p class="qz-cena-fala">“reunião amanhã às 10”</p></div>`],
   ['A Bee entende e organiza tudo para você', () => `<div class="qz-sl"><span class="qz-ok qz-pula">${ICONE_CHECK}</span><b>Anotado!</b><p>Reunião<br>amanhã, às 10h</p></div>`],
   ['E te avisa na hora certa', () => `<div class="qz-sl qz-sl-lista"><div class="qz-banner"><img src="${MASCOTES.bee}" alt=""><span><b>Reunião</b><small>Em 15 minutos</small></span></div><div class="qz-sl-tit">Amanhã</div><div class="qz-sl-ev novo"><i></i><span>10:00</span><b>Reunião</b></div><div class="qz-sl-ev"><i></i><span>15:00</span><b>Dentista</b></div></div>`],
@@ -6025,22 +6025,23 @@ const TELAS_QUIZ = [
       qz.parabensVisto = true;
       qzTimer(() => { tocarSom(true); vibrar('sucesso'); confete(innerWidth / 2, innerHeight * .3, true); }, 350);
     } },
-  { id: 'frases', ok: () => (qz.r.frases || []).length > 0, resposta: () => FRASES_DOR.find(f => qz.r.frases.includes(f[0]))[6], html: () => `
+  { id: 'frases', ok: () => (qz.r.frases || []).length > 0, html: () => `
       ${qzFala('Me conta: qual destas frases parece com você?')}<p class="qz-dica">Pode marcar mais de uma.</p>${FRASES_DOR.map(([v, e, t], i) => qzOpcao('frases', v, t, e, i, '', true)).join('')}` },
   { id: 'mente', bt: 'Faz muito sentido', html: () => `
       <div class="qz-brilho"><img class="qz-bee-grande" src="${MASCOTES.bee}" alt=""></div>
       <h2 class="qz-c qz-sobe" style="--i:1">Sua mente nasceu para criar, não para guardar lista.</h2>
       <p class="qz-texto qz-c qz-sobe" style="--i:2">Quando os compromissos saem da cabeça, sobra energia e foco para o que te leva ao resultado que você quer.</p>` },
-  { id: 'desejo', auto: () => qzDesejo()[5], html: () => `
+  { id: 'desejo', auto: true, html: () => `
       ${qzFala('Com a cabeça livre, onde você quer colocar essa energia?')}${DESEJOS.map(([v, e, t], i) => qzOpcao('desejo', v, t, e, i)).join('')}` },
-  { id: 'trava', auto: () => TRAVAS.find(x => x[0] === qz.r.trava)[3], html: () => `
+  { id: 'trava', auto: true, html: () => `
       ${qzFala('E o que você mais quer resolver primeiro?')}${TRAVAS.map(([v, e, x], i) => qzOpcao('trava', v, x, e, i)).join('')}` },
   { id: 'existe', bt: 'Próximo', segura: () => qz.cena < CENAS_BEE.length - 1 && (qz.irCena(qz.cena + 1), true), html: () => `
-      <h2 class="qz-c qz-sobe">Sua secretária, a dois toques.</h2>
+      <h2 class="qz-c qz-sobe">Como a Bee funciona no dia a dia</h2>
+      <p class="qz-sub qz-c qz-so-ver qz-sobe" style="--i:1">Não precisa dar os toques agora: a gente configura junto depois da assinatura.</p>
       <div class="qz-cenas" id="qzCenas">${CENAS_BEE.map(([, html]) => `<div class="qz-cena"><div class="qz-fone"><div class="qz-fone-tela">${html()}</div></div></div>`).join('')}</div>
       <div class="qz-legenda" id="qzLegenda"></div>
-      <div class="qz-pontos" id="qzPontos">${CENAS_BEE.map((_, i) => `<button aria-label="Passo ${i + 1}"><i></i></button>`).join('')}</div>
-      <div class="qz-arraste" id="qzArraste">Arraste para o lado <span>→</span></div>`, aoAbrir: qzFilme },
+      <div class="qz-pontos" id="qzPontos">${CENAS_BEE.map((_, i) => `<button aria-label="Parte ${i + 1}"><i></i></button>`).join('')}</div>
+      <div class="qz-arraste" id="qzArraste">Arraste para ver como funciona <span>→</span></div>`, aoAbrir: qzFilme },
   { id: 'demo', semBotaoAte: () => !!qz.feito, bt: 'Continuar', html: qzDemoHtml, aoAbrir: qzDemoLigar },
   { id: 'trocar', semBotaoAte: () => qz.troca === 2, bt: 'Continuar', html: qzTrocaHtml, aoAbrir: qzTrocaLigar },
   { id: 'avisos', bt: 'Ativar meus avisos', html: () => {
@@ -6065,7 +6066,7 @@ const TELAS_QUIZ = [
         try {
           const perm = await LN.requestPermissions();
           if (perm.display === 'granted') {
-            await LN.schedule({ notifications: [{ id: ID_AVISO_TESTE, title: qz.feito?.titulo || 'Tap Bee', body: `${fmtLembrete(m)} · aviso de teste da Bee`, schedule: { at: new Date(Date.now() + 4000), allowWhileIdle: true } }] });
+            await LN.schedule({ notifications: [{ id: ID_AVISO_TESTE, title: qz.feito?.titulo || 'Tap Bee', body: qzTextoAviso(m), schedule: { at: new Date(Date.now() + 4000), allowWhileIdle: true } }] });
             qz.avisoReal = true;
           }
         } catch (e) { console.warn('Quiz: aviso de teste', e); }
@@ -6107,7 +6108,7 @@ const TELAS_QUIZ = [
       <p class="qz-pag-oi">${qzNome()}, sua agenda está pronta.</p>
       <h1 class="qz-capa qz-capa2"><span>Uma secretária no seu bolso,</span><br>o ano inteiro.</h1>
       <div class="qz-pag-fones">${['semana', 'habitos', 'hoje'].map(k => `<div class="qz-fone qz-pf-${k}"><div class="qz-fone-tela"><img src="${PRINTS_QUIZ[k]}" alt=""></div></div>`).join('')}</div>
-      ${disse ? `<div class="qz-disse"><img src="${MASCOTES.bee}" alt=""><span>${disse[7]}</span></div>` : ''}
+      ${disse ? `<div class="qz-disse"><img src="${MASCOTES.bee}" alt=""><span>${disse[6]}</span></div>` : ''}
       <div class="qz-preco"><b>${PRECO_MES}</b><span>/mês</span></div>
       <p class="qz-preco-sub">${PRECO_ANO} cobrado por ano, cancele quando quiser</p>
       <div class="qz-compara"><div><small>Uma secretária</small><b>${SECRETARIA_ANO}/ano</b><small>${SECRETARIA_MES} por mês</small></div><div class="bee"><small>A Bee</small><b>${PRECO_ANO}/ano</b><small>o ano inteiro</small></div></div>
@@ -6132,6 +6133,7 @@ function qzDemoHtml() {
       <form id="qzDigita" class="qz-digita" ${SR ? 'hidden' : ''}><input id="qzFrase" class="qz-campo" value="${esc(qzFraseTeste())}" autocomplete="off" enterkeyhint="send"><button class="qz-enviar" type="submit" aria-label="Enviar">${ICO.ok}</button></form>
       ${SR ? '<button class="qz-link" id="qzPrefiro">Prefiro escrever</button>' : ''}`;
 }
+const qzTextoAviso = (m) => { const h = `${pad(qz.feito?.hora ?? 10)}:00`; return m ? `${fmtLembrete(m)} · às ${h}` : `Agora, às ${h}`; };
 const qzEstado = (t) => { const e = document.getElementById('qzEstado'); if (e) e.textContent = t; };
 // Microfone do quiz: abre, ouve e entrega a frase; se não der, oferece escrever
 function qzLigarMic(aoFalar) {
@@ -6188,16 +6190,16 @@ function qzDemoLigar() {
 const qzTrocaDados = () => {
   const de = qz.feito?.hora ?? 10, para = de === 15 ? 10 : 15, a = Math.min(de, para), b = Math.max(de, para), passo = (b - a) / 3;
   const horas = [a, Math.round(a + passo), Math.round(a + passo * 2), b];
-  return { de, para, horas, frases: [`Muda para as ${para}`, `Pagar a luz às ${de}${de < 9 ? ' da manhã' : ''}`] };
+  return { de, para, horas, frases: [`Bee, surgiu um imprevisto. Passa isso para as ${para}.`, `Aproveita e marca um café com um amigo às ${de}${de < 9 ? ' da manhã' : ''}.`] };
 };
 function qzTrocaHtml() {
   const { de, para, horas, frases } = qzTrocaDados(), e = qz.troca || 0, y = (h) => horas.indexOf(h) * 46 + 4;
-  const falas = ['Imprevisto? É só falar. Toque no microfone e diga:', 'Agora aproveite o horário livre. Diga:', 'Viu? Você só fala, e a Bee troca tudo.'];
+  const falas = ['Mudou o plano? Fale comigo como fala com qualquer pessoa. Toque no microfone e diga:', 'Sobrou um horário livre. Agora diga:', 'Viu? Você só fala, e a Bee troca tudo.'];
   return `${qzFala(falas[e])}
       <div class="qz-agenda qz-sobe" id="qzAgenda" style="--i:1">
         ${horas.map((h, i) => `<div class="qz-ag-linha" style="top:${i * 46}px"><span data-hora="${h}">${pad(h)}:00</span></div>`).join('')}
         <div class="qz-ag-card ${e ? 'movido' : ''}" id="qzCardA" style="top:${y(e ? para : de)}px"><b>${esc(qz.feito?.titulo || 'Reunião')}</b></div>
-        <div class="qz-ag-card novo ${e === 2 ? 'on' : ''}" id="qzCardB" style="top:${y(de)}px"><b id="qzCardBTit">${esc(qz.trocaTitulo || 'Pagar a luz')}</b></div>
+        <div class="qz-ag-card novo ${e === 2 ? 'on' : ''}" id="qzCardB" style="top:${y(de)}px"><b id="qzCardBTit">${esc(qz.trocaTitulo || 'Café com um amigo')}</b></div>
       </div>
       <div id="qzTrocaFala" ${e === 2 ? 'hidden' : ''}>
         <div class="qz-frase-teste qz-menor-teste"><b id="qzTrocaFrase">“${esc(frases[Math.min(e, 1)])}”</b></div>
@@ -6221,7 +6223,7 @@ function qzTrocaLigar() {
   const limpar = () => { const f = document.getElementById('qzFalado'); if (f) f.textContent = ''; qzEstado('Toque no microfone e fale'); };
   qzLigarMic((frase) => {
     if ((qz.troca || 0) === 0) {
-      const m = frase.match(/\b(\d{1,2})\b/), h = m && +m[1] >= 1 && +m[1] <= 23 ? +m[1] : para;
+      const m = frase.match(/\b\d{1,2}\b/g)?.pop(), h = m && +m >= 1 && +m <= 23 ? +m : para;
       document.querySelector(`[data-hora="${para}"]`).textContent = `${pad(h)}:00`;
       const a = document.getElementById('qzCardA');
       a.classList.add('voando', 'movido');
@@ -6231,14 +6233,15 @@ function qzTrocaLigar() {
       qz.troca = 1;
       qzTimer(() => {
         tocarSom();
-        dizer('Agora aproveite o horário livre. Diga:');
+        dizer('Sobrou um horário livre. Agora diga:');
         document.getElementById('qzTrocaFrase').textContent = `“${frases[1]}”`;
         const c = document.getElementById('qzFrase'); if (c) c.value = frases[1];
         limpar();
       }, 900);
       return;
     }
-    const titulo = interpretar(frase).titulo || 'Pagar a luz';
+    const marcou = frase.match(/\bmarc\w*\s+(?:um |uma )?(.+?)(?:\s+(?:às|as|para)\s+\d.*)?[.!]?$/i)?.[1];
+    const titulo = maiuscula(marcou || interpretar(frase).titulo.replace(/^bee,?\s*/i, '') || 'Café com um amigo');
     qz.trocaTitulo = titulo;
     document.getElementById('qzCardBTit').textContent = titulo;
     document.getElementById('qzCardB').classList.add('on');
@@ -6263,7 +6266,7 @@ function qzFilme() {
     const [rot, html] = CENAS_BEE[n], tela = cenas[n].querySelector('.qz-fone-tela');
     tela.innerHTML = html();   // a animação do passo começa de novo quando ele aparece
     cenas.forEach((c, k) => c.classList.toggle('ativa', k === n));
-    leg.innerHTML = `<small>Passo ${n + 1} de ${cenas.length}</small>${rot}`; leg.classList.remove('entra'); void leg.offsetWidth; leg.classList.add('entra');
+    leg.innerHTML = `<small>Como funciona · ${n + 1} de ${cenas.length}</small>${rot}`; leg.classList.remove('entra'); void leg.offsetWidth; leg.classList.add('entra');
     pontos.forEach((p, k) => p.classList.toggle('on', k === n));
     document.getElementById('qzSegue').textContent = n === ultima ? 'Quero testar agora' : 'Próximo';
     const fala = tela.querySelector('.qz-cena-fala');
@@ -6448,20 +6451,9 @@ function qzAvisoTeste() {
     if (qz.avisoReal) return;
     const b = document.createElement('div');
     b.className = 'qz-banner qz-banner-topo';
-    b.innerHTML = `<img src="${MASCOTES.bee}" alt=""><span><b>${esc(qz.feito?.titulo || 'Tap Bee')}</b><small>${esc(fmtLembrete(qz.r.aviso ?? lembretePadrao()))} · aviso de teste da Bee</small></span>`;
+    b.innerHTML = `<img src="${MASCOTES.bee}" alt=""><span><b>${esc(qz.feito?.titulo || 'Tap Bee')}</b><small>${esc(qzTextoAviso(qz.r.aviso ?? lembretePadrao()))}</small></span>`;
     document.querySelector('.qz-tela')?.appendChild(b);
   }, 4300);
-}
-// A Bee responde à escolha antes de seguir
-function qzResponder(txt, depois) {
-  const tela = document.querySelector('.qz-tela'), fan = tela.querySelector('.qz-bal-fantasma'), balao = tela.querySelector('.qz-balao');
-  tela.classList.add('qz-respondendo');
-  balao.style.minHeight = `${balao.offsetHeight}px`;
-  fan.textContent = txt; tela.querySelector('.qz-bal-texto').textContent = '';
-  tela.querySelector('.qz-fala img').src = MASCOTES.bee_festa;
-  vibrar('sucesso');
-  qzDigitarFala();
-  qzTimer(depois, 1700);
 }
 // Som dos cliques do quiz: uma nota de madeira bem suave, que nunca repete a anterior e sobe com o progresso
 const ESCALA_QUIZ = [392, 440, 523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1174.66];
@@ -6513,7 +6505,6 @@ function qzDesenhar() {
   on('qzSegue', async () => {
     vibrar('selecao');
     if (t.segura?.()) return;
-    if (t.resposta) return qzResponder(t.resposta(), qzAvancar);
     await t.aoSeguir?.();
     if (t.id === 'pagamento') return qzComprar();
     qzAvancar();
@@ -6528,7 +6519,7 @@ function qzDesenhar() {
     if ('varios' in b.dataset) { const l = qz.r[c] || []; qz.r[c] = l.includes(v) ? l.filter(x => x !== v) : [...l, v]; b.classList.toggle('on'); }
     else {
       qz.r[c] = v; palco.querySelectorAll(`[data-qz-op="${c}"]`).forEach(x => x.classList.toggle('on', x === b));
-      if (t.auto) qzTimer(() => qzResponder(t.auto(), qzAvancar), 260);   // uma resposta só: já segue, sem precisar de botão
+      if (t.auto) qzTimer(qzAvancar, 220);   // uma resposta só: já segue, sem precisar de botão
     }
     qzAtualizarBotao();
   });
