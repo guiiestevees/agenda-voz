@@ -137,7 +137,7 @@ export class ContadorUso extends DurableObject {
   }
 }
 // Quantas pessoas chegam a cada tela do quiz: só um total por tela, sem identificar ninguém
-const TELAS_FUNIL = new Set(["abertura", "nome", "parabens", "frases", "mente", "desejo", "trava", "existe", "demo", "avisos", "chegou", "pote", "plano", "pagamento", "oferta", "comprou", "comprou_oferta"]);
+const TELAS_FUNIL = new Set(["abertura", "nome", "parabens", "frases", "mente", "desejo", "trava", "existe", "demo", "avisos", "chegou", "pote", "plano", "pagamento", "tentou_comprar", "jogo", "oferta", "comprou", "comprou_oferta"]);
 async function funil(req, env, origem) {
   const contador = env.USO.get(env.USO.idFromName("funil"));
   if (req.method === "GET") {

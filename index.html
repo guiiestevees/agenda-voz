@@ -1902,9 +1902,6 @@
   .qz-banner-topo b { font-size: 15px; }
   .qz-banner-topo small { font-size: 13px; color: #6e6655; }
   /* Pagamento */
-  .qz-fechar { position: absolute; left: 12px; top: calc(env(safe-area-inset-top) + 6px); z-index: 3; width: 34px; height: 34px; border: 0; border-radius: 50%; background: rgba(120,80,10,.14); cursor: pointer; }
-  .qz-fechar::before, .qz-fechar::after { content: ''; position: absolute; left: 10px; top: 16px; width: 14px; height: 2px; border-radius: 2px; background: #5d5646; transform: rotate(45deg); }
-  .qz-fechar::after { transform: rotate(-45deg); }
   .qz-pag-fones { position: relative; flex: none; height: min(66vw, 256px); margin-top: 10px; }
   .qz-pag-fones .qz-fone { position: absolute; left: 50%; top: 0; margin: 0; padding: 4px; border-radius: 22px; }
   .qz-pag-fones .qz-fone-tela { border-radius: 18px; }
@@ -1921,6 +1918,22 @@
   @keyframes qzFolhaOferta { from { transform: translateY(100%); } }
   .qz-oferta-folha > img { position: absolute; left: 50%; top: -62px; width: 112px; height: 112px; margin-left: -56px; object-fit: contain; animation: pulinho 2.2s ease-in-out infinite; }
   .qz-oferta-folha h2 { margin-bottom: 4px; }
+  .qz-loja .qz-oferta-folha { padding-top: 24px; }
+  .qz-loja .qz-oferta-preco { margin: 12px 0 16px; }
+  .qz-ultima { margin: 0 0 12px; font-size: 14.5px; font-weight: 800; color: #a8480a; }
+  .qz-jogo { position: absolute; inset: 0; z-index: 4; display: flex; flex-direction: column; justify-content: center; padding: calc(env(safe-area-inset-top) + 16px) 20px calc(env(safe-area-inset-bottom) + 16px); text-align: center; background: linear-gradient(170deg, #ffd978, #fff0c4 55%, #fff9ea); animation: qzFundoOferta .3s both; }
+  .qz-jogo .qz-texto { min-height: 76px; }
+  .qz-mesa { position: relative; height: 190px; margin: 26px 0 30px; }
+  .qz-copo { position: absolute; left: 0; bottom: 0; width: 28%; max-width: 104px; height: 150px; padding: 0; border: 0; background: none; cursor: pointer; }
+  .qz-copo::after { content: ''; position: absolute; left: 4%; right: 4%; bottom: -8px; height: 14px; border-radius: 50%; background: rgba(120,80,10,.2); }
+  .qz-copo:disabled { cursor: default; color: inherit; }
+  .qz-copo:not(:disabled) { animation: qzCopoChama 1.1s ease-in-out infinite; }
+  @keyframes qzCopoChama { 50% { filter: brightness(1.1); } }
+  .qz-copo img { position: absolute; left: 8%; bottom: 6px; width: 84%; object-fit: contain; opacity: 0; transition: opacity 0s .3s; }
+  .qz-copo.aberto img { opacity: 1; transition: none; }
+  .qz-copo-tampa { position: absolute; left: 0; bottom: 0; width: 100%; height: auto; z-index: 1; filter: drop-shadow(0 8px 10px rgba(120,80,10,.28)); transition: transform .38s cubic-bezier(.2,1.2,.4,1); }
+  .qz-copo.aberto .qz-copo-tampa { transform: translateY(-82px) rotate(-5deg); }
+  .qz-copo.achou img { animation: qzPula .6s cubic-bezier(.2,1.8,.4,1); }
   .qz-off { margin-top: 10px; font-size: 44px; font-weight: 800; letter-spacing: -.03em; color: #a86a00; }
   .qz-oferta-preco { display: flex; align-items: baseline; justify-content: center; gap: 8px; }
   .qz-oferta-preco s { font-size: 16px; font-weight: 600; color: #8b826e; }
@@ -5909,9 +5922,9 @@ agendarLembretes();
 // ---------- Quiz de entrada e tela de pagamento (só quem assina entra no app) ----------
 // A Bee conversa, a pessoa faz um teste por voz, vê o pote encher e assina.
 const RC_CHAVE = '';   // chave pública do RevenueCat (appl_...). Vazia = MODO DE TESTE: o botão de assinar entra sem cobrar
-const QUIZ_VERSAO = '8';   // no modo de teste, uma versão nova do quiz aparece de novo no aparelho
+const QUIZ_VERSAO = '9';   // no modo de teste, uma versão nova do quiz aparece de novo no aparelho
 const PRECO_ANO = 'R$ 129,90', PRECO_MES = 'R$ 10,83', PRECO_DIA = 'R$ 0,36';
-const OFERTA_ANO = 'R$ 99,90', OFERTA_MES = 'R$ 8,33', OFERTA_DIA = 'R$ 0,28', OFERTA_OFF = '23%';   // desconto de verdade, oferecido uma vez a quem fecha a tela de preço
+const OFERTA_ANO = 'R$ 99,90', OFERTA_MES = 'R$ 8,33', OFERTA_DIA = 'R$ 0,28', OFERTA_OFF = '23%';   // desconto de verdade, oferecido uma vez a quem desiste da compra
 const ID_AVISO_TESTE = 990001;
 const URL_TERMOS = 'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/';
 const URL_PRIVACIDADE = 'https://guiiestevees.github.io/agenda-voz/privacidade.html';
@@ -6058,8 +6071,7 @@ const TELAS_QUIZ = [
     } },
   { id: 'pagamento', semTopo: true, bt: 'Quero minha agenda agora', html: () => {
       const disse = FRASES_DOR.find(f => (qz.r.frases || []).includes(f[0]));
-      return `${!qz.ofertaVista && (!RC_CHAVE || !lerPref('agenda.ofertaVista', '')) ? '<button class="qz-fechar" id="qzFechar" aria-label="Fechar"></button>' : ''}
-      <div class="qz-logo"><img src="${MASCOTES.bee}" alt=""><b>Tap Bee</b></div>
+      return `<div class="qz-logo"><img src="${MASCOTES.bee}" alt=""><b>Tap Bee</b></div>
       <p class="qz-pag-oi">${qzNome()}, sua agenda está pronta.</p>
       <h1 class="qz-capa qz-capa2"><span>Desbloqueie o Tap Bee.</span><br>Tire tudo da cabeça.</h1>
       <div class="qz-pag-fones">${['semana', 'habitos', 'hoje'].map(k => `<div class="qz-fone qz-pf-${k}"><div class="qz-fone-tela"><img src="${PRINTS_QUIZ[k]}" alt=""></div></div>`).join('')}</div>
@@ -6204,32 +6216,116 @@ function qzEntrar() {
   // Só agora, depois da compra, vem a configuração dos 2 toques
   if (NATIVO && !doisToquesOk()) setTimeout(() => abrirDoisToques(0), 900);
 }
-function qzComprar(plano = 'anual') {
-  if (!RC_CHAVE) {   // MODO DE TESTE: ainda sem RevenueCat
-    toast('Modo de teste: nenhuma cobrança foi feita.', 2500);
+async function qzComprar(plano = 'anual') {
+  funil('tentou_comprar');
+  if (await qzPedirCompra(plano)) {
     gravarPref('agenda.plano', plano);
     funil(plano === 'oferta' ? 'comprou_oferta' : 'comprou');
     return qzEntrar();
   }
+  // Desistiu da compra: a oferta aparece uma única vez
+  if (plano === 'anual' && !qz.ofertaVista && (!RC_CHAVE || !lerPref('agenda.ofertaVista', ''))) qzJogo();
 }
-// Quem fecha a tela de preço recebe um desconto real, uma vez só
+// MODO DE TESTE: ainda sem RevenueCat, esta folha faz o papel da tela de compra da Apple
+function qzPedirCompra(plano) {
+  return new Promise((pronto) => {
+    const el = document.createElement('div');
+    el.className = 'qz-oferta qz-loja';
+    el.innerHTML = `<div class="qz-oferta-folha">
+        <h2>Compra no App</h2>
+        <p class="qz-sub">Modo de teste: nenhuma cobrança será feita.</p>
+        <div class="qz-oferta-preco"><b>${plano === 'oferta' ? OFERTA_ANO : PRECO_ANO}</b><span>/ano</span></div>
+        <button class="qz-seguir" id="qzLojaSim">Assinar</button>
+        <button class="qz-link" id="qzLojaNao">Cancelar</button>
+      </div>`;
+    document.querySelector('.qz-tela').appendChild(el);
+    const fim = (ok) => { el.remove(); pronto(ok); };
+    document.getElementById('qzLojaSim').onclick = () => fim(true);
+    document.getElementById('qzLojaNao').onclick = () => fim(false);
+  });
+}
+const COPO_QUIZ = `<svg class="qz-copo-tampa" viewBox="0 0 100 118" aria-hidden="true"><defs><linearGradient id="qzCopoCor" x1="0" x2="1"><stop offset="0" stop-color="#ffd25c"/><stop offset=".55" stop-color="#f2a313"/><stop offset="1" stop-color="#c8740a"/></linearGradient></defs><path d="M24 4 H76 Q83 4 84 11 L96 104 Q97 114 87 114 H13 Q3 114 4 104 L16 11 Q17 4 24 4 Z" fill="url(#qzCopoCor)"/><path d="M6 92 H94 L96 104 Q97 114 87 114 H13 Q3 114 4 104 Z" fill="#b5680a" opacity=".55"/><path d="M28 14 L22 84" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity=".55"/></svg>`;
+// O jogo é de verdade: a Bee fica mesmo em um copo e os copos trocam de lugar na frente da pessoa.
+// Quem erra joga de novo, mais devagar, e o desconto é o mesmo para todos.
+function qzJogo() {
+  qz.ofertaVista = true; gravarPref('agenda.ofertaVista', '1'); funil('jogo');
+  const el = document.createElement('div');
+  el.className = 'qz-jogo';
+  el.innerHTML = `<h2>Espera, ${qzNome()}!</h2>
+    <p class="qz-texto" id="qzJogoTxt">A Bee se escondeu em um destes copos. Ache ela e ganhe um desconto.</p>
+    <div class="qz-mesa" id="qzMesa">${[0, 1, 2].map(i => `<button class="qz-copo" data-copo="${i}" aria-label="Copo ${i + 1}" disabled>${i === 1 ? `<img src="${MASCOTES.bee}" alt="">` : ''}${COPO_QUIZ}</button>`).join('')}</div>
+    <button class="qz-link" id="qzJogoNao">Não quero desconto</button>`;
+  document.querySelector('.qz-tela').appendChild(el);
+  const copos = [...el.querySelectorAll('.qz-copo')], txt = document.getElementById('qzJogoTxt'), vivo = () => document.body.contains(el);
+  const lugar = copos.map((_, i) => i), passo = () => (document.getElementById('qzMesa').clientWidth - copos[0].offsetWidth) / 2;
+  const pos = (c) => `translateX(${lugar[c] * passo()}px)`;
+  const espera = (ms) => new Promise(r => qzTimer(r, ms));
+  const liberar = (sim) => copos.forEach(c => c.disabled = !sim);
+  copos.forEach((c, i) => c.style.transform = pos(i));
+  const trocar = async (a, b, ms) => {
+    const [da, db] = [pos(a), pos(b)];
+    [lugar[a], lugar[b]] = [lugar[b], lugar[a]];
+    const [pa, pb] = [pos(a), pos(b)], meio = (lugar[a] * passo() + lugar[b] * passo()) / 2;
+    qzSomCopo();
+    vibrar('leve');
+    const anima = (c, de, para, alto) => { copos[c].style.transform = para; return copos[c].animate([{ transform: de }, { transform: `translateX(${meio}px) translateY(${alto}px) scale(${alto < 0 ? .94 : 1.06})` }, { transform: para }], { duration: ms, easing: 'ease-in-out' }).finished; };
+    await Promise.all([anima(a, da, pa, -26), anima(b, db, pb, 26)]);
+  };
+  const rodada = async (n, ms) => {
+    copos.forEach(c => c.classList.remove('aberto'));
+    await espera(450);
+    for (let k = 0; k < n && vivo(); k++) {
+      const a = Math.floor(Math.random() * 3), b = (a + 1 + Math.floor(Math.random() * 2)) % 3;
+      await trocar(a, b, QZ_CALMO ? 60 : ms);
+    }
+    if (!vivo()) return;
+    txt.textContent = 'Onde está a Bee?';
+    liberar(true);
+  };
+  let tentativa = 0;
+  const comeco = async () => {
+    await espera(500);
+    copos[1].classList.add('aberto');
+    await espera(1300);
+    if (vivo()) rodada(7, 340);
+  };
+  copos.forEach((c, i) => c.onclick = async () => {
+    liberar(false);
+    c.classList.add('aberto');
+    if (i === 1) {
+      txt.textContent = 'Achou!';
+      c.classList.add('achou');
+      tocarSom(true); vibrar('sucesso'); confete(innerWidth / 2, innerHeight * .5, true);
+      await espera(1500);
+      if (vivo()) { el.remove(); qzOferta(); }
+      return;
+    }
+    qzSomCopo(true);
+    await espera(500);
+    copos[1].classList.add('aberto');
+    tentativa++;
+    txt.textContent = 'Quase! Ela estava aqui. Vamos de novo, mais devagar.';
+    await espera(1700);
+    if (vivo()) rodada(tentativa > 1 ? 3 : 5, tentativa > 1 ? 620 : 480);
+  });
+  document.getElementById('qzJogoNao').onclick = () => el.remove();
+  comeco();
+}
 function qzOferta() {
-  qz.ofertaVista = true; gravarPref('agenda.ofertaVista', '1'); funil('oferta');
-  document.getElementById('qzFechar')?.remove();
+  funil('oferta');
   const el = document.createElement('div');
   el.className = 'qz-oferta';
   el.innerHTML = `<div class="qz-oferta-folha">
       <img src="${MASCOTES.bee_festa}" alt="">
-      <h2>Espera, ${qzNome()}!</h2>
-      <p class="qz-sub">A Bee tem um presente para você começar hoje.</p>
+      <h2>Você ganhou, ${qzNome()}!</h2>
       <div class="qz-off">${OFERTA_OFF} OFF</div>
       <div class="qz-oferta-preco"><s>${PRECO_ANO}</s><b>${OFERTA_ANO}</b><span>/ano</span></div>
-      <p class="qz-preco-sub">Equivale a ${OFERTA_MES} por mês, menos de ${OFERTA_DIA} por dia. Renova automaticamente, cancele quando quiser. Esta oferta não aparece de novo.</p>
+      <p class="qz-preco-sub">Equivale a ${OFERTA_MES} por mês, menos de ${OFERTA_DIA} por dia. Renova automaticamente, cancele quando quiser.</p>
+      <p class="qz-ultima">Esta é a última vez que você vai ver esta oferta.</p>
       <button class="qz-seguir" id="qzOfertaSim">Quero meu desconto</button>
       <button class="qz-link" id="qzOfertaNao">Não, obrigado</button>
     </div>`;
   document.querySelector('.qz-tela').appendChild(el);
-  tocarSom(true); vibrar('sucesso'); confete(innerWidth / 2, innerHeight * .4, true);
   document.getElementById('qzOfertaSim').onclick = () => qzComprar('oferta');
   document.getElementById('qzOfertaNao').onclick = () => el.remove();
 }
@@ -6257,6 +6353,30 @@ function qzResponder(txt, depois) {
   qzDigitarFala();
   qzTimer(depois, 1700);
 }
+// Som dos cliques do quiz: uma nota de madeira bem suave, que nunca repete a anterior e sobe com o progresso
+const ESCALA_QUIZ = [392, 440, 523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1174.66];
+let qzNotaAntes = -1;
+function qzNota(f, vol, dur) {
+  comAudio((t) => {
+    [[f, vol], [f * 2.01, vol * .22]].forEach(([fr, v]) => {
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = 'sine'; o.frequency.value = fr;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(v, t + .006);
+      g.gain.exponentialRampToValueAtTime(.0008, t + dur);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(t); o.stop(t + dur + .02);
+    });
+  });
+}
+function qzSomClique() {
+  const base = Math.round((qz ? qz.i / (TELAS_QUIZ.length - 1) : 0) * 5);
+  let n;
+  do { n = base + Math.floor(Math.random() * 4); } while (n === qzNotaAntes);
+  qzNotaAntes = n;
+  qzNota(ESCALA_QUIZ[n], .075, .24);
+}
+const qzSomCopo = (vazio) => qzNota(vazio ? 196 : 300 + Math.random() * 60, vazio ? .09 : .05, vazio ? .3 : .12);
 // A fala da Bee aparece letra a letra; o texto invisível guarda o tamanho para nada pular
 function qzDigitarFala() {
   const real = document.querySelector('.qz-bal-fantasma'), vis = document.querySelector('.qz-bal-texto');
@@ -6288,7 +6408,6 @@ function qzDesenhar() {
     if (t.id === 'pagamento') return qzComprar();
     qzAvancar();
   });
-  on('qzFechar', qzOferta);
   on('qzSemAviso', () => { qz.i += 2; qzDesenhar(); });
   on('qzRestaurar', () => { if (!RC_CHAVE) toast('Restaurar compra entra junto com o pagamento.', 3000); });
   const nome = document.getElementById('qzNome');
@@ -6313,6 +6432,7 @@ function abrirQuiz() {
   el.id = 'quiz';
   el.innerHTML = `<div class="qz-fundo" aria-hidden="true"><div class="qz-favo"></div>${Array.from({ length: 10 }, (_, i) => `<i class="qz-polen" style="left:${(i * 37 + 11) % 100}%;top:${(i * 53 + 7) % 100}%;--d:${7 + (i % 5) * 2}s;--a:${(i % 7) * -1.3}s;--s:${5 + (i % 3) * 3}px"></i>`).join('')}</div><div id="qzPalco"></div>`;
   document.body.appendChild(el);
+  el.addEventListener('click', (e) => { if (e.target.closest('button, a') && !e.target.closest('#qzMic, .qz-copo')) qzSomClique(); });
   qzDesenhar();
 }
 
