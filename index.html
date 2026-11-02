@@ -1699,7 +1699,7 @@
   .qz-corpo { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; justify-content: center; margin: 0 -20px; padding: 10px 20px 14px; scrollbar-width: none; }
   .qz-corpo::-webkit-scrollbar { display: none; }
   .qz-corpo > * { flex: none; }
-  .qz-t-dores .qz-corpo, .qz-t-areas .qz-corpo, .qz-t-muda .qz-corpo, .qz-t-demo .qz-corpo { justify-content: flex-start; }
+  .qz-t-frases .qz-corpo, .qz-t-custo .qz-corpo, .qz-t-muda .qz-corpo, .qz-t-demo .qz-corpo { justify-content: flex-start; }
   #quiz h2 { margin: 0 0 16px; font-size: 26px; line-height: 1.18; font-weight: 800; letter-spacing: -.02em; color: #1d1a12; font-family: inherit; }
   .qz-c { text-align: center; }
   .qz-sub { margin: 0; color: #6e6655; font-size: 16px; line-height: 1.4; }
@@ -1793,6 +1793,14 @@
   .qz-salvo em { font-style: normal; font-size: 14.5px; color: #5d5646; }
   .qz-salvo.grande { animation: qzPop .45s ease both; }
   /* Avisos */
+  .qz-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+  .qz-chip { padding: 12px 15px; border: 2px solid transparent; border-radius: 999px; background: #fff; color: #1d1a12; font-size: 15px; font-weight: 650; cursor: pointer; box-shadow: 0 2px 8px rgba(120,80,10,.07); font-family: inherit; }
+  .qz-chip.on { border-color: #f2a313; background: #fff3cf; }
+  .qz-menor { margin-top: 16px; font-size: 15px; }
+  .qz-existe > div:first-child { border-top: 0; }
+  .qz-destino { display: flex; flex-direction: column; gap: 3px; margin-bottom: 12px; padding: 14px 16px; border-radius: 18px; background: linear-gradient(135deg, #ffd761, #f5b21b); color: #1d1600; }
+  .qz-destino small { font-size: 12.5px; font-weight: 700; opacity: .75; }
+  .qz-destino b { font-size: 18px; line-height: 1.25; }
   .qz-sino { display: flex; flex-direction: column; align-items: center; gap: 22px; margin-top: 8px; }
   .qz-sino-it { color: #f2a313; animation: qzBalanca 1.6s ease-in-out infinite; transform-origin: 50% 10%; }
   .qz-sino-it svg { width: 70px; height: 70px; }
@@ -2449,7 +2457,7 @@ function agendarNota(id) {
   const n = notas.find(x => x.id === id);
   if (!n) return;
   const amanha = maisDias(new Date(), 1);
-  abrirEdicao({ id: novoId(), titulo: n.titulo, inicio: dataHoraLocal(chaveDia(amanha), '09:00').toISOString(), duracaoMin: 60, lembreteMin: 15, repetir: null, excecoes: [], avisados: [], frase: '' }, true);
+  abrirEdicao({ id: novoId(), titulo: n.titulo, inicio: dataHoraLocal(chaveDia(amanha), '09:00').toISOString(), duracaoMin: 60, lembreteMin: lembretePadrao(), repetir: null, excecoes: [], avisados: [], frase: '' }, true);
   notaParaAgendar = id;
 }
 function tirarNota(id, como) {
@@ -2778,7 +2786,7 @@ document.getElementById('btnSons').onclick = () => { gravarPref('agenda.sonsToqu
 rotSons();
 
 // ---------- Backup: tudo o que o app guarda vira um arquivo .json ----------
-const CHAVES_BACKUP = ['agenda.eventos', 'agenda.notas', 'agenda.bicho', 'agenda.sonsToque', 'agenda.habitos', 'agenda.xp', 'agenda.focos', 'agenda.foco', 'agenda.nome', 'agenda.tema', 'agenda.modo', 'agenda.marca', 'agenda.visao', 'agenda.boasVindas', 'agenda.dicaFechada'];
+const CHAVES_BACKUP = ['agenda.eventos', 'agenda.notas', 'agenda.lembretePadrao', 'agenda.bicho', 'agenda.sonsToque', 'agenda.habitos', 'agenda.xp', 'agenda.focos', 'agenda.foco', 'agenda.nome', 'agenda.tema', 'agenda.modo', 'agenda.marca', 'agenda.visao', 'agenda.boasVindas', 'agenda.dicaFechada'];
 function mostrarUltimoBackup() {
   const el = document.getElementById('bkUltimo'), quando = lerPref('agenda.ultimoBackup', '');
   if (window.iCloudAtivo && !quando) { el.textContent = 'Backup manual é opcional: o iCloud já cuida disso.'; el.classList.remove('velho'); return; }
@@ -4442,6 +4450,7 @@ async function perguntarIA(frase) {
         agenda: agendaParaIA(),
         notas: notasParaIA(),
         aparelho: idAparelho(),
+        lembretePadrao: lembretePadrao(),
       }),
     });
     if (resp.status === 429) return { tipo: 'responder', resposta: 'Você falou bastante comigo hoje! Preciso descansar um pouco. Amanhã eu volto, e dá para anotar em “Novo compromisso” enquanto isso.', acoes: [] };
@@ -4643,7 +4652,7 @@ function pad(x) { return String(x).padStart(2, '0'); }
 function novoCompromisso(data, hora) {
   const agora = new Date();
   const d = data ? dataHoraLocal(data, hora || '09:00') : new Date(Math.ceil(agora.getTime() / 1800000) * 1800000 + 1800000);
-  abrirEdicao({ id: novoId(), titulo: '', inicio: d.toISOString(), duracaoMin: 60, lembreteMin: 15, repetir: null, excecoes: [], avisados: [], frase: '' }, true);
+  abrirEdicao({ id: novoId(), titulo: '', inicio: d.toISOString(), duracaoMin: 60, lembreteMin: lembretePadrao(), repetir: null, excecoes: [], avisados: [], frase: '' }, true);
 }
 // "＋ Novo compromisso": falar, escrever uma frase ou preencher campos
 function escolherComoCriar() {
@@ -5803,10 +5812,11 @@ agendarLembretes();
 // ---------- Quiz de entrada e tela de pagamento (só quem assina entra no app) ----------
 // A Bee conversa sobre as dores de quem esquece as coisas, a pessoa fala com ela de verdade, vê o que muda e assina.
 const RC_CHAVE = '';   // chave pública do RevenueCat (appl_...). Vazia = MODO DE TESTE: o botão de assinar entra sem cobrar
-const QUIZ_VERSAO = '3';   // no modo de teste, uma versão nova do quiz aparece de novo no aparelho
+const QUIZ_VERSAO = '4';   // no modo de teste, uma versão nova do quiz aparece de novo no aparelho
 const PRECO_ANO = 'R$ 129,90', PRECO_MES = 'R$ 10,83';
 const URL_TERMOS = 'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/';
 const URL_PRIVACIDADE = 'https://guiiestevees.github.io/agenda-voz/privacidade.html';
+const lembretePadrao = () => { const v = lerPref('agenda.lembretePadrao', ''); return v === '' ? 15 : +v; };
 const quizLiberado = () => lerPref('agenda.assinante', '') === 'sim' && (!!RC_CHAVE || lerPref('agenda.quizVersao', '') === QUIZ_VERSAO);
 let qz = null;   // { i, r: respostas, feito: { tipo, titulo, quando, lembrete } }
 const qzNome = () => esc((qz.r.nome || '').trim());
@@ -5821,25 +5831,28 @@ const qzOpcao = (campo, valor, rot, sub, varios) => {
   return `<button class="qz-op ${on ? 'on' : ''}" data-qz-op="${campo}" data-valor="${esc(valor)}" ${varios ? 'data-varios' : ''}><span><b>${rot}</b>${sub ? `<small>${sub}</small>` : ''}</span><i></i></button>`;
 };
 // O que a pessoa marcou → como fica com a Bee
-const DORES = [
-  ['consulta', 'Esqueci uma consulta ou compromisso', 'A Bee avisa antes de cada compromisso'],
-  ['conta', 'Paguei uma conta atrasada', 'Contas com dia certo e aviso no iPhone'],
-  ['aniversario', 'Esqueci o aniversário de alguém', 'Aniversários que se repetem todo ano'],
-  ['tarefa', 'Deixei passar uma tarefa importante', 'Tarefas sem data ficam em “Pra não esquecer”'],
-  ['conflito', 'Marquei duas coisas no mesmo horário', 'Pergunte “o que tenho na sexta?” antes de marcar'],
-  ['promessa', 'Prometi algo e não cumpri', 'Falou, está anotado: nada se perde'],
+const FRASES_DOR = [
+  ['nao-desliga', 'Minha cabeça não desliga: fico repassando tudo o que tenho para fazer', 'Falou, a Bee guardou. Sua cabeça fica livre'],
+  ['ansiedade', 'Fico ansioso com a quantidade de coisas que preciso fazer', 'Tudo anotado, com aviso na hora certa. Sem medo de esquecer'],
+  ['esqueco', 'Tenho tanta coisa na cabeça que acabo esquecendo', 'Nada mais depende da sua memória'],
+  ['automatico', 'Vivo no automático: o dia passa e não faço o que importa', 'Você começa o dia sabendo exatamente o que fazer'],
 ];
-const AREAS = [
-  ['Saúde', 'consulta terça às 3, me lembra um dia antes'],
-  ['Casa e contas', 'pagar a luz sexta'],
-  ['Trabalho', 'reunião amanhã às 10'],
-  ['Família e filhos', 'buscar as crianças hoje às 5'],
-  ['Estudos', 'prova quinta às 8'],
-  ['Hábitos e rotina', 'beber água todo dia'],
+const CUSTOS = [
+  ['oportunidade', 'Perdi dinheiro ou oportunidades', 'Prazos e retornos no dia certo, sem deixar passar'],
+  ['compromisso', 'Esqueci um compromisso importante', 'A Bee te avisa antes de cada compromisso'],
+  ['abandono', 'Abandonei treino, dieta ou um projeto', 'Treinos e hábitos com hora marcada e sequência'],
+  ['energia', 'Termino o dia exausto e sem avançar', 'Sua energia vai para fazer, não para lembrar'],
 ];
+const DESEJOS = [
+  ['dinheiro', 'Fazer mais dinheiro e prosperar', 'prosperar', 'reunião com o cliente amanhã às 10'],
+  ['corpo', 'Emagrecer e cuidar da saúde', 'cuidar da sua saúde', 'academia segunda e quarta às 7'],
+  ['produtivo', 'Ser mais produtivo no trabalho', 'produzir mais', 'terminar o relatório sexta às 9'],
+  ['paz', 'Ter a cabeça tranquila', 'viver com a cabeça tranquila', 'dentista quinta às 3'],
+];
+const AVISOS_QUIZ = [[0, 'Na hora'], [15, '15 min antes'], [60, '1 hora antes'], [120, '2 horas antes'], [1440, '1 dia antes']];
+const qzDesejo = () => DESEJOS.find(d => d[0] === qz.r.desejo);
 const qzExemplos = () => {
-  const es = (qz.r.areas || []).map(a => AREAS.find(x => x[0] === a)?.[1]).filter(Boolean);
-  const base = [...es, 'dentista quinta às 3', 'preciso renovar a CNH', 'pagar a luz sexta'];
+  const base = [qzDesejo()?.[3], 'pagar a luz sexta', 'preciso renovar a CNH'].filter(Boolean);
   return base.filter((x, i) => base.indexOf(x) === i).slice(0, 3);
 };
 const TELAS_QUIZ = [
@@ -5855,40 +5868,57 @@ const TELAS_QUIZ = [
       <div class="qz-aceite"><i>${ICONE_CHECK}</i><p>Li e aceito os <a href="${URL_TERMOS}">Termos de Uso</a> e a <a href="${URL_PRIVACIDADE}">Política de Privacidade</a>.</p></div>
       <div class="qz-aceite"><i>${ICONE_CHECK}</i><p>Para entender o que você fala, sua frase e um resumo dos seus compromissos e anotações são enviados à IA da Anthropic (Claude). Nada fica guardado nem é usado para treinar a IA.</p></div>`,
     extra: () => '<button class="qz-link" id="qzSemIA">Continuar sem a IA (só compromissos simples)</button>', aoSeguir: () => { gravarPref('agenda.iaOk', 'sim'); marcarIA(); } },
-  { id: 'dores', topoFixo: true, ok: () => (qz.r.dores || []).length > 0, html: () => `
-      ${qzFala('Sem julgamento: o que já aconteceu com você nos últimos meses?')}<p class="qz-dica">Pode marcar mais de um.</p>${DORES.map(([v, t]) => qzOpcao('dores', v, t, '', true)).join('')}` },
-  { id: 'acolhe', bt: 'Faz sentido', html: () => `
+  { id: 'frases', ok: () => (qz.r.frases || []).length > 0, html: () => `
+      ${qzFala(`${qzNome()}, me conta: qual destas frases parece com você?`)}<p class="qz-dica">Pode marcar mais de uma.</p>${FRASES_DOR.map(([v, t]) => qzOpcao('frases', v, t, '', true)).join('')}` },
+  { id: 'quantas', ok: () => !!qz.r.quantas, html: () => `
+      ${qzFala('Agora, sendo bem sincero: quantas coisas você está tentando guardar na cabeça neste momento?')}${[['poucas', 'Algumas', 'Mas já me pesam'], ['muitas', 'Muitas', 'Sempre tem mais uma'], ['perdi', 'Perdi a conta', 'Nem sei mais o que está pendente']].map(([v, t, s]) => qzOpcao('quantas', v, t, s)).join('')}` },
+  { id: 'acolhe', bt: 'É exatamente isso', html: () => `
       <img class="qz-bee-grande" src="${MASCOTES.bee}" alt="">
-      <h2 class="qz-c">${qzNome()}, isso não é falta de organização.</h2>
-      <p class="qz-texto qz-c">A cabeça serve para ter ideias, não para guardar lista. Quando tudo fica nela, você vive com a sensação de que está esquecendo alguma coisa.</p>` },
-  { id: 'sente', ok: () => !!qz.r.sente, html: () => `
-      ${qzFala('E quando fica muita coisa na sua cabeça, como você se sente?')}${[['ansioso', 'Ansioso, com medo de esquecer'], ['cansado', 'Cansado, com a mente cheia'], ['culpado', 'Culpado quando deixo algo passar'], ['controle', 'Tudo bem, mas queria ter mais controle']].map(([v, t]) => qzOpcao('sente', v, t)).join('')}` },
-  { id: 'hoje', ok: () => !!qz.r.organiza, html: () => `
-      ${qzFala('Hoje, onde você guarda o que precisa fazer?')}${[['cabeca', 'Na cabeça', 'E torço para lembrar'], ['papel', 'Papel e caderno', 'Quando estão por perto'], ['mensagem', 'Mensagem para mim mesmo', 'E depois se perde no meio'], ['agenda', 'Agenda do celular', 'Quando dá tempo de preencher']].map(([v, t, s]) => qzOpcao('organiza', v, t, s)).join('')}` },
+      <h2 class="qz-c">${qzNome()}, sua cabeça está sobrecarregada.</h2>
+      <p class="qz-texto qz-c">Cada compromisso que você tenta guardar fica consumindo sua energia, mesmo quando você nem está pensando nele. Aí falta foco justamente para o que te leva ao resultado que você quer.</p>` },
+  { id: 'custo', ok: () => (qz.r.custo || []).length > 0, html: () => `
+      ${qzFala('O que essa sobrecarga já te custou?')}<p class="qz-dica">Pode marcar mais de um.</p>${CUSTOS.map(([v, t]) => qzOpcao('custo', v, t, '', true)).join('')}` },
+  { id: 'desejo', ok: () => !!qz.r.desejo, html: () => `
+      ${qzFala('Se sua cabeça estivesse livre, onde você colocaria essa energia?')}${DESEJOS.map(([v, t]) => qzOpcao('desejo', v, t)).join('')}` },
   { id: 'trava', ok: () => (qz.r.trava || []).length > 0, html: () => `
-      ${qzFala('O que te faz desistir de anotar?')}<p class="qz-dica">Pode marcar mais de um.</p>${[['Dá preguiça de abrir e digitar'], ['Lembro na hora errada: dirigindo, no banho'], ['Agenda é complicada demais'], ['Anoto, mas nunca mais olho']].map(([t]) => qzOpcao('trava', t, t, '', true)).join('')}` },
-  { id: 'areas', ok: () => (qz.r.areas || []).length > 0, html: () => `
-      ${qzFala('Em que parte da vida você mais precisa de ajuda agora?')}<p class="qz-dica">Pode marcar mais de um.</p>${AREAS.map(([t]) => qzOpcao('areas', t, t, '', true)).join('')}` },
-  { id: 'facil', bt: 'Quero testar', html: () => `
-      ${qzFala(`É por isso que eu existo, ${qzNome()}. Olha a diferença:`)}
-      <div class="qz-barras"><div class="qz-barra dig"><span>Agenda comum</span><b>6 passos</b></div><p>Abrir o app, novo evento, título, dia, hora, salvar.</p><div class="qz-barra voz"><span>Com a Bee</span><b>1 frase</b></div><p>Você fala do seu jeito, e eu preencho o resto.</p></div>` },
-  { id: 'demo', semBotaoAte: () => !!qz.feito, bt: 'Continuar', html: qzDemoHtml, aoAbrir: qzDemoLigar, aoSeguir: () => { try { pluginNativo('Loja')?.avaliar(); } catch {} } },
-  { id: 'avisos', bt: 'Quero ser avisado', html: () => `
-      ${qzFala(`Posso te avisar na hora certa${qz.feito?.titulo ? ` de “${esc(qz.feito.titulo)}”` : ''}?`)}
-      <div class="qz-sino"><span class="qz-sino-it">${ICO.sino}</span><div class="qz-aviso"><img src="${MASCOTES.bee}" alt=""><span><b>${esc(qz.feito?.titulo || 'Seu compromisso')}</b><small>O iPhone avisa, mesmo com o app fechado</small></span></div></div>`,
+      ${qzFala('Onde você mais sente dificuldade hoje?')}<p class="qz-dica">Pode marcar mais de uma.</p>${['Organizar as coisas', 'Definir quais tarefas vou fazer', 'Manter tudo na cabeça', 'Ficar anotando numa agenda que não ajuda'].map(t => qzOpcao('trava', t, t, '', true)).join('')}` },
+  { id: 'existe', bt: 'Quero testar', html: () => `
+      ${qzFala(`É para isso que eu existo, ${qzNome()}: facilitar sua vida. Pense em mim como a sua secretária.`)}
+      <div class="qz-lista qz-existe">${[['Dois toques atrás do celular', 'Lembrou de algo? Toca e fala, a qualquer momento'], ['Por áudio, sem escrever nada', 'Fale do seu jeito, em segundos'], ['Eu faço por você', 'Marco, reagendo, desmarco e digo o que você tem no dia'], ['Tudo organizado', 'Sua agenda em ordem, e sua cabeça livre']].map(([a, b]) => `<div><i>${ICONE_CHECK}</i><span><b>${a}</b><small>${b}</small></span></div>`).join('')}</div>` },
+  { id: 'demo', semBotaoAte: () => !!qz.feito, bt: 'Continuar', html: qzDemoHtml, aoAbrir: qzDemoLigar },
+  { id: 'avisos', bt: 'Ativar meus avisos', html: () => {
+      const m = qz.r.aviso ?? 15, rot = AVISOS_QUIZ.find(a => a[0] === m)?.[1] || '';
+      return `${qzFala('Eu te mando uma notificação para você não esquecer. Quando prefere ser avisado?')}
+      <div class="qz-chips">${AVISOS_QUIZ.map(([v, t]) => `<button class="qz-chip ${v === m ? 'on' : ''}" data-qz-aviso="${v}">${t}</button>`).join('')}</div>
+      <div class="qz-aviso"><img src="${MASCOTES.bee}" alt=""><span><b>${esc(qz.feito?.titulo || 'Seu compromisso')}</b><small id="qzAvisoRot">${rot}</small></span></div>
+      <p class="qz-texto qz-c qz-menor">E pode mudar quando quiser, só falando: <i>“me lembra 1 hora antes”</i>.</p>`;
+    },
+    aoAbrir: () => document.querySelectorAll('[data-qz-aviso]').forEach(b => b.onclick = () => {
+      qz.r.aviso = +b.dataset.qzAviso; vibrar('selecao');
+      document.querySelectorAll('[data-qz-aviso]').forEach(x => x.classList.toggle('on', x === b));
+      document.getElementById('qzAvisoRot').textContent = b.textContent;
+    }),
     extra: () => '<button class="qz-link" id="qzSemAviso">Agora não</button>',
-    aoSeguir: async () => { const LN = pluginNativo('LocalNotifications'); if (LN) { try { await LN.requestPermissions(); } catch {} } agendarLembretes(); } },
+    aoSeguir: async () => {
+      const m = qz.r.aviso ?? 15;
+      gravarPref('agenda.lembretePadrao', String(m));
+      const ev = qz.feito?.id && eventos.find(e => e.id === qz.feito.id);
+      if (ev) { ev.lembreteMin = m; salvar(); }
+      const LN = pluginNativo('LocalNotifications'); if (LN) { try { await LN.requestPermissions(); } catch {} }
+      agendarLembretes();
+    } },
   { id: 'prepara', semTopo: true, semBotao: true, html: () => {
-      const itens = [...(qz.r.areas || []).slice(0, 3).map(a => `Organizando ${a.toLowerCase()}`), 'Preparando seus lembretes', 'Deixando tudo pronto'];
+      const itens = ['Tirando peso da sua cabeça', 'Organizando suas tarefas', 'Preparando seus avisos', 'Deixando tudo pronto'];
       return `<img class="qz-bee-grande voando" src="${MASCOTES.bee}" alt=""><h2 class="qz-c">Só um instante, ${qzNome()}…</h2>
         <div class="qz-passos" id="qzPassos">${itens.map(t => `<div><i>${ICONE_CHECK}</i><span>${esc(t)}</span></div>`).join('')}</div>`;
     }, aoAbrir: qzPreparar },
-  { id: 'muda', bt: 'Quero organizar minha vida', html: () => {
-      const marcadas = DORES.filter(d => (qz.r.dores || []).includes(d[0])).slice(0, 3);
-      return `<h2>${qzNome()}, é isso que muda:</h2>
+  { id: 'muda', bt: 'Quero minha vida organizada', html: () => {
+      const marcadas = [...FRASES_DOR.filter(d => (qz.r.frases || []).includes(d[0])), ...CUSTOS.filter(d => (qz.r.custo || []).includes(d[0]))].slice(0, 3);
+      const fim = qzDesejo()?.[2];
+      return `<h2>${qzNome()}, sua vida com a Bee:</h2>
         <div class="qz-muda">${marcadas.map(([, antes, depois]) => `<div><s>${antes}</s><b><i>${ICONE_CHECK}</i>${depois}</b></div>`).join('')}</div>
-        ${qz.feito ? `<div class="qz-salvo"><span class="qz-ok">${ICONE_CHECK}</span><span><small>Já está na sua agenda</small><b>${esc(qz.feito.titulo)}</b><em>${esc(qz.feito.quando)}</em></span></div>` : ''}
-        <div class="qz-lista">${[['2 toques atrás do celular', 'Lembrou de algo? Toca, fala e pronto'], ['A Bee entende do seu jeito', 'Anota, muda, desmarca e responde'], ['Hábitos, Pomodoro e títulos', 'Para manter o ritmo todo dia']].map(([a, b]) => `<div><i>${ICONE_CHECK}</i><span><b>${a}</b><small>${b}</small></span></div>`).join('')}</div>`;
+        ${fim ? `<div class="qz-destino"><small>O resultado</small><b>Mais energia e foco para ${esc(fim)}.</b></div>` : ''}
+        ${qz.feito ? `<div class="qz-salvo"><span class="qz-ok">${ICONE_CHECK}</span><span><small>Já está na sua agenda</small><b>${esc(qz.feito.titulo)}</b><em>${esc(qz.feito.quando)}</em></span></div>` : ''}`;
     } },
   { id: 'pagamento', semTopo: true, bt: 'Assinar por ' + PRECO_ANO + ' ao ano', html: () => `
       <div class="qz-logo"><img src="${MASCOTES.bee}" alt=""><b>Tap Bee</b></div>
@@ -5934,7 +5964,7 @@ function qzDemoLigar() {
     const notasAntes = notas.length, habitosAntes = habitos.length, feitos = (r.tipo === 'agir' ? r.acoes : []).map(a => aplicarAcao(a, frase)).filter(Boolean), ev = feitos[0];
     if (ev) {
       const d = new Date(ev.inicio);
-      qz.feito = { tipo: 'Anotado', titulo: ev.titulo, quando: `${maiuscula(fmtDataLonga(d))}, às ${fmtHora(d)}`, lembrete: ev.lembreteMin === null ? '' : `Lembrete: ${fmtLembrete(ev.lembreteMin).toLowerCase()}` };
+      qz.feito = { id: ev.id, tipo: 'Anotado', titulo: ev.titulo, quando: `${maiuscula(fmtDataLonga(d))}, às ${fmtHora(d)}`, lembrete: ev.lembreteMin === null ? '' : `Aviso: ${fmtLembrete(ev.lembreteMin).toLowerCase()}` };
       salvar(); mostrarDiaNoHoje(ev);
     } else if (notas.length > notasAntes) {
       qz.feito = { tipo: 'Anotado para não esquecer', titulo: notas[notas.length - 1].titulo, quando: 'Sem dia nem hora, até você marcar', lembrete: '' };

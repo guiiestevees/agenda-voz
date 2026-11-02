@@ -1,7 +1,6 @@
 import Foundation
 import AVFoundation
 import Speech
-import StoreKit
 import Capacitor
 
 // Tela principal do app: registra os plugins próprios do Tap Bee
@@ -9,7 +8,6 @@ class TapBeeViewController: CAPBridgeViewController {
     override func capacitorDidLoad() {
         bridge?.registerPluginInstance(NuvemPlugin())
         bridge?.registerPluginInstance(VozPlugin())
-        bridge?.registerPluginInstance(LojaPlugin())
         // App nativo não dá zoom: um toque duplo sem querer mudava o tamanho da tela
         webView?.scrollView.minimumZoomScale = 1
         webView?.scrollView.maximumZoomScale = 1
@@ -168,24 +166,5 @@ public class VozPlugin: CAPPlugin, CAPBridgedPlugin {
         // Volta ao modo de reprodução: o som do Pomodoro continua com a tela bloqueada
         try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.mixWithOthers])
         try? AVAudioSession.sharedInstance().setActive(true)
-    }
-}
-
-// ---------- Loja: pede a avaliação da App Store (o iOS decide se mostra) ----------
-@objc(LojaPlugin)
-public class LojaPlugin: CAPPlugin, CAPBridgedPlugin {
-    public let identifier = "LojaPlugin"
-    public let jsName = "Loja"
-    public let pluginMethods: [CAPPluginMethod] = [
-        CAPPluginMethod(name: "avaliar", returnType: CAPPluginReturnPromise),
-    ]
-
-    @objc func avaliar(_ call: CAPPluginCall) {
-        DispatchQueue.main.async {
-            if let cena = UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene {
-                SKStoreReviewController.requestReview(in: cena)
-            }
-            call.resolve()
-        }
     }
 }
