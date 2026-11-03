@@ -76,6 +76,8 @@ public class VozPlugin: CAPPlugin, CAPBridgedPlugin {
     private var motor: AVAudioEngine?
     private var pedido: SFSpeechAudioBufferRecognitionRequest?
     private var tarefa: SFSpeechRecognitionTask?
+    private var parando = false
+    private var textoAnterior = ""
 
     @objc func iniciar(_ call: CAPPluginCall) {
         SFSpeechRecognizer.requestAuthorization { fala in
@@ -108,6 +110,7 @@ public class VozPlugin: CAPPlugin, CAPBridgedPlugin {
 
     @objc func parar(_ call: CAPPluginCall) {
         DispatchQueue.main.async {
+            self.parando = true
             self.pedido?.endAudio()
             if let motor = self.motor, motor.isRunning { motor.stop(); motor.inputNode.removeTap(onBus: 0) }
             call.resolve()
@@ -116,16 +119,14 @@ public class VozPlugin: CAPPlugin, CAPBridgedPlugin {
 
     private func comecar(idioma: String) throws {
         encerrar()
+        parando = false
+        textoAnterior = ""
         guard let reconhecedor = SFSpeechRecognizer(locale: Locale(identifier: idioma)), reconhecedor.isAvailable else {
             throw NSError(domain: "Voz", code: 1)
         }
         let sessao = AVAudioSession.sharedInstance()
         try sessao.setCategory(.playAndRecord, mode: .measurement, options: [.duckOthers, .defaultToSpeaker])
         try sessao.setActive(true, options: .notifyOthersOnDeactivation)
-
-        let pedido = SFSpeechAudioBufferRecognitionRequest()
-        pedido.shouldReportPartialResults = true
-        self.pedido = pedido
 
         // O áudio é criado aqui, já no modo de gravação: criado antes, a entrada fica presa em 0 Hz
         let motor = AVAudioEngine()
@@ -134,14 +135,32 @@ public class VozPlugin: CAPPlugin, CAPBridgedPlugin {
         let formato = entrada.outputFormat(forBus: 0)
         print("[Voz] entrada: \(formato.sampleRate) Hz, \(formato.channelCount) canal(is), disponível: \(sessao.isInputAvailable)")
         guard formato.sampleRate > 0, formato.channelCount > 0 else { throw NSError(domain: "Voz", code: 2) }
-        entrada.installTap(onBus: 0, bufferSize: 1024, format: formato) { buffer, _ in pedido.append(buffer) }
+        entrada.installTap(onBus: 0, bufferSize: 1024, format: formato) { [weak self] buffer, _ in self?.pedido?.append(buffer) }
         motor.prepare()
         try motor.start()
 
+        ouvir(com: reconhecedor)
+    }
+
+    private func ouvir(com reconhecedor: SFSpeechRecognizer) {
+        let pedido = SFSpeechAudioBufferRecognitionRequest()
+        pedido.shouldReportPartialResults = true
+        self.pedido = pedido
         tarefa = reconhecedor.recognitionTask(with: pedido) { [weak self] resultado, erro in
             guard let self = self else { return }
             if let resultado = resultado {
-                self.notifyListeners("resultado", data: ["texto": resultado.bestTranscription.formattedString, "final": resultado.isFinal])
+                let texto = self.textoAnterior + resultado.bestTranscription.formattedString
+                // O iPhone pode dar a frase por encerrada numa pausa: continua ouvindo até a pessoa terminar
+                if resultado.isFinal && !self.parando {
+                    self.notifyListeners("resultado", data: ["texto": texto, "final": false])
+                    DispatchQueue.main.async {
+                        guard !self.parando, self.motor != nil else { return }
+                        self.textoAnterior = texto + " "
+                        self.ouvir(com: reconhecedor)
+                    }
+                    return
+                }
+                self.notifyListeners("resultado", data: ["texto": texto, "final": resultado.isFinal])
             }
             if let erro = erro { print("[Voz] reconhecimento terminou com erro: \(erro)") }
             if erro != nil || resultado?.isFinal == true {

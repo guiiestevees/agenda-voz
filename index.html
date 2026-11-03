@@ -649,6 +649,13 @@
     padding-right: 40px; background-repeat: no-repeat; background-position: right 14px center; background-size: 12px;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none' stroke='%238a8da6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E");
   }
+  .mais-opcoes { margin-top: 16px; border-top: 1px solid var(--line); }
+  .mais-opcoes summary { display: flex; align-items: center; gap: 8px; min-height: 52px; font-weight: 700; color: var(--accent-ink); cursor: pointer; list-style: none; }
+  .mais-opcoes summary::-webkit-details-marker { display: none; }
+  .mais-opcoes summary::after { content: '›'; margin-left: auto; font-size: 22px; line-height: 1; transition: transform .2s; }
+  .mais-opcoes[open] summary::after { transform: rotate(90deg); }
+  .mais-opcoes summary small { font-size: 13px; font-weight: 500; color: var(--muted); }
+  .mais-opcoes label:first-of-type { margin-top: 2px; }
   form.editar .dupla { display: flex; gap: 10px; }
   form.editar .dupla > div { flex: 1; min-width: 0; }
   .ics { display: block; text-align: center; margin-top: 14px; color: var(--accent-text); font-weight: 600; text-decoration: none; }
@@ -1255,13 +1262,6 @@
   .form-falar { flex: none; height: 36px; display: inline-flex; align-items: center; gap: 5px; padding: 0 13px 0 10px; border: 0; border-radius: 999px;
     background: var(--accent-soft); color: var(--accent-ink); font-weight: 750; font-size: 14px; cursor: pointer; }
   .form-falar svg { width: 17px; height: 17px; }
-  .dica-gesto { display: flex; align-items: center; gap: 10px; margin: -2px 0 10px; padding: 10px 10px 10px 12px; border-radius: 14px; background: var(--accent-soft); font-size: 13.5px; line-height: 1.35; color: var(--text); }
-  .dica-gesto button { flex: none; height: 32px; padding: 0 12px; border: 0; border-radius: 10px; background: var(--card); color: var(--accent-ink); font-weight: 750; cursor: pointer; }
-  .deslize.ensina .deslize-fundo { opacity: 1; background: var(--ok); }
-  .deslize.ensina .df-del { display: none; }
-  .deslize.ensina .df-ok { opacity: 1; }
-  .deslize.ensina .evento { animation: ensinaDeslize 2.2s cubic-bezier(.4,0,.2,1) .8s 2; }
-  @keyframes ensinaDeslize { 0%, 100% { transform: translateX(0); } 35%, 60% { transform: translateX(96px); } }
   .permissao-ia { text-align: center; }
   .pi-ico { width: 64px; height: 64px; margin: 4px auto 12px; border-radius: 20px; background: var(--accent-soft); color: var(--accent-text); display: grid; place-items: center; }
   .pi-ico svg { width: 30px; height: 30px; }
@@ -2751,11 +2751,6 @@ function telaHoje() {
   const corpo = diaHoje ? linhaDoTempo(dia, agora, false)
     : total && tudo ? `<div class="tudo-feito">${cenaMascote('festa')}<b>Dia fechado, pote cheio!</b><span>Pode descansar. Amanhã tem mais.</span></div>` : linhaDoTempo(hoje, agora, true);
   html += `<section class="grupo"><div class="grupo-topo"><h2>${tituloDia}</h2><button class="novo-mini" data-novo-comp>${ICO.mais}Novo compromisso</button></div>${htmlFaixaDias(hoje)}<div class="dia-corpo">${corpo}</div></section>`;
-  // Na primeira vez com compromissos, mostra que dá pra arrastar os cartões
-  if (total > feitos && !lerPref('agenda.dicaGesto', '')) {
-    html = html.replace('<div class="deslize"', '<div class="deslize ensina"');
-    html = html.replace('<section class="grupo">', `<section class="grupo">`).replace(/(<div class="grupo-topo">[\s\S]*?<\/div>)/, `$1<div class="dica-gesto"><span>👉 Arraste um compromisso para a <b>direita</b> para marcar como feito, ou para a <b>esquerda</b> para excluir.</span><button data-fechar-gesto>Entendi</button></div>`);
-  }
   if (feitos && !diaHoje) html += `<details class="feitos"><summary>Feitos (${feitos})</summary>${feitosL.map(o => cartao(o, agora)).join('')}</details>`;
   return html + '</div>' + htmlNotas();
 }
@@ -3219,7 +3214,6 @@ window.addEventListener('resize', () => { if (aba === 'semana') render(); });
 document.getElementById('lista').addEventListener('click', (ev) => {
   if (ignorarClique) { ev.preventDefault(); ev.stopImmediatePropagation(); return; }
   if (ev.target.closest('[data-fechar-ontem]')) return fecharOntem();
-  if (ev.target.closest('[data-fechar-gesto]')) { gravarPref('agenda.dicaGesto', '1'); return render(); }
   if (ev.target.closest('[data-fogo]')) return mostrarSequencia();
   if (ev.target.closest('[data-dois-toques]')) return abrirDoisToques();
   const nt = ev.target.closest('[data-nova-nota], [data-nota-feita], [data-nota-agendar], [data-nota]');
@@ -4940,6 +4934,19 @@ const sheet = document.getElementById('sheet');
 function abrirFolha(html) { sheet.innerHTML = html; overlay.classList.add('show'); }
 function fecharFolha() { overlay.classList.remove('show'); pararReconhecimento(); notaParaAgendar = null; }
 overlay.addEventListener('click', (e) => { if (e.target === overlay) fecharFolha(); });
+// Com o teclado aberto, a folha cabe no espaço que sobra e o campo em uso continua à vista
+function folhaAcimaDoTeclado() {
+  const vv = window.visualViewport;
+  if (!vv) return;
+  const teclado = overlay.classList.contains('show') && innerHeight - vv.height > 120;
+  overlay.style.top = teclado ? `${vv.offsetTop}px` : '';
+  overlay.style.bottom = teclado ? 'auto' : '';
+  overlay.style.height = teclado ? `${vv.height}px` : '';
+  sheet.style.maxHeight = teclado ? `${vv.height - 12}px` : '';
+  if (teclado && sheet.contains(document.activeElement)) document.activeElement.scrollIntoView({ block: 'nearest' });
+}
+window.visualViewport?.addEventListener('resize', folhaAcimaDoTeclado);
+window.visualViewport?.addEventListener('scroll', folhaAcimaDoTeclado);
 
 // 1ª linha = destaque; "Terça, 03/11:" = título do dia; "• ..." = tópico
 function formatarResposta(texto, icone) {
@@ -5036,6 +5043,8 @@ function abrirEdicao(ev, novo = false) {
         <div><label for="eDia">Dia</label><input id="eDia" type="date" name="dia" value="${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}" required></div>
         <div><label for="eHora">Hora</label><input id="eHora" type="time" name="hora" value="${pad(d.getHours())}:${pad(d.getMinutes())}" required></div>
       </div>
+      <details class="mais-opcoes" id="eMais">
+      <summary>Mais opções<small>duração, aviso e repetir</small></summary>
       <label>Duração</label>
       ${chipsSel('duracao', duracoes.map(m => [m, fmtMin(m)]), durDe(ev))}
       <label>Lembrete</label>
@@ -5043,6 +5052,7 @@ function abrirEdicao(ev, novo = false) {
       <label>Repetir</label>
       ${chipsSel('repetir', [['nenhuma', 'Não repete'], ['diaria', 'Todo dia'], ['semanal', 'Toda semana'], ['mensal', 'Todo mês'], ['anual', 'Todo ano']], freqAtual)}
       <div class="dias-sel dias-rep" id="eDias" ${freqAtual === 'semanal' ? '' : 'hidden'}>${['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((l, i) => `<button type="button" data-d="${i}" aria-label="${NOMES_DIAS[i]}">${l}</button>`).join('')}</div>
+      </details>
       <div class="botoes">
         ${novo ? '<button type="button" id="bCancelar">Cancelar</button>' : '<button type="button" class="perigo" id="bExcluir">Excluir</button>'}
         <button type="submit" class="primario">${novo ? 'Criar' : 'Salvar'}</button>
@@ -5062,7 +5072,7 @@ function abrirEdicao(ev, novo = false) {
     if (r.name === 'repetir') boxDias.hidden = f.repetir.value !== 'semanal';
   });
   // a opção escolhida aparece na tela (as listas rolam de lado)
-  setTimeout(() => f.querySelectorAll('.chips-sel').forEach(c => c.querySelector('input:checked')?.parentElement.scrollIntoView({ inline: 'center', block: 'nearest' })), 60);
+  document.getElementById('eMais').ontoggle = () => f.querySelectorAll('.chips-sel').forEach(c => { const o = c.querySelector('input:checked')?.parentElement; if (o) c.scrollLeft = o.offsetLeft - (c.clientWidth - o.offsetWidth) / 2; });
   if (novo) setTimeout(() => f.titulo.focus(), 80);
   f.onsubmit = (e) => {
     e.preventDefault();
@@ -5134,9 +5144,11 @@ function abrirVoz() {
       <div class="onda" id="vOnda" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
       <div class="transcricao" id="vTexto"></div>
       <div class="exemplos"><span>“médico terça às 4”</span><span>“desmarca a academia de amanhã”</span><span>“o que tenho amanhã?”</span></div>
+      <button class="cta-falar" id="vPronto" hidden>Pronto, terminei</button>
       <button class="link-digitar" id="vDigitar">${ICO.teclado}Prefiro digitar</button>
     </div>`);
   document.getElementById('vDigitar').onclick = abrirDigitar;
+  document.getElementById('vPronto').onclick = pararReconhecimento;
   document.getElementById('vMic').onclick = () => rec ? pararReconhecimento() : iniciarReconhecimento();
   iniciarReconhecimento();
 }
@@ -5171,10 +5183,11 @@ function iniciarReconhecimento() {
   rec.interimResults = true;
   rec.continuous = true; // não corta na primeira pausa
   rec.onstart = () => {
-    titulo.textContent = 'Ouvindo… toque quando terminar';
+    titulo.textContent = 'Ouvindo… pode falar tudo';
+    document.getElementById('vPronto').hidden = false;
     document.getElementById('vMic').classList.add('ativo');
     document.getElementById('vOnda')?.classList.add('ativa');
-    esperarSilencio(8000); // tempo pra começar a falar
+    esperarSilencio(10000); // tempo pra começar a falar
   };
   rec.onresult = (e) => {
     let final = '', parcial = '';
@@ -5184,7 +5197,7 @@ function iniciarReconhecimento() {
     if (el) el.textContent = textoFinal;
     const onda = document.getElementById('vOnda');
     if (onda) { onda.classList.add('falando'); clearTimeout(onda._t); onda._t = setTimeout(() => onda.classList.remove('falando'), 450); }
-    esperarSilencio(3500); // encerra sozinho após 3,5 s calado
+    esperarSilencio(6000); // encerra sozinho após 6 s calado: dá tempo de lembrar do próximo compromisso
   };
   rec.onerror = (e) => {
     const t = document.getElementById('vTitulo');
@@ -5195,6 +5208,8 @@ function iniciarReconhecimento() {
     clearTimeout(silencioTimer);
     const mic = document.getElementById('vMic');
     if (mic) mic.classList.remove('ativo');
+    const pronto = document.getElementById('vPronto');
+    if (pronto) pronto.hidden = true;
     document.getElementById('vOnda')?.classList.remove('ativa', 'falando');
     if (textoFinal) criarDeFrase(textoFinal);
     else { const t = document.getElementById('vTitulo'); if (t && t.textContent.startsWith('Ouvindo')) t.textContent = 'Toque para falar'; }
@@ -6248,7 +6263,7 @@ const TELAS_QUIZ = [
       ${qzFala('E o que você mais quer resolver primeiro?')}${TRAVAS.map(([v, e, x], i) => qzOpcao('trava', v, x, e, i)).join('')}` },
   { id: 'existe', bt: 'Próximo', segura: () => qz.cena < CENAS_BEE.length - 1 && (qz.irCena(qz.cena + 1), true), html: () => `
       <h2 class="qz-c qz-sobe">Como a Bee funciona no dia a dia</h2>
-      <p class="qz-sub qz-c qz-so-ver qz-sobe so-iphone" style="--i:1">Não precisa dar os toques agora: a gente configura junto depois da assinatura.</p>
+      <p class="qz-sub qz-c qz-so-ver qz-sobe so-iphone" style="--i:1">Não precisa dar os toques agora: depois é só ativar em 1 minuto, dentro do app.</p>
       <div class="qz-cenas" id="qzCenas">${CENAS_BEE.map(([, html]) => `<div class="qz-cena"><div class="qz-fone"><div class="qz-fone-tela">${html()}</div></div></div>`).join('')}</div>
       <div class="qz-legenda" id="qzLegenda"></div>
       <div class="qz-pontos" id="qzPontos">${CENAS_BEE.map((_, i) => `<button aria-label="Parte ${i + 1}"><i></i></button>`).join('')}</div>
@@ -6539,8 +6554,6 @@ function qzEntrar() {
   tocarSom(true); confete(innerWidth / 2, innerHeight / 3, true);
   aba = 'hoje'; render();
   el.classList.add('saindo'); setTimeout(() => el.remove(), 450);
-  // Só agora, depois da compra, vem a configuração dos 2 toques
-  if (NATIVO && !EH_IPAD && !doisToquesOk()) setTimeout(() => abrirDoisToques(0), 900);
 }
 const rcPlugin = () => RC_CHAVE ? pluginNativo('Purchases') : null;
 let rcIniciado;
