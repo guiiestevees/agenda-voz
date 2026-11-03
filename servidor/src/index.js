@@ -199,7 +199,7 @@ export default {
         // Sonnet 5.5 aceita o desvio automático para outro modelo em caso de recusa; o Haiku não
         ...(model === "claude-sonnet-5-5" ? { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" } : {}),
         output_config: { effort: "low", format: { type: "json_schema", schema: ESQUEMA } },
-        system: SISTEMA,
+        system: entrada.idioma === "en" ? `${SISTEMA}\n\nIdioma desta pessoa: ela fala INGLÊS. Entenda o pedido em inglês e escreva títulos, anotações, hábitos e "resposta" em inglês natural.` : SISTEMA,
         messages: [{
           role: "user",
           content: `Agora: ${agora}\nAviso padrão desta pessoa: ${avisoPadrao} minutos antes\n\nDatas dos próximos dias:\n${proximosDias(hoje)}\n\nAgenda (próximas ocorrências, uma por linha: id | dia | hora | nome | repetição):\n${agenda}\n\nAnotações sem data (id | texto):\n${notas}\n\nA pessoa disse: "${texto}"`,

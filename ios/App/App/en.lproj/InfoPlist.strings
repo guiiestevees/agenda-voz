@@ -1,0 +1,2 @@
+NSMicrophoneUsageDescription = "Tap Bee uses the microphone so you can tell Bee your appointments.";
+NSSpeechRecognitionUsageDescription = "Tap Bee turns your speech into text so Bee can save your appointments.";

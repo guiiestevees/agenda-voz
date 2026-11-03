@@ -389,6 +389,7 @@
   .g-cab.hoje b { background: var(--accent); color: #fff; }
   .g-corpo { flex: 1; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
   .g-linha { display: flex; }
+  :root[lang^="en"] .g-horas { width: 50px; }
   .g-horas { flex: none; width: 44px; position: relative; }
   .g-horas div { position: absolute; right: 8px; transform: translateY(-50%); font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
   .g-dias { flex: 1; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
@@ -1929,6 +1930,7 @@
   .qz-oferta-dia { margin: 6px 0 0; font-size: 14px; font-weight: 700; line-height: 1.3; color: #3d3729; }
   .qz-seguir-longo { font-size: 16.5px; }
   .qz-compara { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .qz-compara[hidden] { display: none; }
   .qz-compara > div { display: flex; flex-direction: column; padding: 7px 10px; border-radius: 15px; background: rgba(255,255,255,.7); text-align: center; line-height: 1.2; }
   .qz-compara .bee { background: #fff3cf; box-shadow: inset 0 0 0 2px #f2a313; }
   .qz-compara small { font-size: 11.5px; font-weight: 600; color: #6e6655; }
@@ -2133,7 +2135,60 @@
 <div class="overlay" id="overlay"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 
+<script src="i18n-en.js"></script>
 <script>
+// ---------- Idioma: em português nada muda; nos outros idiomas, o app aparece em inglês ----------
+const IDIOMA = /^pt/i.test(new URLSearchParams(location.search).get('lang') || navigator.language || 'pt') ? 'pt' : 'en';
+const EM_INGLES = IDIOMA === 'en';
+const LOCALE = !EM_INGLES ? 'pt-BR' : /^en/i.test(navigator.language || '') ? navigator.language : 'en-US';
+document.documentElement.lang = LOCALE;
+const TR_FIXO = new Map(), TR_MOLDES = [], TR_CACHE = new Map();
+if (EM_INGLES) {
+  for (const [k, v] of Object.entries(window.TR_EN || {})) {
+    if (!k.includes('{')) { TR_FIXO.set(k, v); continue; }
+    const re = k.split(/(\{#?\})/).map(x => x === '{}' ? '(.*?)' : x === '{#}' ? '([\\d.,:]+)' : x.replace(/[.*+?^$()|[\]\\{}]/g, '\\$&')).join('');
+    TR_MOLDES.push([new RegExp(`^${re}$`), v, k.length]);
+  }
+  TR_MOLDES.sort((a, b) => b[2] - a[2]);
+}
+function tr(txt) {
+  if (!EM_INGLES || !txt) return txt;
+  const nu = txt.trim();
+  if (!nu) return txt;
+  if (TR_CACHE.has(nu)) return txt.replace(nu, () => TR_CACHE.get(nu));
+  let fim = TR_FIXO.get(nu);
+  if (fim === undefined) for (const [re, v] of TR_MOLDES) {
+    const m = nu.match(re);
+    if (m) { fim = v.replace(/\{(\d)\}/g, (_, i) => tr(m[+i + 1] || '')); break; }
+  }
+  if (fim === undefined) { const em = nu.match(/^([^\p{L}\d“"(+]+)(.+)$/u); fim = em ? em[1] + tr(em[2]) : nu; }
+  TR_CACHE.set(nu, fim);
+  return txt.replace(nu, () => fim);
+}
+if (EM_INGLES) {
+  const ATR = ['placeholder', 'aria-label', 'title'];
+  const naoMexe = (n) => { const e = n.nodeType === 1 ? n : n.parentElement; return !e || e.closest('script, style, textarea, .qz-bal-texto, #qzFalado, [data-original]'); };
+  const noTexto = (n) => { if (naoMexe(n)) return; const v = tr(n.nodeValue); if (v !== n.nodeValue) n.nodeValue = v; };
+  const noElem = (e) => ATR.forEach(a => { if (e.hasAttribute?.(a)) { const v = tr(e.getAttribute(a)); if (v !== e.getAttribute(a)) e.setAttribute(a, v); } });
+  const varrer = (raiz) => {
+    if (raiz.nodeType === 3) return noTexto(raiz);
+    if (raiz.nodeType !== 1 || naoMexe(raiz)) return;
+    noElem(raiz);
+    raiz.querySelectorAll('[placeholder], [aria-label], [title]').forEach(noElem);
+    const w = document.createTreeWalker(raiz, NodeFilter.SHOW_TEXT);
+    while (w.nextNode()) noTexto(w.currentNode);
+  };
+  varrer(document.body);
+  new MutationObserver((lista) => lista.forEach(m => {
+    if (m.type === 'childList') m.addedNodes.forEach(varrer);
+    else if (m.type === 'characterData') noTexto(m.target);
+    else noElem(m.target);
+  })).observe(document.body, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ATR });
+  document.title = 'Tap Bee: Voice Calendar';
+  const P = CanvasRenderingContext2D.prototype, escreve = P.fillText, mede = P.measureText;
+  P.fillText = function (t, ...r) { return escreve.call(this, tr(String(t)), ...r); };
+  P.measureText = function (t) { return mede.call(this, tr(String(t))); };
+}
 const ICO = {
   escudo: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.2 4.5 5v6.2c0 4.9 3.2 9.2 7.5 10.6 4.3-1.4 7.5-5.7 7.5-10.6V5Z"/><path d="M8.6 12l2.3 2.3 4.5-4.6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   grafico: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
@@ -2208,7 +2263,7 @@ function fmtFalta(m) {
 }
 const EMOJI_CAT = { treino: '💪', saude: '🩺', trabalho: '💼', estudo: '📚', social: '🎉', casa: '🏠' };
 const tituloAviso = (titulo) => `${EMOJI_CAT[categoria(titulo)?.id] || '🐝'} ${titulo}`;
-const corpoAviso = (m, hora) => `${fmtFalta(m)} · às ${hora}`;
+const corpoAviso = (m, hora) => tr(`${fmtFalta(m)} · às ${hora}`);
 const TIPO_AVISO = 'AVISO_BEE';
 function agendarLembretes() {
   clearTimeout(timerLembretes);
@@ -2264,7 +2319,7 @@ function abrirDoAviso(acao, { ev: id, dia } = {}) {
 function ligarAcoesDoAviso() {
   const LN = pluginNativo('LocalNotifications');
   if (!LN) return;
-  LN.registerActionTypes({ types: [{ id: TIPO_AVISO, actions: [{ id: 'feito', title: 'Feito', foreground: true }, { id: 'adiar', title: 'Adiar 10 min', foreground: true }, { id: 'mudar', title: 'Mudar horário', foreground: true }] }] }).catch(e => console.warn('Botões do aviso', e));
+  LN.registerActionTypes({ types: [{ id: TIPO_AVISO, actions: [{ id: 'feito', title: tr('Feito'), foreground: true }, { id: 'adiar', title: tr('Adiar 10 min'), foreground: true }, { id: 'mudar', title: tr('Mudar horário'), foreground: true }] }] }).catch(e => console.warn('Botões do aviso', e));
   LN.addListener('localNotificationActionPerformed', (a) => abrirDoAviso(a.actionId, a.notification?.extra));
 }
 
@@ -2333,7 +2388,42 @@ function normalizar(s) {
   return Array.from(s).map(c => c.normalize('NFD')[0]).join('').toLowerCase();
 }
 
+// Versão simples em inglês, usada no quiz e quando a IA não está disponível
+function interpretarEn(frase, agora) {
+  let n = ` ${frase.replace(/\s+/g, ' ').trim()} `, lembreteMin = null, m;
+  if ((m = n.match(/,?\s*remind me (\d+|half an?|an?|one) (hours?|minutes?|mins?|days?)? ?before/i))) {
+    const q = /half/i.test(m[1]) ? 30 : /^(an?|one)$/i.test(m[1]) ? 1 : +m[1];
+    lembreteMin = /^half/i.test(m[1]) ? 30 : q * (/^h/i.test(m[2] || '') ? 60 : /^d/i.test(m[2] || '') ? 1440 : 1);
+    n = n.replace(m[0], ' ');
+  }
+  const hoje = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
+  let data = null;
+  const DIAS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  if ((m = n.match(/\b(day after tomorrow|tomorrow|today|tonight)\b/i))) {
+    data = new Date(hoje); data.setDate(data.getDate() + (/after/i.test(m[1]) ? 2 : /tomorrow/i.test(m[1]) ? 1 : 0));
+    n = n.replace(m[0], ' ');
+  } else if ((m = n.match(new RegExp(`\\b(?:on |next )?(${DIAS.join('|')})\\b`, 'i')))) {
+    data = new Date(hoje); data.setDate(data.getDate() + ((DIAS.indexOf(m[1].toLowerCase()) - hoje.getDay() + 7) % 7 || 7));
+    n = n.replace(m[0], ' ');
+  }
+  let hora = null, minuto = 0;
+  if ((m = n.match(/\b(?:at )?(\d{1,2})(?::(\d{2}))? ?(am|pm|a\.m\.|p\.m\.)\b/i)) || (m = n.match(/\bat (\d{1,2})(?::(\d{2}))?\b()/i))) {
+    hora = +m[1] % 24; minuto = +(m[2] || 0);
+    if (/^p/i.test(m[3]) && hora < 12) hora += 12;
+    else if (/^a/i.test(m[3]) && hora === 12) hora = 0;
+    else if (!m[3] && hora >= 1 && hora <= 7) hora += 12;
+    n = n.replace(m[0], ' ');
+  } else if ((m = n.match(/\b(?:at )?noon\b/i))) { hora = 12; n = n.replace(m[0], ' '); }
+  const semHora = hora === null;
+  const inicio = new Date(data || hoje);
+  inicio.setHours(semHora ? 9 : hora, minuto, 0, 0);
+  if (!data && inicio < agora) inicio.setDate(inicio.getDate() + 1);
+  let titulo = n.replace(/\b(please|bee|schedule|add|create|put|remember to|remind me to|i need to|i have|i have to)\b/gi, ' ').replace(/[,.!?]+/g, ' ').replace(/\s+/g, ' ').trim().replace(/^(an?|the)\s+/i, '') || 'Appointment';
+  titulo = titulo[0].toUpperCase() + titulo.slice(1);
+  return { titulo, inicio: inicio.toISOString(), lembreteMin, semHora };
+}
 function interpretar(fraseOriginal, agora = new Date()) {
+  if (EM_INGLES) return interpretarEn(fraseOriginal, agora);
   let original = fraseOriginal.normalize('NFC').replace(/\s+/g, ' ').trim();
   let n = normalizar(original);
   const remover = (m) => {
@@ -2464,8 +2554,8 @@ function interpretar(fraseOriginal, agora = new Date()) {
 window.interpretar = interpretar; // facilita testar pelo console
 
 // ---------- Formatação ----------
-const fmtHora = (d) => d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-const fmtDataLonga = (d) => d.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+const fmtHora = (d) => d.toLocaleTimeString(LOCALE, { hour: EM_INGLES ? 'numeric' : '2-digit', minute: '2-digit' });
+const fmtDataLonga = (d) => d.toLocaleDateString(LOCALE, { weekday: 'long', day: 'numeric', month: 'long' });
 function fmtLembrete(min) {
   if (min === null || min === undefined) return 'Sem lembrete';
   if (min === 0) return 'Na hora';
@@ -2480,7 +2570,7 @@ function rotuloDia(d) {
   if (dif === 0) return 'Hoje';
   if (dif === 1) return 'Amanhã';
   if (dif === -1) return 'Ontem';
-  return d.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' });
+  return d.toLocaleDateString(LOCALE, { weekday: 'long', day: '2-digit', month: '2-digit' });
 }
 const esc = (s) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -2488,9 +2578,10 @@ const esc = (s) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>':
 const lerPref = (k, padrao) => { try { return localStorage.getItem(k) || padrao; } catch { return padrao; } };
 const gravarPref = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
 const maisDias = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
-const fmtH = (d) => d.getMinutes() ? `${d.getHours()}h${pad(d.getMinutes())}` : `${d.getHours()}h`;
+const hora12 = (h) => `${h % 12 || 12} ${h < 12 ? 'AM' : 'PM'}`;
+const fmtH = (d) => EM_INGLES ? (d.getMinutes() ? fmtHora(d) : hora12(d.getHours())) : d.getMinutes() ? `${d.getHours()}h${pad(d.getMinutes())}` : `${d.getHours()}h`;
 const maiuscula = (t) => t.replace(/^./, c => c.toUpperCase());
-const DIAS_CURTOS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+const DIAS_CURTOS = EM_INGLES ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] : ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 
 let aba = lerPref('agenda.aba', 'hoje');
 let diaSel = inicioDoDia(new Date());   // dia escolhido em Semana e Mês
@@ -2615,7 +2706,7 @@ function telaHoje() {
   let html = htmlCheckinHero() + htmlDoisToques() + htmlProgresso() + htmlFalaBee(total, feitos, agora) + htmlResgate();   // no fim do dia, o botão da câmera no cartão do bicho vira "Postar"
   if (diaHojeBase !== chaveDia(hoje)) { diaHojeBase = chaveDia(hoje); diaHoje = 0; }
   const dia = maisDias(hoje, diaHoje);
-  const tituloDia = !diaHoje ? 'Agenda de hoje' : diaHoje === 1 ? 'Amanhã' : `${maiuscula(dia.toLocaleDateString('pt-BR', { weekday: 'long' }).replace('-feira', ''))}, ${dia.getDate()}`;
+  const tituloDia = !diaHoje ? 'Agenda de hoje' : diaHoje === 1 ? 'Amanhã' : `${maiuscula(dia.toLocaleDateString(LOCALE, { weekday: 'long' }).replace('-feira', ''))}, ${dia.getDate()}`;
   const corpo = diaHoje ? linhaDoTempo(dia, agora, false)
     : total && tudo ? `<div class="tudo-feito">${cenaMascote('festa')}<b>Dia fechado, pote cheio!</b><span>Pode descansar. Amanhã tem mais.</span></div>` : linhaDoTempo(hoje, agora, true);
   html += `<section class="grupo"><div class="grupo-topo"><h2>${tituloDia}</h2><button class="novo-mini" data-novo-comp>${ICO.mais}Novo compromisso</button></div>${htmlFaixaDias(hoje)}<div class="dia-corpo">${corpo}</div></section>`;
@@ -2832,11 +2923,11 @@ function telaSemana() {
     const linha = k === hojeK ? `<div class="g-agora" style="top:${(agora.getHours() * 60 + agora.getMinutes()) * HORA_PX / 60}px"></div>` : '';
     cols += `<div class="g-col ${k === hojeK ? 'hoje' : ''}" style="height:${24 * HORA_PX}px" data-col="${k}">${blocosDoDia(porDia.get(k) || [], agora)}${linha}</div>`;
   }
-  const horas = Array.from({ length: 23 }, (_, h) => `<div style="top:${(h + 1) * HORA_PX}px">${h + 1}h</div>`).join('');
+  const horas = Array.from({ length: 23 }, (_, h) => `<div style="top:${(h + 1) * HORA_PX}px">${EM_INGLES ? hora12(h + 1) : `${h + 1}h`}</div>`).join('');
   const fim = maisDias(ini, 6);
   const faixa = ini.getMonth() === fim.getMonth()
-    ? `${ini.getDate()} a ${fim.getDate()} de ${fim.toLocaleDateString('pt-BR', { month: 'long' })}`
-    : `${ini.getDate()} ${ini.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')} a ${fim.getDate()} ${fim.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}`;
+    ? `${ini.getDate()} a ${fim.getDate()} de ${fim.toLocaleDateString(LOCALE, { month: 'long' })}`
+    : `${ini.getDate()} ${ini.toLocaleDateString(LOCALE, { month: 'short' }).replace('.', '')} a ${fim.getDate()} ${fim.toLocaleDateString(LOCALE, { month: 'short' }).replace('.', '')}`;
   const semanaAtual = chaveDia(ini) === chaveDia(maisDias(inicioDoDia(agora), -agora.getDay()));
   return `<div class="navega"><span class="periodo">${faixa}</span><div class="nav-btns">${semanaAtual ? '' : '<button class="nav-hoje" data-nav="hoje">Hoje</button>'}<button data-nav="-7" aria-label="Semana anterior">${ICO.esq}</button><button data-nav="7" aria-label="Próxima semana">${ICO.dir}</button></div></div>
     <div class="dica-grade">Toque num horário vazio para marcar. Segure um compromisso para arrastar.</div>
@@ -2889,13 +2980,13 @@ function telaMes() {
   // Datas importantes: aniversários e datas anuais dos próximos 4 meses
   const anuais = ocorrencias(inicioDoDia(agora), maisDias(agora, 120)).filter(o => o.ev.repetir?.freq === 'anual').slice(0, 5);
   return `
-    <div class="navega"><span class="periodo">${maiuscula(ini.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }))}</span><div class="nav-btns">${(ini.getMonth() === agora.getMonth() && ini.getFullYear() === agora.getFullYear() && chaveDia(diaSel) === chaveDia(agora)) ? '' : '<button class="nav-hoje" data-nav="hoje">Hoje</button>'}<button data-nav="-1m" aria-label="Mês anterior">${ICO.esq}</button><button data-nav="1m" aria-label="Próximo mês">${ICO.dir}</button></div></div>
+    <div class="navega"><span class="periodo">${maiuscula(ini.toLocaleDateString(LOCALE, { month: 'long', year: 'numeric' }))}</span><div class="nav-btns">${(ini.getMonth() === agora.getMonth() && ini.getFullYear() === agora.getFullYear() && chaveDia(diaSel) === chaveDia(agora)) ? '' : '<button class="nav-hoje" data-nav="hoje">Hoje</button>'}<button data-nav="-1m" aria-label="Mês anterior">${ICO.esq}</button><button data-nav="1m" aria-label="Próximo mês">${ICO.dir}</button></div></div>
     <div class="mes-grade">${grade.replace(/<span class="ds">[^<]*<\/span>/g, '')}</div>
     <section class="grupo"><h2>${esc(maiuscula(rotuloDia(diaSel)))}</h2>${linhaDoTempo(diaSel, agora)}</section>
     ${anuais.length ? `<section class="grupo"><h2>Datas importantes</h2>${anuais.map(o => {
       const falta = Math.round((inicioDoDia(o.inicio) - inicioDoDia(agora)) / 86400000);
       return `<div class="evento" data-id="${o.ev.id}"><div class="data-ico">${ICO.presente}</div><div class="info"><div class="titulo">${esc(o.ev.titulo)}</div>
-        <div class="lembrete">${o.inicio.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' })} · ${falta === 0 ? 'é hoje!' : falta === 1 ? 'amanhã' : `faltam ${falta} dias`}</div></div></div>`;
+        <div class="lembrete">${o.inicio.toLocaleDateString(LOCALE, { day: 'numeric', month: 'long' })} · ${falta === 0 ? 'é hoje!' : falta === 1 ? 'amanhã' : `faltam ${falta} dias`}</div></div></div>`;
     }).join('')}</section>` : ''}`;
 }
 
@@ -2923,7 +3014,7 @@ function render() {
   document.getElementById('titulo').innerHTML = aba === 'hoje'
     ? `<span class="per-ic">${ICONE_PERIODO[per]}</span><span class="per-txt">${saudacao()}${nome ? `, <b>${esc(nome)}</b>` : ''}</span>`
     : { semana: 'Agenda', habitos: 'Hábitos', foco: 'Pomodoro', mais: 'Ajustes' }[aba];
-  document.getElementById('topoData').textContent = aba === 'hoje' ? maiuscula(new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })) : '';
+  document.getElementById('topoData').textContent = aba === 'hoje' ? maiuscula(new Date().toLocaleDateString(LOCALE, { weekday: 'long', day: 'numeric', month: 'long' })) : '';
   document.getElementById('btnMais').hidden = aba === 'mais';
   document.getElementById('mais').hidden = aba !== 'mais';
   lista.hidden = aba === 'mais';
@@ -3032,7 +3123,7 @@ function restaurarBackup(arquivo) {
     try { b = JSON.parse(leitor.result); } catch { b = null; }
     if (!b || b.app !== 'agenda-por-voz' || !b.dados) return toast('Esse arquivo não é um backup do Tap Bee.', 4000);
     let qtd = 0; try { qtd = JSON.parse(b.dados['agenda.eventos'] || '[]').length; } catch {}
-    const data = new Date(b.criado).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
+    const data = new Date(b.criado).toLocaleDateString(LOCALE, { day: 'numeric', month: 'long', year: 'numeric' });
     abrirFolha(`
       <div>
         <h3>Restaurar backup?</h3>
@@ -3520,7 +3611,7 @@ function agendarAvisoFoco() {
     const LN = window.Capacitor?.Plugins?.LocalNotifications;
     if (!LN || !foco.fim) return;
     LN.cancel({ notifications: [{ id: ID_AVISO_FOCO }] }).catch(() => {});
-    LN.schedule({ notifications: [{ id: ID_AVISO_FOCO, title: foco.modo === 'foco' ? 'Foco concluído!' : 'Pausa acabou', body: foco.modo === 'foco' ? 'Hora de uma pausa. Você mandou bem.' : 'Bora focar de novo?', schedule: { at: new Date(foco.fim) } }] });
+    LN.schedule({ notifications: [{ id: ID_AVISO_FOCO, title: tr(foco.modo === 'foco' ? 'Foco concluído!' : 'Pausa acabou'), body: tr(foco.modo === 'foco' ? 'Hora de uma pausa. Você mandou bem.' : 'Bora focar de novo?'), schedule: { at: new Date(foco.fim) } }] });
   } catch {}
 }
 function cancelarAvisoFoco() { try { window.Capacitor?.Plugins?.LocalNotifications?.cancel({ notifications: [{ id: ID_AVISO_FOCO }] }); } catch {} }
@@ -4635,9 +4726,9 @@ const IA_URL = 'https://agenda-voz.guiiestevees.workers.dev/';
 function agendaParaIA() {
   const de = inicioDoDia(new Date());
   const linhas = ocorrencias(de, new Date(de.getTime() + 45 * 86400000)).slice(0, 150).map(({ ev, inicio }) =>
-    `${ev.id} | ${inicio.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' })} | ${fmtHora(inicio)} | ${ev.titulo} | ${ev.repetir ? fmtRepetir(ev.repetir) : 'não repete'}`);
+    `${ev.id} | ${inicio.toLocaleDateString(LOCALE, { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' })} | ${fmtHora(inicio)} | ${ev.titulo} | ${ev.repetir ? fmtRepetir(ev.repetir) : 'não repete'}`);
   const longe = eventos.filter(e => !e.repetir && new Date(e.inicio) >= new Date(de.getTime() + 45 * 86400000)).slice(0, 50)
-    .map(ev => `${ev.id} | ${new Date(ev.inicio).toLocaleDateString('pt-BR')} | ${fmtHora(new Date(ev.inicio))} | ${ev.titulo} | não repete`);
+    .map(ev => `${ev.id} | ${new Date(ev.inicio).toLocaleDateString(LOCALE)} | ${fmtHora(new Date(ev.inicio))} | ${ev.titulo} | não repete`);
   return [...linhas, ...longe].join('\n') || '(vazia)';
 }
 
@@ -4657,12 +4748,13 @@ async function perguntarIA(frase) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         texto: frase,
-        agora: `${agora.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })} ${fmtHora(agora)}`,
+        agora: `${agora.toLocaleDateString(LOCALE, { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })} ${fmtHora(agora)}`,
         hoje: chaveDia(agora),
         agenda: agendaParaIA(),
         notas: notasParaIA(),
         aparelho: idAparelho(),
         lembretePadrao: lembretePadrao(),
+        idioma: IDIOMA,
       }),
     });
     if (resp.status === 429) return { tipo: 'responder', resposta: 'Você falou bastante comigo hoje! Preciso descansar um pouco. Amanhã eu volto, e dá para anotar em “Novo compromisso” enquanto isso.', acoes: [] };
@@ -5032,7 +5124,7 @@ function iniciarReconhecimento() {
   }
   textoFinal = '';
   rec = new SR();
-  rec.lang = 'pt-BR';
+  rec.lang = LOCALE;
   rec.interimResults = true;
   rec.continuous = true; // não corta na primeira pausa
   rec.onstart = () => {
@@ -5389,7 +5481,7 @@ function abrirConvites() {
     </div>`);
   document.getElementById('bConvidar').onclick = async () => {
     const texto = `Tô usando o Tap Bee pra organizar meu dia falando e subir de Bicho-preguiça até o título secreto. Baixa e usa meu código ${codigo} pra ganhar ${BONUS_CONVIDADO} pontos!`;
-    try { if (navigator.share) await navigator.share({ text: texto }); else { await navigator.clipboard.writeText(texto); toast('Convite copiado. Agora é só colar pro seu amigo!'); } } catch {}
+    try { if (navigator.share) await navigator.share({ text: tr(texto) }); else { await navigator.clipboard.writeText(tr(texto)); toast('Convite copiado. Agora é só colar pro seu amigo!'); } } catch {}
   };
   const f = document.getElementById('fCodigo');
   if (f) f.onsubmit = (e) => { e.preventDefault(); usarCodigo(document.getElementById('cvCodigo').value); };
@@ -5446,12 +5538,12 @@ function atualizarWidget() {
 
 // ---------- Categorias dos compromissos (descobertas pelo nome) ----------
 const CATEGORIAS = [
-  { id: 'treino', nome: 'Treino', cor: '#f97316', re: /academia|treino|muscula|corrid|correr|pilates|crossfit|yoga|ioga|futebol|natacao|bike|caminhada|luta|jiu|boxe|danca|funcional|beach|tenis|volei/, ico: '<path d="M6.5 6.5v11M17.5 6.5v11M3 9.5v5M21 9.5v5M6.5 12h11"/>' },
-  { id: 'saude', nome: 'Saúde', cor: '#ef4444', re: /medic|dentista|exame|consulta|terapia|psic|fisio|hospital|vacina|remedio|nutri|clinica|oculista|derma|cardio/, ico: '<path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 12 5a5.5 5.5 0 0 0-10 3.5c0 2.3 1.5 4 3 5.5l7 7Z"/><path d="M3.5 12h4l2-3 3 6 2-3h6"/>' },
-  { id: 'trabalho', nome: 'Trabalho', cor: '#3b82f6', re: /reuniao|call|cliente|apresenta|entrega|projeto|trabalho|escritorio|fornecedor|contador|banco|e-?mail|proposta|gravar|video|live|post|venda|lancamento|campanha|anuncio|meet|planilha|relatorio/, ico: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18"/>' },
-  { id: 'estudo', nome: 'Estudo', cor: '#8b5cf6', re: /aula|curso|estud|prova|faculdade|ingles|espanhol|leitura|\bler\b|livro|mentoria|palestra/, ico: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5v14ZM4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/>' },
-  { id: 'social', nome: 'Pessoal', cor: '#ec4899', re: /jantar|almoco|cafe|festa|aniversario|encontro|\bbar\b|cinema|show|viagem|familia|\bmae\b|\bpai\b|amig|namor|noiv|casamento|churrasco|igreja|culto/, ico: '<path d="M17 8h1a4 4 0 1 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4ZM6 2v2M10 2v2M14 2v2"/>' },
-  { id: 'casa', nome: 'Afazeres', cor: '#ca8a04', re: /mercado|compra|limpa|pagar|conta\b|boleto|lavar|casa|farmacia|feira|\bpet\b|veterin|carro|oficina|correio/, ico: '<path d="M3 3h2l2.4 12.4a2 2 0 0 0 2 1.6h8.7a2 2 0 0 0 2-1.6L22 7H6M10 21h.01M18 21h.01"/>' },
+  { id: 'treino', nome: 'Treino', cor: '#f97316', re: /gym|workout|run\b|academia|treino|muscula|corrid|correr|pilates|crossfit|yoga|ioga|futebol|natacao|bike|caminhada|luta|jiu|boxe|danca|funcional|beach|tenis|volei/, ico: '<path d="M6.5 6.5v11M17.5 6.5v11M3 9.5v5M21 9.5v5M6.5 12h11"/>' },
+  { id: 'saude', nome: 'Saúde', cor: '#ef4444', re: /doctor|dentist|therapy|hospital|medic|dentista|exame|consulta|terapia|psic|fisio|hospital|vacina|remedio|nutri|clinica|oculista|derma|cardio/, ico: '<path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 12 5a5.5 5.5 0 0 0-10 3.5c0 2.3 1.5 4 3 5.5l7 7Z"/><path d="M3.5 12h4l2-3 3 6 2-3h6"/>' },
+  { id: 'trabalho', nome: 'Trabalho', cor: '#3b82f6', re: /meeting|client|report|work\b|office|reuniao|call|cliente|apresenta|entrega|projeto|trabalho|escritorio|fornecedor|contador|banco|e-?mail|proposta|gravar|video|live|post|venda|lancamento|campanha|anuncio|meet|planilha|relatorio/, ico: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18"/>' },
+  { id: 'estudo', nome: 'Estudo', cor: '#8b5cf6', re: /class|study|exam|school|course|read\b|aula|curso|estud|prova|faculdade|ingles|espanhol|leitura|\bler\b|livro|mentoria|palestra/, ico: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5v14ZM4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/>' },
+  { id: 'social', nome: 'Pessoal', cor: '#ec4899', re: /dinner|lunch|coffee|party|birthday|family|friend|trip|jantar|almoco|cafe|festa|aniversario|encontro|\bbar\b|cinema|show|viagem|familia|\bmae\b|\bpai\b|amig|namor|noiv|casamento|churrasco|igreja|culto/, ico: '<path d="M17 8h1a4 4 0 1 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4ZM6 2v2M10 2v2M14 2v2"/>' },
+  { id: 'casa', nome: 'Afazeres', cor: '#ca8a04', re: /grocer|shopping|clean|\bpay\b|bill|laundry|mercado|compra|limpa|pagar|conta\b|boleto|lavar|casa|farmacia|feira|\bpet\b|veterin|carro|oficina|correio/, ico: '<path d="M3 3h2l2.4 12.4a2 2 0 0 0 2 1.6h8.7a2 2 0 0 0 2-1.6L22 7H6M10 21h.01M18 21h.01"/>' },
 ];
 const categoria = (titulo) => { const n = normalizar(titulo || ''); return CATEGORIAS.find(c => c.re.test(n)) || null; };
 const corCat = (titulo) => (categoria(titulo) || {}).cor || 'var(--accent)';
@@ -5601,7 +5693,7 @@ function dadosRetro(ano, mes) {
   const pontosMes = Object.entries(xp.dia || {}).filter(([k]) => dentro(k)).reduce((s, [, v]) => s + v, 0);
   const ptsInicio = (xp.inicioMes || {})[chaveMes(ini)] ?? Math.max(0, xp.pontos - pontosMes);
   return {
-    ini, completo, nomeMes: ini.toLocaleDateString('pt-BR', { month: 'long' }), ano,
+    ini, completo, nomeMes: ini.toLocaleDateString(LOCALE, { month: 'long' }), ano,
     feitos: feitos.length, total: ocs.length, cats, focos: focosM.length, minFoco, habFeitos,
     diasNoMes: dias.length, checkins: comFogo.length, maiorSeq, dias, porSemana, melhorDia,
     pontosMes, tituloIni: xp.secreto ? SECRETO : tituloDe(ptsInicio), tituloFim: tituloAtual(),
@@ -5685,7 +5777,7 @@ function desenharSlideRetro(i, r) {
     r.porSemana.forEach((v, j) => {
       const hgt = Math.max(16, alt * v / max), x = x0 + j * (larg + gap);
       g.fillStyle = j === r.melhorDia ? '#fff' : 'rgba(255,255,255,.3)'; caixaArred(g, x, base - hgt, larg, hgt, 24); g.fill();
-      g.fillStyle = '#fff'; g.globalAlpha = j === r.melhorDia ? 1 : .75; g.font = fonteCard(800, 38); g.fillText(['D', 'S', 'T', 'Q', 'Q', 'S', 'S'][j], x + larg / 2, base + 64); g.globalAlpha = 1;
+      g.fillStyle = '#fff'; g.globalAlpha = j === r.melhorDia ? 1 : .75; g.font = fonteCard(800, 38); g.fillText((EM_INGLES ? ['S', 'M', 'T', 'W', 'T', 'F', 'S'] : ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'])[j], x + larg / 2, base + 64); g.globalAlpha = 1;
     });
     txt('É o dia em que você mais conclui coisas.', 600, 40, 1540, .9);
   } else {   // evolução
@@ -6026,9 +6118,9 @@ agendarLembretes();
 // A Bee conversa, a pessoa faz um teste por voz, vê o pote encher e assina.
 const RC_CHAVE = 'appl_nbAkIjJJOZRhgWUnGfzzhIPElcv';   // chave pública do RevenueCat (pode ficar no app). Fora do iPhone, a compra continua em modo de teste
 const RC_PRODUTO = { anual: 'tapbee_anual', oferta: 'tapbee_anual_oferta' };
-const QUIZ_VERSAO = '17';   // no modo de teste, uma versão nova do quiz aparece de novo no aparelho
-const PRECO_ANO = 'R$ 129,90', PRECO_MES = 'R$ 10,83', PRECO_DIA = 'R$ 0,36';
-const OFERTA_ANO = 'R$ 99,90', OFERTA_MES = 'R$ 8,33', OFERTA_DIA = 'R$ 0,28', OFERTA_OFF = '23%';   // desconto de verdade, oferecido uma vez a quem desiste da compra
+const QUIZ_VERSAO = '18';   // no modo de teste, uma versão nova do quiz aparece de novo no aparelho
+let PRECO_ANO = 'R$ 129,90', PRECO_MES = 'R$ 10,83', PRECO_DIA = 'R$ 0,36', EM_REAIS = !EM_INGLES;
+let OFERTA_ANO = 'R$ 99,90', OFERTA_MES = 'R$ 8,33', OFERTA_DIA = 'R$ 0,28', OFERTA_OFF = '23%';   // desconto de verdade, oferecido uma vez a quem desiste da compra
 const SECRETARIA_MES = 'R$ 1.700', SECRETARIA_ANO = 'R$ 20.400';
 const ID_AVISO_TESTE = 990001;
 const URL_TERMOS = 'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/';
@@ -6071,7 +6163,7 @@ const TRAVAS = [
 ];
 const AVISOS_QUIZ = [[0, 'Na hora'], [15, '15 min antes'], [60, '1 hora antes'], [120, '2 horas antes'], [1440, '1 dia antes']];
 const qzDesejo = () => DESEJOS.find(d => d[0] === qz.r.desejo);
-const qzFraseTeste = () => qzDesejo()?.[4] || 'Reunião amanhã às 10';
+const qzFraseTeste = () => tr(qzDesejo()?.[4] || 'Reunião amanhã às 10');
 // Animação de como a Bee funciona, no celular
 const CENAS_BEE = [
   ['Com o app configurado, dois toques atrás do iPhone chamam a Bee', () => `<div class="qz-c-costas"><i class="cam"></i><i class="cam b"></i><span class="toque"></span><span class="toque b"></span><span class="mao">👆</span><em class="qz-exemplo">Exemplo</em></div>`],
@@ -6139,7 +6231,7 @@ const TELAS_QUIZ = [
         try {
           const perm = await LN.requestPermissions();
           if (perm.display === 'granted') {
-            await LN.schedule({ notifications: [{ id: ID_AVISO_TESTE, title: tituloAviso(qz.feito?.titulo || 'Reunião com o cliente'), body: qzTextoAviso(m), schedule: { at: new Date(Date.now() + 2000), allowWhileIdle: true } }] });
+            await LN.schedule({ notifications: [{ id: ID_AVISO_TESTE, title: tituloAviso(qz.feito?.titulo || tr('Reunião com o cliente')), body: qzTextoAviso(m), schedule: { at: new Date(Date.now() + 2000), allowWhileIdle: true } }] });
             qz.avisoReal = true;
           }
         } catch (e) { console.warn('Quiz: aviso de teste', e); }
@@ -6181,10 +6273,10 @@ const TELAS_QUIZ = [
       return `<div class="qz-logo"><img src="${MASCOTES.bee}" alt=""><b>Tap Bee</b></div>
       <p class="qz-pag-oi">${qzNome()}, sua agenda está pronta.</p>
       <h1 class="qz-capa qz-capa2"><span>Uma secretária no seu bolso,</span><br>o ano inteiro.</h1>
-      <div class="qz-pag-fones">${['semana', 'habitos', 'hoje'].map(k => `<div class="qz-fone qz-pf-${k}"><div class="qz-fone-tela"><img src="${PRINTS_QUIZ[k]}" alt=""></div></div>`).join('')}</div>
+      <div class="qz-pag-fones">${['semana', 'habitos', 'hoje'].map(k => `<div class="qz-fone qz-pf-${k}"><div class="qz-fone-tela"><img src="${(EM_INGLES ? window.PRINTS_EN : PRINTS_QUIZ)[k]}" alt=""></div></div>`).join('')}</div>
       <div class="qz-preco"><b>${PRECO_MES}</b><span>/mês</span></div>
       <p class="qz-preco-sub">${PRECO_ANO} cobrado por ano,<br>menos de ${PRECO_DIA} por dia</p>
-      <div class="qz-compara"><div><small>Uma secretária</small><b>${SECRETARIA_ANO}/ano</b><small>${SECRETARIA_MES} por mês</small></div><div class="bee"><small>A Bee</small><b>${PRECO_ANO}/ano</b><small>o ano inteiro</small></div></div>`;
+      <div class="qz-compara" ${EM_REAIS ? '' : 'hidden'}><div><small>Uma secretária</small><b>${SECRETARIA_ANO}/ano</b><small>${SECRETARIA_MES} por mês</small></div><div class="bee"><small>A Bee</small><b>${PRECO_ANO}/ano</b><small>o ano inteiro</small></div></div>`;
     },
     extra: () => `<p class="qz-legal">Renova automaticamente. Cancele quando quiser.</p><div class="qz-rodape"><button id="qzRestaurar">Restaurar compra</button><a href="${URL_TERMOS}">Termos</a><a href="${URL_PRIVACIDADE}">Privacidade</a></div>` },
 ];
@@ -6224,7 +6316,7 @@ function qzLigarMic(aoFalar, fraseEsperada) {
     if (!SR) return document.getElementById('qzFrase')?.focus();
     ultimo = ''; ouvindo = false; pronto = false;
     qzEstado('Abrindo o microfone…');
-    voz = new SR(); voz.lang = 'pt-BR'; voz.interimResults = true; voz.continuous = true;
+    voz = new SR(); voz.lang = LOCALE; voz.interimResults = true; voz.continuous = true;
     voz.onstart = () => { ouvindo = true; document.getElementById('qzMic')?.classList.add('ativo'); qzEstado('Estou ouvindo. Pode falar'); silencio = setTimeout(parar, 9000); };
     voz.onresult = (e) => {
       ultimo = [...e.results].map(x => x[0].transcript).join(' ').trim();
@@ -6262,10 +6354,13 @@ function qzDemoLigar() {
   }, qzFraseTeste);
 }
 // Trocar um horário só falando: a pessoa muda o compromisso de teste e coloca outro no lugar
+const qzHoraFalada = (h) => `${h % 12 || 12} ${h < 12 ? 'AM' : 'PM'}`;
 const qzTrocaDados = () => {
   const de = qz.feito?.hora ?? 10, para = de === 15 ? 10 : 15, a = Math.min(de, para), b = Math.max(de, para), passo = (b - a) / 3;
   const horas = [a, Math.round(a + passo), Math.round(a + passo * 2), b];
-  return { de, para, horas, frases: [`Bee, surgiu um imprevisto. Passa isso para as ${para}.`, `Aproveita e marca um café com um amigo às ${de}${de < 9 ? ' da manhã' : ''}.`] };
+  return { de, para, horas, frases: EM_INGLES
+    ? [`Bee, something came up. Move this to ${qzHoraFalada(para)}.`, `And schedule coffee with a friend at ${qzHoraFalada(de)}.`]
+    : [`Bee, surgiu um imprevisto. Passa isso para as ${para}.`, `Aproveita e marca um café com um amigo às ${de}${de < 9 ? ' da manhã' : ''}.`] };
 };
 function qzTrocaHtml() {
   const { de, para, horas, frases } = qzTrocaDados(), e = qz.troca || 0, y = (h) => horas.indexOf(h) * 46 + 4;
@@ -6298,7 +6393,7 @@ function qzTrocaLigar() {
   const limpar = () => { const f = document.getElementById('qzFalado'); if (f) f.textContent = ''; qzEstado('Toque no microfone e fale'); };
   qzLigarMic((frase) => {
     if ((qz.troca || 0) === 0) {
-      const m = frase.match(/\b\d{1,2}\b/g)?.pop(), h = m && +m >= 1 && +m <= 23 ? +m : para;
+      const m = frase.match(/\b\d{1,2}\b/g)?.pop(), h = !EM_INGLES && m && +m >= 1 && +m <= 23 ? +m : para;
       document.querySelector(`[data-hora="${para}"]`).textContent = `${pad(h)}:00`;
       const a = document.getElementById('qzCardA');
       a.classList.add('voando', 'movido');
@@ -6308,22 +6403,22 @@ function qzTrocaLigar() {
       qz.troca = 1;
       qzTimer(() => {
         tocarSom();
-        dizer('Sobrou um horário livre. Agora diga:');
+        dizer(tr('Sobrou um horário livre. Agora diga:'));
         document.getElementById('qzTrocaFrase').textContent = `“${frases[1]}”`;
         const c = document.getElementById('qzFrase'); if (c) c.value = frases[1];
         limpar();
       }, 900);
       return;
     }
-    const marcou = frase.match(/\bmarc\w*\s+(?:um |uma )?(.+?)(?:\s+(?:às|as|para)\s+\d.*)?[.!]?$/i)?.[1];
-    const titulo = maiuscula(marcou || interpretar(frase).titulo.replace(/^bee,?\s*/i, '') || 'Café com um amigo');
+    const marcou = frase.match(/\b(?:marc\w*|schedule)\s+(?:um |uma |an? )?(.+?)(?:\s+(?:às|as|para|at|for)\s+\d.*)?[.!]?$/i)?.[1];
+    const titulo = maiuscula(marcou || interpretar(frase).titulo.replace(/^bee,?\s*/i, '') || tr('Café com um amigo'));
     qz.trocaTitulo = titulo;
     document.getElementById('qzCardBTit').textContent = titulo;
     document.getElementById('qzCardB').classList.add('on');
     qz.troca = 2;
     document.getElementById('qzTrocaFala').hidden = true;
     tocarSom(true); vibrar('sucesso'); confete(innerWidth / 2, innerHeight * .34, true);
-    dizer('Viu? Você só fala, e a Bee troca tudo.');
+    dizer(tr('Viu? Você só fala, e a Bee troca tudo.'));
     document.querySelector('.qz-fala img').src = MASCOTES.bee_festa;
     if (qz.i === tela) qzAtualizarBotao();
   }, () => frases[Math.min(qz.troca || 0, 1)]);
@@ -6418,6 +6513,26 @@ async function rcComprar(rc, plano) {
     toast('Não deu para concluir a compra. Confira sua internet e tente de novo.', 3500);
     return null;
   }
+}
+// Fora do Brasil, os preços da tela vêm da Apple, na moeda de cada país
+async function rcPrecos() {
+  const rc = rcPlugin();
+  if (!rc) return;
+  try {
+    await rcIniciar(rc);
+    const { products } = await rc.getProducts({ productIdentifiers: Object.values(RC_PRODUTO), type: 'SUBSCRIPTION' });
+    const anual = products.find(p => p.identifier === RC_PRODUTO.anual), oferta = products.find(p => p.identifier === RC_PRODUTO.oferta);
+    if (!anual) return;
+    EM_REAIS = anual.currencyCode === 'BRL';
+    if (EM_REAIS && !EM_INGLES) return;
+    const fmt = (v, cima) => new Intl.NumberFormat(LOCALE, { style: 'currency', currency: anual.currencyCode }).format(cima ? Math.ceil(v * 100) / 100 : v);
+    PRECO_ANO = anual.priceString; PRECO_MES = fmt(anual.price / 12); PRECO_DIA = fmt(anual.price / 365, true);
+    if (oferta) {
+      OFERTA_ANO = oferta.priceString; OFERTA_MES = fmt(oferta.price / 12); OFERTA_DIA = fmt(oferta.price / 365, true);
+      OFERTA_OFF = `${Math.round((1 - oferta.price / anual.price) * 100)}%`;
+    }
+    if (qz && TELAS_QUIZ[qz.i]?.id === 'pagamento') qzDesenhar();
+  } catch (e) { console.error('[Compra]', e); }
 }
 async function rcRestaurar() {
   const rc = rcPlugin();
@@ -6561,7 +6676,7 @@ function qzOferta() {
       <p class="qz-sub">Agora ela é sua secretária por um ano inteiro.</p>
       <ul class="qz-oferta-lista">${['Secretária por voz', 'Dois toques atrás do iPhone', 'Avisos no tempo que você escolher', 'Troca de horários só falando', 'Trackeamento de hábitos e Pomodoro'].map(x => `<li>${ICONE_CHECK}${x}</li>`).join('')}</ul>
       <div class="qz-oferta-preco"><i>${OFERTA_OFF} OFF</i><s>${PRECO_ANO}</s><b>${OFERTA_ANO}</b><span>/ano</span></div>
-      <p class="qz-oferta-dia">Menos de ${OFERTA_DIA} por dia. Uma secretária custa ${SECRETARIA_MES} por mês, ${SECRETARIA_ANO} por ano.</p>
+      <p class="qz-oferta-dia">${EM_REAIS ? `Menos de ${OFERTA_DIA} por dia. Uma secretária custa ${SECRETARIA_MES} por mês, ${SECRETARIA_ANO} por ano.` : `menos de ${OFERTA_DIA} por dia`}</p>
       <p class="qz-preco-sub">Renova automaticamente, cancele quando quiser.</p>
       <p class="qz-ultima">Esta é a última vez que você vai ver esta oferta.</p>
       <button class="qz-seguir qz-seguir-longo" id="qzOfertaSim">Quero minha secretária por ${OFERTA_ANO}</button>
@@ -6580,7 +6695,7 @@ function qzAvisoTeste() {
     if (qz.avisoReal) return;
     const b = document.createElement('div');
     b.className = 'qz-banner qz-banner-topo';
-    b.innerHTML = `<img src="${MASCOTES.bee}" alt=""><span><b>${esc(tituloAviso(qz.feito?.titulo || 'Reunião com o cliente'))}</b><small>${esc(qzTextoAviso(qz.r.aviso ?? lembretePadrao()))}</small></span>`;
+    b.innerHTML = `<img src="${MASCOTES.bee}" alt=""><span><b>${esc(tituloAviso(qz.feito?.titulo || tr('Reunião com o cliente')))}</b><small>${esc(qzTextoAviso(qz.r.aviso ?? lembretePadrao()))}</small></span>`;
     document.querySelector('.qz-tela')?.appendChild(b);
   }, 2300);
 }
@@ -6615,7 +6730,7 @@ const qzSomCopo = (vazio) => qzNota(vazio ? 196 : 300 + Math.random() * 60, vazi
 function qzDigitarFala() {
   const real = document.querySelector('.qz-bal-fantasma'), vis = document.querySelector('.qz-bal-texto');
   if (!real || !vis) return;
-  const txt = real.textContent;
+  const txt = tr(real.textContent);
   if (QZ_CALMO) { vis.textContent = txt; return; }
   let c = 0;
   const dig = () => { if (!document.body.contains(vis)) return; c += 2; vis.textContent = txt.slice(0, c); if (c < txt.length) qzTimer(dig, 22); };
@@ -6687,6 +6802,7 @@ else if (params.has('voz')) abrirVoz();
 else if (!lerPref('agenda.boasVindas', '')) boasVindas();
 if (params.toString()) history.replaceState(null, '', location.pathname);
 rcConferir();
+rcPrecos();
 
 // ================= Ambiente imersivo: favo, pólen, Bee viva, topo, puxar =================
 const CALMO = matchMedia('(prefers-reduced-motion: reduce)').matches;
