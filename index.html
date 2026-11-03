@@ -5197,7 +5197,7 @@ function iniciarReconhecimento() {
     if (el) el.textContent = textoFinal;
     const onda = document.getElementById('vOnda');
     if (onda) { onda.classList.add('falando'); clearTimeout(onda._t); onda._t = setTimeout(() => onda.classList.remove('falando'), 450); }
-    esperarSilencio(6000); // encerra sozinho após 6 s calado: dá tempo de lembrar do próximo compromisso
+    esperarSilencio(2800); // encerra sozinho após 2,8 s calado
   };
   rec.onerror = (e) => {
     const t = document.getElementById('vTitulo');
