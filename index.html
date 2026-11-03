@@ -2015,7 +2015,7 @@
   .chip-op span { min-height: 44px; display: inline-flex; align-items: center; }
   .check { position: relative; }
   .check::before { content: ''; position: absolute; inset: -9px; }
-  .engrenagem { width: auto !important; height: 44px !important; padding: 0 14px 0 11px !important; border-radius: 999px !important; display: inline-flex !important; align-items: center; gap: 6px; font-size: 14px; font-weight: 700; }
+  .engrenagem:not([hidden]) { width: auto !important; height: 44px !important; padding: 0 14px 0 11px !important; border-radius: 999px !important; display: inline-flex !important; align-items: center; gap: 6px; font-size: 14px; font-weight: 700; }
   .engrenagem svg { width: 20px; height: 20px; }
   .nav-btns button { width: auto !important; padding: 0 12px; border-radius: 999px; display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 650; }
   .navega { flex-wrap: wrap; gap: 8px; }
@@ -2051,6 +2051,43 @@
   .facil .mic-aba { order: 1; }
   .facil .aba[data-aba="semana"] { order: 2; }
   .facil .status-linha, .facil .hoje-esq, .facil #topoAcao, .facil .aba[data-aba="habitos"], .facil .aba[data-aba="foco"] { display: none !important; }
+  .mais-ajustes { margin-top: 20px; border-top: 1px solid var(--line); }
+  .mais-ajustes > summary { display: flex; align-items: center; gap: 8px; min-height: 56px; font-size: 17px; font-weight: 750; cursor: pointer; list-style: none; }
+  .mais-ajustes > summary::-webkit-details-marker { display: none; }
+  .mais-ajustes > summary::after { content: '›'; margin-left: auto; font-size: 24px; color: var(--muted); transition: transform .2s; }
+  .mais-ajustes[open] > summary::after { transform: rotate(90deg); }
+  .mais-ajustes > summary small { font-size: 13px; font-weight: 500; color: var(--muted); }
+  .letra-grande { -webkit-text-size-adjust: 125%; text-size-adjust: 125%; }
+  .sheet { position: relative; }
+  .folha-fechar { position: absolute; top: 10px; right: 12px; z-index: 3; min-height: 38px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--field); color: var(--text); font-size: 14px; font-weight: 700; cursor: pointer; }
+  .sheet.tem-fechar { padding-top: 56px; }
+  .sheet.tem-fechar::before { position: absolute; top: 10px; left: 50%; margin: 0 0 0 -18px; }
+  .conf-conflito { margin: 10px 0 0; padding: 12px 14px; border-radius: 14px; background: var(--danger-soft); color: var(--danger); font-size: 15px; font-weight: 650; text-align: left; }
+  .conf-primeiro { margin: 10px 0 0; padding: 12px 14px; border-radius: 14px; background: var(--ok-soft); color: var(--text); font-size: 16px; font-weight: 700; text-align: center; }
+  .link-exemplos { display: block; margin: 8px auto 0; min-height: 44px; border: 0; background: none; color: var(--accent-text); font-size: 15px; font-weight: 700; cursor: pointer; }
+  .ex-grupo { margin: 14px 0 0; text-align: left; }
+  .ex-grupo b { display: block; margin-bottom: 6px; font-size: 14px; color: var(--muted); }
+  .ex-grupo span { display: block; margin-top: 6px; padding: 12px 14px; border-radius: 14px; background: var(--field); font-size: 16px; }
+  .guia-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); text-align: left; }
+  .guia-item > span { flex: 1; font-size: 16px; font-weight: 650; }
+  .guia-item button { flex: none; min-height: 44px; padding: 0 14px; border: 0; border-radius: 12px; background: var(--accent); color: var(--on-accent); font-size: 14px; font-weight: 750; cursor: pointer; }
+  .guia-fundo { position: fixed; inset: 0; z-index: 30; background: rgba(8,8,16,.55); animation: fade .2s ease; }
+  .guia-buraco { position: fixed; z-index: 31; border-radius: 18px; box-shadow: 0 0 0 4px #f5b21b, 0 0 0 9999px rgba(8,8,16,.55); pointer-events: none; animation: guiaPulsa 1.3s ease-in-out infinite; }
+  .guia-balao { position: fixed; z-index: 32; left: 16px; right: 16px; max-width: 420px; margin: 0 auto; padding: 14px 16px; border-radius: 16px; background: var(--card); color: var(--text); font-size: 17px; font-weight: 700; text-align: center; box-shadow: var(--shadow-lg); }
+  .guia-balao small { display: block; margin-top: 4px; font-size: 13px; font-weight: 500; color: var(--muted); }
+  @keyframes guiaPulsa { 50% { box-shadow: 0 0 0 8px #f5b21b, 0 0 0 9999px rgba(8,8,16,.55); } }
+  .jeito { margin: 14px 0 0; padding: 14px; border-radius: 16px; background: var(--field); text-align: left; }
+  .jeito b { display: block; font-size: 17px; }
+  .jeito small { display: block; margin: 2px 0 8px; font-size: 13px; color: var(--muted); }
+  .jeito ol { margin: 0; padding-left: 20px; font-size: 15px; line-height: 1.5; }
+  .dt-filme { position: relative; width: 210px; height: 150px; margin: 12px auto 4px; overflow: hidden; border: 5px solid #1d1a12; border-radius: 22px; background: #f2f2f7; color: #000; text-align: left; font-size: 13px; }
+  .dt-filme > div { position: absolute; inset: 0; padding: 10px; opacity: 0; animation: dtFilme 9s infinite; }
+  .dt-filme > div:nth-child(2) { animation-delay: 3s; }
+  .dt-filme > div:nth-child(3) { animation-delay: 6s; }
+  @keyframes dtFilme { 0%, 30% { opacity: 1; } 33%, 100% { opacity: 0; } }
+  .dt-filme em { display: block; margin-bottom: 6px; font-style: normal; font-size: 11px; font-weight: 700; color: #6b6b70; }
+  .dt-filme i { display: block; padding: 8px 10px; margin-bottom: 5px; border-radius: 9px; background: #fff; font-style: normal; font-weight: 600; }
+  .dt-filme i.on { background: #0a84ff; color: #fff; }
   .hoje-esq, .hoje-dir, .hoje-topo { display: contents; }
   .ipad .so-iphone { display: none; }
   @media (min-width: 620px) {
@@ -2100,13 +2137,35 @@
 <main id="lista"></main>
 
 <section id="mais" hidden>
-  <button class="ajuste-convite" id="btnConvites"><span class="ac-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg></span><span class="ac-txt"><b>Monte sua colmeia</b><small>Convide amigos: +100 pontos e 1 protetor por amigo</small></span></button>
   <h2 class="sec">Você</h2>
-  <button class="icon-btn linha-ajuste" id="btnSons"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg><span id="sonsRot">Sons de comemoração: ligados</span></button>
   <button class="icon-btn linha-ajuste" id="btnFacil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg><span id="facilRot">Modo fácil: desligado</span></button>
+  <button class="icon-btn linha-ajuste" id="btnLetra"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19 9 5l5 14M6 14h6M15 19l3-8 3 8M16 16h4"/></svg><span id="letraRot">Letra grande: desligada</span></button>
   <button class="icon-btn linha-ajuste" id="btnNome"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Seu nome na saudação</span></button>
+  <h2 class="sec">Ajuda</h2>
+  <button class="icon-btn linha-ajuste" id="btnComoUsar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7M12 17h.01"/></svg><span>Como usar o app</span></button>
   <h2 class="sec">Avisos</h2>
   <button class="icon-btn" id="btnNotif"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span>Ativar avisos</span></button>
+  <h2 class="sec so-iphone">Atalho do iPhone</h2>
+  <button class="dt-ajuste" id="btnDoisToques" hidden></button>
+  <details class="ajuda" id="ajudaAtalhoWeb">
+    <summary>Abrir com 2 toques atrás do iPhone</summary>
+    <ol>
+      <li>Toque no botão abaixo e depois em <b>Adicionar Atalho</b>.
+        <a class="instalar" href="https://www.icloud.com/shortcuts/7935ee07c5ac46bea2381cffcf53d948"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>Instalar atalho “Anotar Compromisso”</a></li>
+      <li>Vá em <b>Ajustes → Acessibilidade → Toque → Tocar Atrás → Toque Duplo</b> e escolha <b>Anotar Compromisso</b> (lá embaixo, em Atalhos).</li>
+      <li>Na primeira vez que usar, o iPhone pede permissão para o atalho abrir a agenda: toque em <b>Permitir</b>.</li>
+    </ol>
+    <p class="ajuda-rodape">Pronto: 2 toques atrás, fale com calma, toque em “Concluído” e o compromisso aparece aqui já salvo. Também funciona dizendo “E aí Siri, Anotar Compromisso”.</p>
+  </details>
+  <button class="icon-btn linha-ajuste so-iphone" id="btnOutrosJeitos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg><span>Botão de Ação e Central de Controle</span></button>
+  <h2 class="sec">Bee, sua secretária</h2>
+  <div class="dicas">
+    <p class="bk-txt" id="txtIA"></p>
+    <button class="icon-btn linha-ajuste" id="btnIA"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Ativar a Bee</span></button>
+  </div>
+  <details class="mais-ajustes"><summary>Mais ajustes<small>cores, sons, backup e mais</small></summary>
+  <button class="ajuste-convite" id="btnConvites"><span class="ac-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg></span><span class="ac-txt"><b>Monte sua colmeia</b><small>Convide amigos: +100 pontos e 1 protetor por amigo</small></span></button>
+  <button class="icon-btn linha-ajuste" id="btnSons"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg><span id="sonsRot">Sons de comemoração: ligados</span></button>
   <h2 class="sec">Cor do app</h2>
   <div class="dicas">
     <div class="temas temas3">
@@ -2124,11 +2183,6 @@
       <button class="tema-btn modo-btn" data-escolher-modo="auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg>Igual ao iPhone</button>
     </div>
   </div>
-  <h2 class="sec">Bee, sua secretária</h2>
-  <div class="dicas">
-    <p class="bk-txt" id="txtIA"></p>
-    <button class="icon-btn linha-ajuste" id="btnIA"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Ativar a Bee</span></button>
-  </div>
   <h2 class="sec">Backup</h2>
   <div class="dicas backup">
     <p class="bk-txt" id="txtNuvem">Seus dados ficam só neste aparelho. Salve um backup no iCloud ou no Arquivos para não perder nada se trocar de celular.</p>
@@ -2139,18 +2193,6 @@
     </div>
     <input type="file" id="arqBackup" accept=".json,application/json" hidden>
   </div>
-  <h2 class="sec so-iphone">Atalho do iPhone</h2>
-  <button class="dt-ajuste" id="btnDoisToques" hidden></button>
-  <details class="ajuda" id="ajudaAtalhoWeb">
-    <summary>Abrir com 2 toques atrás do iPhone</summary>
-    <ol>
-      <li>Toque no botão abaixo e depois em <b>Adicionar Atalho</b>.
-        <a class="instalar" href="https://www.icloud.com/shortcuts/7935ee07c5ac46bea2381cffcf53d948"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>Instalar atalho “Anotar Compromisso”</a></li>
-      <li>Vá em <b>Ajustes → Acessibilidade → Toque → Tocar Atrás → Toque Duplo</b> e escolha <b>Anotar Compromisso</b> (lá embaixo, em Atalhos).</li>
-      <li>Na primeira vez que usar, o iPhone pede permissão para o atalho abrir a agenda: toque em <b>Permitir</b>.</li>
-    </ol>
-    <p class="ajuda-rodape">Pronto: 2 toques atrás, fale com calma, toque em “Concluído” e o compromisso aparece aqui já salvo. Também funciona dizendo “E aí Siri, Anotar Compromisso”.</p>
-  </details>
   <h2 class="sec">O que você pode falar</h2>
   <div class="dicas">
     <ul>
@@ -2162,6 +2204,7 @@
       <li>“Como tá minha semana?”</li>
     </ul>
   </div>
+  </details>
   <h2 class="sec">Sobre</h2>
   <div class="dicas lista-links">
     <a href="privacidade.html" target="_blank" rel="noopener">Política de privacidade</a>
@@ -2331,7 +2374,17 @@ function salvarNotas() { try { localStorage.setItem('agenda.notas', JSON.stringi
 function carregar() {
   try { return JSON.parse(localStorage.getItem(CHAVE)) || []; } catch { return []; }
 }
+// Widget da tela de início: os próximos compromissos
+function atualizarWidget() {
+  const W = pluginNativo('BeeWidget');
+  if (!W) return;
+  const agora = new Date(), hoje = inicioDoDia(agora);
+  const itens = ocorrencias(hoje, maisDias(hoje, 4)).filter(o => !estaFeito(o.ev, o.inicio) && fimDe(o.ev, o.inicio) > agora).slice(0, 8)
+    .map(o => ({ titulo: o.ev.titulo, quando: fmtQuando(o.inicio), fim: fimDe(o.ev, o.inicio).getTime() }));
+  W.atualizar({ itens }).catch(() => {});
+}
 function salvar() {
+  setTimeout(atualizarWidget, 0);
   try { localStorage.setItem(CHAVE, JSON.stringify(eventos)); } catch {}
   agendarLembretes();
 }
@@ -2649,6 +2702,11 @@ function fmtLembrete(min) {
   return `${min} min antes`;
 }
 // "Amanhã, às 3 da tarde"
+// Outro compromisso no mesmo horário
+function conflitoDe(ev) {
+  const ini = new Date(ev.inicio), fim = fimDe(ev, ini), dia = inicioDoDia(ini);
+  return ocorrencias(dia, maisDias(dia, 1)).find(o => o.ev.id !== ev.id && o.inicio < fim && fimDe(o.ev, o.inicio) > ini);
+}
 function fmtQuando(d) {
   const dif = Math.round((inicioDoDia(d) - inicioDoDia(new Date())) / 86400000);
   const semana = maiuscula(d.toLocaleDateString(LOCALE, { weekday: 'long' }).replace('-feira', ''));
@@ -2807,7 +2865,7 @@ function telaHoje() {
     : total && tudo ? `<div class="tudo-feito">${cenaMascote('festa')}<b>Dia fechado, pote cheio!</b><span>Pode descansar. Amanhã tem mais.</span></div>` : linhaDoTempo(hoje, agora, true);
   html += `<section class="grupo"><div class="grupo-topo"><h2>${tituloDia}</h2><button class="novo-mini" data-novo-comp>${ICO.mais}Novo compromisso</button></div>${htmlFaixaDias(hoje)}<div class="dia-corpo">${corpo}</div></section>`;
   if (feitos && !diaHoje) html += `<details class="feitos"><summary>Feitos (${feitos})</summary>${feitosL.map(o => cartao(o, agora)).join('')}</details>`;
-  return html + '</div>' + htmlNotas() + '<div class="hoje-esq">' + htmlFalaBee(total, feitos, agora) + htmlProgresso() + '</div>';
+  return html + '</div>' + htmlNotas() + '<div class="hoje-esq">' + htmlProgresso() + '</div>';
 }
 // "Pra não esquecer": anotações sem dia nem hora, no fim do Hoje
 function htmlNotas() {
@@ -3208,7 +3266,7 @@ document.getElementById('btnSons').onclick = () => { gravarPref('agenda.sonsToqu
 rotSons();
 
 // ---------- Backup: tudo o que o app guarda vira um arquivo .json ----------
-const CHAVES_BACKUP = ['agenda.modoFacil', 'agenda.eventos', 'agenda.notas', 'agenda.lembretePadrao', 'agenda.bicho', 'agenda.sonsToque', 'agenda.habitos', 'agenda.xp', 'agenda.focos', 'agenda.foco', 'agenda.nome', 'agenda.tema', 'agenda.modo', 'agenda.marca', 'agenda.visao', 'agenda.boasVindas', 'agenda.dicaFechada', 'agenda.ofertaVista3', 'agenda.plano'];
+const CHAVES_BACKUP = ['agenda.letraGrande', 'agenda.modoFacil', 'agenda.eventos', 'agenda.notas', 'agenda.lembretePadrao', 'agenda.bicho', 'agenda.sonsToque', 'agenda.habitos', 'agenda.xp', 'agenda.focos', 'agenda.foco', 'agenda.nome', 'agenda.tema', 'agenda.modo', 'agenda.marca', 'agenda.visao', 'agenda.boasVindas', 'agenda.dicaFechada', 'agenda.ofertaVista3', 'agenda.plano'];
 function mostrarUltimoBackup() {
   const el = document.getElementById('bkUltimo'), quando = lerPref('agenda.ultimoBackup', '');
   if (window.iCloudAtivo && !quando) { el.textContent = 'Backup manual é opcional: o iCloud já cuida disso.'; el.classList.remove('velho'); return; }
@@ -3431,9 +3489,7 @@ function abrirAcoes(ev, dia) {
       <button class="acao-ev primario" id="aFeito">${ICO.ok}${feito ? 'Desmarcar' : 'Feito'}</button>
       <button class="acao-ev" id="aMudar">${ICO.lapis}Mudar</button>
       <button class="acao-ev perigo" id="aApagar">${ICO.lixo}${ev.repetir ? 'Apagar só este dia' : 'Apagar'}</button>
-      <button class="link-digitar" id="aFechar">Fechar</button>
     </div>`);
-  document.getElementById('aFechar').onclick = fecharFolha;
   document.getElementById('aMudar').onclick = () => abrirEdicao(ev);
   document.getElementById('aApagar').onclick = () => { fecharFolha(); excluirPorGesto(chave); };
   document.getElementById('aFeito').onclick = () => {
@@ -4559,6 +4615,37 @@ document.getElementById('lista').addEventListener('click', (ev) => {
 });
 
 // ---------- Primeira vez no app: 3 passos ----------
+// Guia "Como usar": mostra na tela onde tocar
+const GUIA = [
+  ['Marcar um compromisso', 'hoje', '#btnMic', 'Toque aqui e fale o compromisso'],
+  ['Mudar ou apagar', 'hoje', '.evento .info', 'Toque no compromisso para mudar ou apagar'],
+  ['Marcar como feito', 'hoje', '.evento .check', 'Toque neste círculo quando terminar'],
+  ['Ver os próximos dias', 'hoje', '.aba[data-aba="semana"]', 'Toque aqui para ver sua agenda'],
+  ['Anotar sem dia marcado', 'hoje', '.nota-add, .nota-vazia', 'Toque aqui para anotar sem dia e hora'],
+];
+function abrirComoUsar() {
+  abrirFolha(`<div class="ouvindo"><h3>Como usar o app</h3>${GUIA.map(([t], i) => `<div class="guia-item"><span>${t}</span><button data-guia="${i}">Me mostra</button></div>`).join('')}</div>`);
+  sheet.querySelectorAll('[data-guia]').forEach(b => b.onclick = () => mostrarGuia(GUIA[+b.dataset.guia]));
+}
+function mostrarGuia([, ir, seletor, texto]) {
+  fecharFolha();
+  if (aba !== ir) irPara(ir);
+  setTimeout(() => {
+    const el = document.querySelector(seletor);
+    if (!el) { toast('Primeiro marque um compromisso. Toque em Falar.', 4000); return mostrarGuia(GUIA[0]); }
+    el.scrollIntoView({ block: 'center' });
+    setTimeout(() => {
+      const r = el.getBoundingClientRect(), m = 8;
+      const camada = document.createElement('div');
+      camada.innerHTML = `<div class="guia-buraco" style="left:${r.left - m}px;top:${r.top - m}px;width:${r.width + m * 2}px;height:${r.height + m * 2}px"></div>
+        <div class="guia-balao" style="${r.top > innerHeight / 2 ? `bottom:${innerHeight - r.top + 22}px` : `top:${r.bottom + 22}px`}">${texto}<small>Toque em qualquer lugar para fechar</small></div><div class="guia-fundo" style="background:none"></div>`;
+      document.body.appendChild(camada);
+      const sai = () => camada.remove();
+      camada.addEventListener('click', sai);
+    }, 250);
+  }, 150);
+}
+
 // Primeiro uso: em vez de explicar, a Bee já pede o primeiro compromisso
 function boasVindas() {
   const semNome = !lerPref('agenda.nome', '');
@@ -4935,14 +5022,16 @@ function marcarIA() {
 async function criarDeFrase(frase) {
   frase = frase.trim();
   if (!frase) return;
+  const corr = corrigindo; corrigindo = null;
   // Antes da primeira vez, pede permissão para mandar a frase à IA (exigência da Apple)
   if (!lerPref('agenda.iaOk', '')) await pedirPermissaoIA();
   abrirFolha(`<div class="pensando"><img class="bee-voz voando" src="${MASCOTES.bee}" alt=""><div class="bee-rot">A Bee está anotando…</div><div class="frase">“${esc(frase)}”</div><div class="pontos"><i></i><i></i><i></i></div></div>`);
   let r = null;
   const usaIA = lerPref('agenda.iaOk', '') === 'sim';
   if (IA_URL && usaIA && navigator.onLine !== false) {
-    try { r = await perguntarIA(frase); } catch (e) { console.warn('IA indisponível, usando o modo simples', e); }
+    try { r = await perguntarIA(corr ? `Corrija o compromisso “${corr.titulo}”, marcado para ${fmtQuando(new Date(corr.inicio))}: ${frase}` : frase); } catch (e) { console.warn('IA indisponível, usando o modo simples', e); }
   }
+  if (corr && (!r || !Array.isArray(r.acoes))) { abrirEdicao(corr); return toast('Não consegui agora. Mude por aqui.', 4000); }
   if (!r || !Array.isArray(r.acoes)) {
     // Sem internet/IA: entende só pedidos de criar, pelo jeito antigo
     const p = interpretar(frase), d = new Date(p.inicio);
@@ -5028,8 +5117,14 @@ function executar(r, frase) {
 // ---------- Folhas (overlay) ----------
 const overlay = document.getElementById('overlay');
 const sheet = document.getElementById('sheet');
-function abrirFolha(html) { sheet.innerHTML = html; overlay.classList.add('show'); }
-function fecharFolha() { overlay.classList.remove('show'); pararReconhecimento(); notaParaAgendar = null; }
+function abrirFolha(html) {
+  const comFechar = !html.includes('class="pensando"');
+  sheet.innerHTML = (comFechar ? '<button class="folha-fechar" data-fechar-folha>Fechar</button>' : '') + html;
+  sheet.classList.toggle('tem-fechar', comFechar);
+  overlay.classList.add('show');
+}
+sheet.addEventListener('click', (e) => { if (e.target.closest('[data-fechar-folha]')) fecharFolha(); });
+function fecharFolha() { overlay.classList.remove('show'); textoFinal = ''; pararReconhecimento(); notaParaAgendar = null; corrigindo = null; }
 overlay.addEventListener('click', (e) => { if (e.target === overlay) fecharFolha(); });
 // Com o teclado aberto, a folha cabe no espaço que sobra e o campo em uso continua à vista
 function folhaAcimaDoTeclado() {
@@ -5068,6 +5163,8 @@ function mostrarResultado(r, frase, evs, antes) {
     : tipos.every(t => t === 'desmarcar') ? `<span class="r-ico apagar">${ICO.lixo}</span>` : tipos.every(t => t === 'mudar') ? `<span class="r-ico info">${ICO.lapis}</span>` : `<span class="r-ico">${ICO.ok}</span>`;
   const um = evs.length === 1 ? evs[0] : null, errou = r.tipo === 'nao_entendi', agiu = r.tipo === 'agir' && !!antes;
   const quando = (ev) => fmtQuando(new Date(ev.inicio));
+  const primeiro = agiu && tipos.includes('criar') && evs.length && !lerPref('agenda.primeiroOk', '');
+  if (primeiro) { gravarPref('agenda.primeiroOk', '1'); setTimeout(() => confete(innerWidth / 2, innerHeight * .4, true), 200); }
   const detalhes = um ? `
         <div class="conf-grande"><b>${esc(um.titulo)}</b><span>${esc(quando(um))}</span>
         <small>${um.lembreteMin === null || um.lembreteMin === undefined ? 'Sem aviso' : `Vou te avisar: ${fmtLembrete(um.lembreteMin)}`}${um.repetir ? ` · ${esc(fmtRepetir(um.repetir))}` : ''}</small></div>`
@@ -5077,6 +5174,8 @@ function mostrarResultado(r, frase, evs, antes) {
       ${formatarResposta(r.resposta || '', icone)}
       ${errou ? `<div class="frase">Ouvi: “${esc(frase)}”</div><div class="conf-exemplo">Tente assim:<b>“dentista quinta às 3”</b></div>` : ''}
       ${detalhes}
+      ${um && conflitoDe(um) ? `<div class="conf-conflito">Atenção: você já tem “${esc(conflitoDe(um).ev.titulo)}” às ${fmtHora(conflitoDe(um).inicio)}.</div>` : ''}
+      ${primeiro ? '<div class="conf-primeiro">Pronto! É só isso. Sempre que lembrar de algo, é só falar.</div>' : ''}
       ${tipos.includes('anotar') && r.tipo === 'agir' ? '<div class="linha"><span>Onde fica</span><span>Em “Pra não esquecer”, na tela Hoje</span></div>' : ''}
       ${r.modoSimples ? '<div class="nota-simples">Modo simples: a Bee está desligada. <button id="bAtivarIA">Ativar</button></div>' : ''}
       <div class="botoes">
@@ -5092,7 +5191,7 @@ function mostrarResultado(r, frase, evs, antes) {
   on('bAtivarIA', () => { gravarPref('agenda.iaOk', 'sim'); marcarIA(); fecharFolha(); vibrar('sucesso'); toast('Bee ativada! 🐝'); });
   on('bEscrever', abrirDigitar);
   on('bDeNovo', abrirVoz);
-  on('bCorrigir', () => { if (um) abrirEdicao(um); else { desfazer(); abrirVoz(); } });
+  on('bCorrigir', () => { if (um) abrirCorrecao(um); else { desfazer(); abrirVoz(); } });
   on('bDesfazer', () => { desfazer(); fecharFolha(); toast('Desfeito'); });
 }
 
@@ -5182,7 +5281,10 @@ function abrirEdicao(ev, novo = false) {
     if (novo) { eventos.push(ev); diaSel = inicioDoDia(new Date(ev.inicio)); rolarParaDia = true; }
     if (novo) mostrarDiaNoHoje(ev);
     if (novo && notaParaAgendar) { notas = notas.filter(n => n.id !== notaParaAgendar); salvarNotas(); }
-    salvar(); destacarId = ev.id; render(); fecharFolha(); vibrar('sucesso'); if (!(novo && dicaPosCriar())) toast(novo ? 'Compromisso criado' : 'Alterações salvas');
+    salvar(); destacarId = ev.id; render(); fecharFolha(); vibrar('sucesso');
+    if (novo) gravarPref('agenda.primeiroOk', '1');
+    const choque = conflitoDe(ev);
+    if (choque) { toast(`Atenção: você já tem “${choque.ev.titulo}” às ${fmtHora(choque.inicio)}.`, 6000); return; } if (!(novo && dicaPosCriar())) toast(novo ? 'Compromisso criado' : 'Alterações salvas');
   };
   if (novo) { document.getElementById('bCancelar').onclick = fecharFolha; document.getElementById('bFalarForm').onclick = abrirVoz; }
   else document.getElementById('bExcluir').onclick = () => {
@@ -5225,23 +5327,46 @@ class VozNativa {
   }
 }
 const SR = pluginNativo('Voz') ? VozNativa : (window.SpeechRecognition || window.webkitSpeechRecognition);
-let rec = null, textoFinal = '';
+let rec = null, textoFinal = '', corrigindo = null;
 const ICONE_MIC = document.querySelector('#btnMic svg').outerHTML;
 
+// Corrigir só falando: "não, é às 4"
+function abrirCorrecao(ev) {
+  if (navigator.onLine === false || lerPref('agenda.iaOk', '') !== 'sim') return abrirEdicao(ev);
+  corrigindo = ev;
+  abrirVoz();
+}
+function abrirExemplos() {
+  textoFinal = ''; pararReconhecimento();
+  const g = (t, l) => `<div class="ex-grupo"><b>${t}</b>${l.map(x => `<span>${x}</span>`).join('')}</div>`;
+  abrirFolha(`<div class="ouvindo">
+    <h3>O que posso falar?</h3>
+    ${g('Marcar', ['“dentista quinta às 3”', '“academia toda segunda às 7”'])}
+    ${g('Mudar', ['“passa o dentista para as 5”'])}
+    ${g('Desmarcar', ['“desmarca a academia de amanhã”'])}
+    ${g('Perguntar', ['“o que tenho amanhã?”'])}
+    <button class="cta-falar bv-falar" id="exFalar">${ICO.mic}Falar agora</button>
+  </div>`);
+  document.getElementById('exFalar').onclick = abrirVoz;
+}
 function abrirVoz() {
   if (navigator.onLine === false) return abrirDigitar();   // o reconhecimento de voz do iPhone precisa de internet
   abrirFolha(`
     <div class="ouvindo">
       <img class="bee-voz" src="${MASCOTES.bee}" alt="">
       <h3 id="vTitulo">Toque para falar</h3>
+      ${corrigindo ? `<p class="dt-grande">O que mudar em <b>${esc(corrigindo.titulo)}</b>?</p>` : ''}
       <button class="pulse" id="vMic" aria-label="Começar ou parar de ouvir">${ICONE_MIC}</button>
       <div class="onda" id="vOnda" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
       <div class="transcricao" id="vTexto"></div>
-      <div class="exemplos"><span>“médico terça às 4”</span></div>
+      <div class="exemplos"><span>${corrigindo ? '“não, é às 4”' : '“médico terça às 4”'}</span></div>
+      ${corrigindo ? '' : '<button class="link-exemplos" id="vExemplos">O que posso falar?</button>'}
       <button class="cta-falar" id="vPronto" hidden>Pronto, terminei</button>
-      <button class="link-digitar" id="vDigitar">${ICO.teclado}Prefiro digitar</button>
+      <button class="link-digitar" id="vDigitar">${ICO.teclado}${corrigindo ? 'Prefiro editar' : 'Prefiro digitar'}</button>
     </div>`);
-  document.getElementById('vDigitar').onclick = abrirDigitar;
+  const emCorrecao = corrigindo;
+  document.getElementById('vDigitar').onclick = emCorrecao ? () => { const ev = emCorrecao; fecharFolha(); abrirEdicao(ev); } : abrirDigitar;
+  document.getElementById('vExemplos')?.addEventListener('click', abrirExemplos);
   document.getElementById('vPronto').onclick = pararReconhecimento;
   document.getElementById('vMic').onclick = () => rec ? pararReconhecimento() : iniciarReconhecimento();
   iniciarReconhecimento();
@@ -5495,7 +5620,14 @@ listaEl.addEventListener('touchend', soltarArrasto);
 listaEl.addEventListener('touchcancel', soltarArrasto);
 
 // ---------- Tamanho de texto do iPhone (no app da App Store, com o plugin @capacitor/text-zoom) ----------
-(async () => { try { const TZ = window.Capacitor?.Plugins?.TextZoom; if (TZ) { const { value } = await TZ.getPreferred(); await TZ.set({ value }); } } catch {} })();
+const letraGrande = () => lerPref('agenda.letraGrande', '') === '1';
+async function aplicarLetra() {
+  document.documentElement.classList.toggle('letra-grande', letraGrande());
+  document.getElementById('letraRot').textContent = `Letra grande: ${letraGrande() ? 'ligada' : 'desligada'}`;
+  try { const TZ = window.Capacitor?.Plugins?.TextZoom; if (TZ) { const { value } = await TZ.getPreferred(); await TZ.set({ value: value * (letraGrande() ? 1.25 : 1) }); } } catch {}
+}
+aplicarLetra();
+document.getElementById('btnLetra').onclick = () => { gravarPref('agenda.letraGrande', letraGrande() ? '' : '1'); aplicarLetra(); vibrar('selecao'); };
 
 // ---------- Sem internet ----------
 function marcarConexao() { document.getElementById('offline').hidden = navigator.onLine !== false; }
@@ -6070,6 +6202,11 @@ function abrirDoisToques(passo = 0) {
       <div class="dt-num">2</div>
       <h3>Ligue os 2 toques</h3>
       <p class="dt-grande">Abra os <b>Ajustes</b> do iPhone, toque em <b>Buscar</b>, lá embaixo na tela, e digite:</p>
+      <div class="dt-filme" aria-hidden="true">
+        <div><em>1. Busque nos Ajustes</em><i class="on">🔍 Toque Duplo</i><i>Toque Duplo</i></div>
+        <div><em>2. Toque no resultado</em><i>Tocar Atrás</i><i class="on">Toque Duplo</i><i>Toque Triplo</i></div>
+        <div><em>3. Escolha o atalho</em><i>Nenhuma</i><i class="on">✓ Falar com a Bee</i></div>
+      </div>
       <div class="dt-busca"><span class="dt-lupa"></span><b>Toque Duplo</b><i class="dt-cursor"></i></div>
       <p class="dt-grande">Depois toque, em ordem:</p>
       ${rotaHtml([[ICO_TOQUE, 'Toque Duplo', 'o primeiro da lista, com o botão azul'], ROTA_AJUSTES[5]])}
@@ -6128,6 +6265,7 @@ function abrirLink(url) {
   if (u.protocol !== 'tapbee:' || (NATIVO && !quizLiberado())) return;
   const texto = (u.searchParams.get('texto') || '').trim(), doAtalho = u.searchParams.get('de') === 'atalho';
   if (aba !== 'hoje') irPara('hoje');
+  if (u.hostname === 'abrir') return;
   if (doAtalho && comemorarDoisToques(texto)) return;
   if (texto) criarDeFrase(texto); else abrirVoz();
 }
@@ -6136,6 +6274,13 @@ if (CapApp) {
   CapApp.addListener('appUrlOpen', (e) => abrirLink(e.url));
   CapApp.getLaunchUrl?.().then(r => { if (r?.url) abrirLink(r.url); }).catch(() => {});
 }
+document.getElementById('btnComoUsar').onclick = abrirComoUsar;
+document.getElementById('btnOutrosJeitos').onclick = () => abrirFolha(`<div class="dois-toques">
+    <h3>Outros jeitos de chamar a Bee</h3>
+    <p>Primeiro, instale o atalho <b>Falar com a Bee</b> em “Ativar os 2 toques”.</p>
+    <div class="jeito"><b>Botão de Ação</b><small>iPhone 15 Pro ou mais novo</small><ol><li>Abra os <b>Ajustes</b> do iPhone.</li><li>Toque em <b>Botão de Ação</b>.</li><li>Deslize até <b>Atalho</b>.</li><li>Escolha <b>Falar com a Bee</b>.</li></ol></div>
+    <div class="jeito"><b>Central de Controle</b><small>iOS 18 ou mais novo</small><ol><li>Abra a <b>Central de Controle</b>.</li><li>Segure um espaço vazio.</li><li>Toque em <b>Adicionar um Controle</b>.</li><li>Busque <b>Atalho</b> e escolha <b>Falar com a Bee</b>.</li></ol></div>
+  </div>`);
 marcarBotaoDoisToques();
 document.getElementById('btnDoisToques').onclick = () => abrirDoisToques(doisToquesOk() ? 3 : 0);
 
@@ -6956,6 +7101,8 @@ else if (!lerPref('agenda.boasVindas', '')) boasVindas();
 if (params.toString()) history.replaceState(null, '', location.pathname);
 rcConferir();
 rcPrecos();
+atualizarWidget();
+document.addEventListener('visibilitychange', () => { if (!document.hidden) atualizarWidget(); });
 
 // ================= Ambiente imersivo: favo, pólen, Bee viva, topo, puxar =================
 const CALMO = matchMedia('(prefers-reduced-motion: reduce)').matches;

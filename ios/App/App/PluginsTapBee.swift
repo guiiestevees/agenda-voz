@@ -2,12 +2,14 @@ import Foundation
 import AVFoundation
 import Speech
 import Capacitor
+import WidgetKit
 
 // Tela principal do app: registra os plugins próprios do Tap Bee
 class TapBeeViewController: CAPBridgeViewController {
     override func capacitorDidLoad() {
         bridge?.registerPluginInstance(NuvemPlugin())
         bridge?.registerPluginInstance(VozPlugin())
+        bridge?.registerPluginInstance(BeeWidgetPlugin())
         // App nativo não dá zoom: um toque duplo sem querer mudava o tamanho da tela
         webView?.scrollView.minimumZoomScale = 1
         webView?.scrollView.maximumZoomScale = 1
@@ -185,5 +187,26 @@ public class VozPlugin: CAPPlugin, CAPBridgedPlugin {
         // Volta ao modo de reprodução: o som do Pomodoro continua com a tela bloqueada
         try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.mixWithOthers])
         try? AVAudioSession.sharedInstance().setActive(true)
+    }
+}
+
+// ---------- Widget: passa os próximos compromissos para a tela de início ----------
+@objc(BeeWidgetPlugin)
+public class BeeWidgetPlugin: CAPPlugin, CAPBridgedPlugin {
+    public let identifier = "BeeWidgetPlugin"
+    public let jsName = "BeeWidget"
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "atualizar", returnType: CAPPluginReturnPromise),
+    ]
+
+    @objc func atualizar(_ call: CAPPluginCall) {
+        let itens = call.getArray("itens", JSObject.self) ?? []
+        guard let dados = try? JSONSerialization.data(withJSONObject: itens) else { return call.resolve() }
+        let loja = UserDefaults(suiteName: "group.com.guiiestevees.tapbee")
+        if loja?.data(forKey: "itens") != dados {
+            loja?.set(dados, forKey: "itens")
+            WidgetCenter.shared.reloadAllTimelines()
+        }
+        call.resolve()
     }
 }
