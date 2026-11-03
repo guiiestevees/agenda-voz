@@ -5876,7 +5876,8 @@ function toast(msg, ms = 2500, acao) {
 // ---------- 2 toques atrás do iPhone (app nativo) ----------
 // O atalho "Falar com a Bee" ouve por cima de qualquer tela e abre tapbee://anotar?de=atalho&texto=...
 const NATIVO = !!window.Capacitor?.isNativePlatform?.();
-const ATALHO_URL = 'https://www.icloud.com/shortcuts/15bc1b9e04a344d4a12a3a687be6cde5';
+const ATALHO_URL = EM_INGLES ? 'https://www.icloud.com/shortcuts/082dd3984f184f4a815f41976a55dfc6' : 'https://www.icloud.com/shortcuts/15bc1b9e04a344d4a12a3a687be6cde5';
+if (EM_INGLES) document.querySelectorAll('a.instalar').forEach(a => { a.href = ATALHO_URL; });
 const PONTOS_DOIS_TOQUES = 20;
 const doisToquesOk = () => lerPref('agenda.doisToques', '') === 'ok';
 function htmlDoisToques() {
