@@ -2998,7 +2998,7 @@ document.getElementById('btnSons').onclick = () => { gravarPref('agenda.sonsToqu
 rotSons();
 
 // ---------- Backup: tudo o que o app guarda vira um arquivo .json ----------
-const CHAVES_BACKUP = ['agenda.eventos', 'agenda.notas', 'agenda.lembretePadrao', 'agenda.bicho', 'agenda.sonsToque', 'agenda.habitos', 'agenda.xp', 'agenda.focos', 'agenda.foco', 'agenda.nome', 'agenda.tema', 'agenda.modo', 'agenda.marca', 'agenda.visao', 'agenda.boasVindas', 'agenda.dicaFechada', 'agenda.ofertaVista', 'agenda.plano'];
+const CHAVES_BACKUP = ['agenda.eventos', 'agenda.notas', 'agenda.lembretePadrao', 'agenda.bicho', 'agenda.sonsToque', 'agenda.habitos', 'agenda.xp', 'agenda.focos', 'agenda.foco', 'agenda.nome', 'agenda.tema', 'agenda.modo', 'agenda.marca', 'agenda.visao', 'agenda.boasVindas', 'agenda.dicaFechada', 'agenda.ofertaVista2', 'agenda.plano'];
 function mostrarUltimoBackup() {
   const el = document.getElementById('bkUltimo'), quando = lerPref('agenda.ultimoBackup', '');
   if (window.iCloudAtivo && !quando) { el.textContent = 'Backup manual é opcional: o iCloud já cuida disso.'; el.classList.remove('velho'); return; }
@@ -6304,7 +6304,7 @@ function qzTrocaLigar() {
       a.classList.add('voando', 'movido');
       a.style.top = `${document.querySelector(`[data-hora="${para}"]`).parentElement.offsetTop + 4}px`;
       setTimeout(() => a.classList.remove('voando'), 800);
-      vibrar('sucesso'); qzSomClique();
+      vibrar('sucesso');
       qz.troca = 1;
       qzTimer(() => {
         tocarSom();
@@ -6413,7 +6413,7 @@ async function rcComprar(rc, plano) {
     await rc.purchaseStoreProduct({ product: { identifier: RC_PRODUTO[plano] } });
     return true;
   } catch (e) {
-    if (String(e?.code) === '1' || e?.userCancelled || e?.data?.userCancelled) return false;
+    if (String(e?.code) === '1' || e?.userCancelled || e?.data?.userCancelled || /cancel/i.test(e?.message || '')) return false;
     console.error('[Compra]', e);
     toast('Não deu para concluir a compra. Confira sua internet e tente de novo.', 3500);
     return null;
@@ -6461,7 +6461,7 @@ async function qzComprar(plano = 'anual') {
     return qzEntrar();
   }
   // Desistiu da compra: a oferta aparece uma única vez
-  if (comprou === false && plano === 'anual' && !qz.ofertaVista && (!RC_CHAVE || !lerPref('agenda.ofertaVista', ''))) qzJogo();
+  if (comprou === false && plano === 'anual' && !qz.ofertaVista && (!RC_CHAVE || !lerPref('agenda.ofertaVista2', ''))) qzJogo();
 }
 // No iPhone abre a compra da Apple. Fora dele (MODO DE TESTE), esta folha faz o papel dessa tela
 function qzPedirCompra(plano) {
@@ -6487,7 +6487,7 @@ const COPO_QUIZ = `<svg class="qz-copo-tampa" viewBox="0 0 100 118" aria-hidden=
 // O jogo é de verdade: a Bee fica mesmo em um copo e os copos trocam de lugar na frente da pessoa.
 // Quem erra joga de novo, mais devagar, e o desconto é o mesmo para todos.
 function qzJogo() {
-  qz.ofertaVista = true; gravarPref('agenda.ofertaVista', '1'); funil('jogo');
+  qz.ofertaVista = true; gravarPref('agenda.ofertaVista2', '1'); funil('jogo');
   const el = document.createElement('div');
   el.className = 'qz-jogo';
   el.innerHTML = `<h2>Espera, ${qzNome()}!</h2>
@@ -6584,9 +6584,6 @@ function qzAvisoTeste() {
     document.querySelector('.qz-tela')?.appendChild(b);
   }, 2300);
 }
-// Som dos cliques do quiz: uma nota de madeira bem suave, que nunca repete a anterior e sobe com o progresso
-const ESCALA_QUIZ = [392, 440, 523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1174.66];
-let qzNotaAntes = -1;
 function qzNota(f, vol, dur) {
   comAudio((t) => {
     [[f, vol], [f * 2.01, vol * .22]].forEach(([fr, v]) => {
@@ -6599,13 +6596,6 @@ function qzNota(f, vol, dur) {
       o.start(t); o.stop(t + dur + .02);
     });
   });
-}
-function qzSomClique() {
-  const base = Math.round((qz ? qz.i / (TELAS_QUIZ.length - 1) : 0) * 5);
-  let n;
-  do { n = base + Math.floor(Math.random() * 4); } while (n === qzNotaAntes);
-  qzNotaAntes = n;
-  qzNota(ESCALA_QUIZ[n], .075, .24);
 }
 const qzSomCopo = (vazio) => qzNota(vazio ? 196 : 300 + Math.random() * 60, vazio ? .09 : .05, vazio ? .3 : .12);
 // A fala da Bee aparece letra a letra; o texto invisível guarda o tamanho para nada pular
@@ -6662,7 +6652,6 @@ function abrirQuiz() {
   el.id = 'quiz';
   el.innerHTML = `<div class="qz-fundo" aria-hidden="true"><div class="qz-favo"></div>${Array.from({ length: 10 }, (_, i) => `<i class="qz-polen" style="left:${(i * 37 + 11) % 100}%;top:${(i * 53 + 7) % 100}%;--d:${7 + (i % 5) * 2}s;--a:${(i % 7) * -1.3}s;--s:${5 + (i % 3) * 3}px"></i>`).join('')}</div><div id="qzPalco"></div>`;
   document.body.appendChild(el);
-  el.addEventListener('click', (e) => { if (e.target.closest('button, a') && !e.target.closest('#qzMic, .qz-copo')) qzSomClique(); });
   qzDesenhar();
 }
 
