@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "Tap Bee: Agenda por Voz (app nativo para iPhone)",
   "scripts": {
-    "web": "rm -rf www && mkdir -p www && cp index.html privacidade.html sw.js www/ && cp -R sons atalho www/ 2>/dev/null || true",
+    "web": "rm -rf www && mkdir -p www && cp index.html privacidade.html suporte.html sw.js www/ && cp -R sons atalho www/ 2>/dev/null || true",
     "sync": "npm run web && npx cap sync ios",
     "abrir": "npx cap open ios"
   },
