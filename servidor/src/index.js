@@ -167,10 +167,37 @@ async function dentroDoLimite(env, aparelho, ip) {
   }
 }
 
+// ---------- WhatsApp: a Meta confere o endereço (GET) e manda mensagens e status (POST) ----------
+// A assinatura prova que o aviso veio mesmo da Meta; sem o segredo do app guardado, só registra
+async function assinaturaOk(req, corpo, env) {
+  if (!env.WA_APP_SECRET) return true;
+  const assinatura = (req.headers.get("X-Hub-Signature-256") || "").replace("sha256=", "");
+  const chave = await crypto.subtle.importKey("raw", new TextEncoder().encode(env.WA_APP_SECRET), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const certa = [...new Uint8Array(await crypto.subtle.sign("HMAC", chave, new TextEncoder().encode(corpo)))].map((b) => b.toString(16).padStart(2, "0")).join("");
+  return assinatura.length === certa.length && crypto.subtle.timingSafeEqual(new TextEncoder().encode(assinatura), new TextEncoder().encode(certa));
+}
+async function whatsapp(req, env) {
+  if (req.method === "GET") {
+    const u = new URL(req.url).searchParams;
+    if (u.get("hub.mode") === "subscribe" && env.WA_VERIFY_TOKEN && u.get("hub.verify_token") === env.WA_VERIFY_TOKEN) return new Response(u.get("hub.challenge") || "", { status: 200 });
+    return new Response("não autorizado", { status: 403 });
+  }
+  if (req.method !== "POST") return new Response("use POST", { status: 405 });
+  const corpo = await req.text();
+  if (!(await assinaturaOk(req, corpo, env))) return new Response("assinatura inválida", { status: 401 });
+  // Por enquanto só confirma o recebimento; marcar compromissos pelo WhatsApp vem depois
+  try {
+    const mudanca = JSON.parse(corpo)?.entry?.[0]?.changes?.[0]?.value;
+    if (mudanca?.messages?.length) console.log("WhatsApp: mensagem recebida", mudanca.messages[0].type);
+  } catch {}
+  return new Response("ok", { status: 200 });
+}
+
 export default {
   async fetch(req, env) {
     const origem = req.headers.get("Origin") || "";
     if (req.method === "OPTIONS") return new Response(null, { headers: cabecalhos(origem) });
+    if (new URL(req.url).pathname === "/whatsapp") return whatsapp(req, env);
     if (new URL(req.url).pathname === "/funil") return funil(req, env, origem);
     if (new URL(req.url).pathname === "/convite") {
       if (!ORIGENS.includes(origem)) return responder({ erro: "origem não permitida" }, 403, origem);
