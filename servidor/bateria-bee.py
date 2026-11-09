@@ -2,7 +2,8 @@
 import json, sys, urllib.request, concurrent.futures as cf
 
 URL = "https://agenda-voz.guiiestevees.workers.dev/"
-AGENDA = """101 | seg., 09/11/2026 | 19:00 | Buscar a Júlia na clínica | não repete
+AGENDA = """103 | seg., 09/11/2026 | 07:00 | Academia | toda semana (seg, qua, sex)
+101 | seg., 09/11/2026 | 19:00 | Buscar a Júlia na clínica | não repete
 102 | ter., 10/11/2026 | 16:00 | Dentista | não repete
 103 | qua., 11/11/2026 | 07:00 | Academia | toda semana (seg, qua, sex)
 104 | qui., 12/11/2026 | 10:00 | Reunião com o cliente | não repete
@@ -65,6 +66,11 @@ CASOS = [
  ("não vou na academia hoje", lambda r: um(r, acao="desmarcar", eventoId="103", soNaData="2026-11-09")),
  ("cancela a academia", lambda r: um(r, acao="desmarcar", eventoId="103", soNaData=None)),
  ("a missa de domingo vai ser às 11", lambda r: um(r, acao="mudar", eventoId="106", soNaData="2026-11-15", hora="11:00")),
+ ("pilates às 7 da noite e me avisa daqui a 5 minutos", lambda r: um(r, acao="criar", data="2026-11-09", hora="19:00", lembreteMin=110)),
+ ("quero ir na academia às 7 da noite, me lembra daqui a meia hora", lambda r: um(r, acao="mudar", eventoId="103", soNaData="2026-11-09", hora="19:00", lembreteMin=85)),
+ ("me avisa do jantar com a Ana às 6", lambda r: um(r, acao="mudar", eventoId="105", lembreteMin=120)),
+ ("me lembra de buscar a Júlia daqui a 10 minutos", lambda r: um(r, acao="mudar", eventoId="101", lembreteMin=105)),
+ ("dentista amanhã às 10, me avisa 30 minutos antes", lambda r: um(r, acao="mudar", eventoId="102", hora="10:00", lembreteMin=30) if (acoes(r) and acoes(r)[0].get("acao") == "mudar") else um(r, acao="criar", hora="10:00", lembreteMin=30)),
  ("o que eu tenho amanhã?", lambda r: "" if r.get("tipo") == "responder" and "16" in r.get("resposta", "") else r.get("resposta")),
  ("tô livre sexta de manhã?", lambda r: "" if r.get("tipo") == "responder" else r.get("tipo")),
 ]

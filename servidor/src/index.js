@@ -32,10 +32,11 @@ Regras:
 - titulo: só o nome do compromisso, curto e com inicial maiúscula ("Médico", "Academia", "Reunião com o João", "Tomar remédio"). Nunca inclua data, hora, lembrete ou palavras como "tenho", "marca", "me lembra".
 - data no formato AAAA-MM-DD e hora HH:MM (24h), no fuso da pessoa. Use a lista de datas abaixo para saber o dia certo de "terça", "amanhã" etc. Hora de 1 a 12 SEM período ("às 7", "7 horas"), para HOJE ou sem dia: use a tabela "Hora SEM período" que vem na mensagem; ela já escolheu o próximo horário que ainda vai chegar (manhã ou noite). Nunca jogue para amanhã um "hoje" que ainda dá tempo de acontecer hoje. Se a pessoa disser o período ("da manhã", "da tarde", "da noite", "meio-dia", "madrugada") ou a hora em 24h ("19h", "às 15"), obedeça exatamente. Para outro dia ("terça às 4"), sem período: de 1 a 5 soma 12 ("às 3" → 15:00, "às 4" → 16:00), de 6 a 11 é manhã, 12 é meio-dia; mas se o próprio compromisso indica o período, siga ele (jantar, festa, balada, culto à noite → noite: "jantar sexta às 8" → 20:00; café da manhã → manhã). "3 da tarde" é 15:00, "8 da noite" é 20:00, "meio-dia e meia" é 12:30, "7 e meia" é :30, "7 e quinze" é :15, "quinze pras 8" é 7:45. Com hora mas sem dia → hoje, se o horário ainda vai chegar; senão amanhã. Com dia mas sem hora → 09:00. Sem dia E sem hora, é uma tarefa para lembrar → "anotar" (a não ser que a pessoa peça claramente para marcar agora). Se a pessoa falar vários compromissos e só disser o dia no primeiro, os seguintes são no mesmo dia.
 - lembreteMin: minutos de antecedência do aviso. "me lembre 15 min antes" → 15; "me lembra de tomar remédio às 8" → 0; "1 dia antes" → 1440. Se a pessoa não falar nada sobre aviso ao criar, use o aviso padrão informado na mensagem; para aniversário, use 0. Em "mudar", null = não mexer e -1 = tirar o aviso.
+- avisoDaquiMin / avisoHora: quando a pessoa pede o aviso num MOMENTO certo, e não com antecedência, NÃO faça conta: "me avisa daqui a 5 minutos" → avisoDaquiMin 5; "me lembra daqui a meia hora" → 30; "me avisa às 6" → avisoHora "18:00" (mesma regra de hora). Nesses casos lembreteMin = null (o app calcula a antecedência). "Me avisa 5 minutos antes" continua sendo lembreteMin 5. Nos outros casos, os dois = null. Vale para "criar" e para "mudar" ("me avisa daqui a 10 minutos da academia" → mudar com avisoDaquiMin 10).
 - repetir: "nenhuma", "diaria", "semanal", "mensal" ou "anual". Para semanal, diasSemana com os dias (0=domingo, 1=segunda … 6=sábado), ex.: "toda segunda e quarta" → [1,3]; "de segunda a sexta" → [1,2,3,4,5]. Aniversário → "anual". Nos outros casos diasSemana = [].
 - notaId: só em "agendar" e "tirar_nota", escolhido na lista de anotações pelo texto; nas outras ações, null.
 - Antes de criar, confira a agenda: se a pessoa fala de um compromisso que JÁ EXISTE (mesmo nome ou quase) e diz outro dia ou horário para ele ("buscar a Júlia é amanhã", "o dentista na verdade é às 5", "a reunião passou pra sexta", "mudou o horário do jantar"), é "mudar" esse compromisso, e não "criar" outro igual. Só crie um novo com o mesmo nome se a pessoa disser claramente que é mais um ("outro dentista", "mais uma reunião"). Se o nome tiver um detalhe diferente (outro lugar ou outra pessoa: "buscar a Júlia no inglês" não é "buscar a Júlia na clínica"), é outro compromisso → "criar". "No mesmo horário" = mantém a hora (hora null).
-- Para mudar/desmarcar, escolha o eventoId na agenda pelo nome e pela data mencionados. Se o compromisso se repete e a pessoa cita QUALQUER dia ("desse domingo", "de amanhã", "de hoje", "da semana que vem", "dia 22", "na segunda que vem"), mexa SÓ naquele dia: soNaData = a data daquela ocorrência. Só mexa na série toda (soNaData = null) quando a pessoa não cita dia nenhum ou diz claramente que é para sempre ("cancela a academia", "não vou mais na missa", "a academia agora é sempre às 6"). Na dúvida, mexa só em um dia: apagar a série por engano é muito pior.
+- Para mudar/desmarcar, escolha o eventoId na agenda pelo nome e pela data mencionados. Se o compromisso se repete e a pessoa cita QUALQUER dia ("desse domingo", "de amanhã", "de hoje", "da semana que vem", "dia 22", "na segunda que vem"), mexa SÓ naquele dia: soNaData = a data daquela ocorrência. Só mexa na série toda (soNaData = null) quando a pessoa diz claramente que é para sempre ("cancela a academia", "não vou mais na missa", "a academia agora é sempre às 6", "toda semana"). Se ela fala de ir/fazer agora, sem dia ("quero ir na academia às 7 da noite", "vou na academia mais tarde"), é só a ocorrência de HOJE (ou a próxima, se hoje não tiver): soNaData = essa data. Na dúvida, mexa só em um dia: apagar a série por engano é muito pior.
 - Se não achar o compromisso para mudar/desmarcar, use tipo "responder" e diga isso em "resposta".
 - resposta: curta e simpática, como uma secretária falaria, confirmando tudo o que foi feito ou respondendo a pergunta. Ex.: "Anotado: médico terça às 16h, te aviso 15 minutos antes." Fale horários como "16h" ou "16h30" e dias como "terça" ou "amanhã". Sem emojis.
 - Quando o tipo for "responder", organize a resposta em tópicos para leitura rápida, usando quebras de linha (\\n):
@@ -64,10 +65,12 @@ const ESQUEMA = {
           data: nulo("string"),
           hora: nulo("string"),
           lembreteMin: nulo("integer"),
+          avisoDaquiMin: nulo("integer"),
+          avisoHora: nulo("string"),
           repetir: { type: "string", enum: ["nenhuma", "diaria", "semanal", "mensal", "anual", "manter"] },
           diasSemana: { type: "array", items: { type: "integer" } },
         },
-        required: ["acao", "emoji", "eventoId", "notaId", "soNaData", "titulo", "data", "hora", "lembreteMin", "repetir", "diasSemana"],
+        required: ["acao", "emoji", "eventoId", "notaId", "soNaData", "titulo", "data", "hora", "lembreteMin", "avisoDaquiMin", "avisoHora", "repetir", "diasSemana"],
         additionalProperties: false,
       },
     },
@@ -591,6 +594,46 @@ function tabelaHoras(agora, hoje) {
 // Resposta que se contradiz ("Anotado!" sem nenhuma ação, ou "agir" vazio) não pode chegar na pessoa:
 // ela acharia que salvou. Nesse caso, pergunta de novo ao modelo mais forte.
 const confirmaSemAcao = (r) => (r.tipo === "agir" && !(r.acoes || []).length) || (r.tipo !== "agir" && /^(anotad|pront|marquei|ajustei|mudei|desmarquei|cancelei|agendei|feito|done|added|all set|moved|changed|cancel)/i.test(String(r.resposta || "").trim()));
+// "Me avisa daqui a 5 minutos" vira antecedência: a conta é feita aqui, não pela IA
+const minutosDoDia = (hora) => {
+  const m = String(hora || "").match(/^(\d{1,2}):(\d{2})\s*([AaPp])?/);
+  return m ? ((m[3] ? (+m[1] % 12) + (/p/i.test(m[3]) ? 12 : 0) : +m[1]) * 60 + +m[2]) : null;
+};
+const diaUTC = (data) => Date.parse(`${data}T00:00:00Z`);
+// Dia e hora de um compromisso que já está na agenda (linha "id | seg., 09/11/2026 | 19:00 | ...")
+// Sem dia certo, vale a próxima ocorrência que ainda não passou
+function horarioNaAgenda(agenda, eventoId, soNaData, idioma, agoraMs) {
+  let primeira = null;
+  for (const linha of String(agenda).split("\n")) {
+    const [id, dia, hora] = linha.split(" | ");
+    if (id?.trim() !== eventoId) continue;
+    const d = dia?.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if (!d) continue;
+    const [dd, mm] = idioma === "en" ? [d[2], d[1]] : [d[1], d[2]];
+    const data = `${d[3]}-${mm.padStart(2, "0")}-${dd.padStart(2, "0")}`;
+    if (soNaData && data !== soNaData) continue;
+    const achado = { data, min: minutosDoDia(hora?.trim()) };
+    if (soNaData || agoraMs === undefined || diaUTC(data) + (achado.min ?? 0) * 60000 >= agoraMs) return achado;
+    primeira ||= achado;
+  }
+  return primeira;
+}
+function avisosNaHoraCerta(r, { agora, hoje, agenda, idioma }) {
+  const agoraMin = minutosDoDia(String(agora).match(/(\d{1,2}:\d{2}\s*(?:[AaPp]\.?\s*[Mm]\.?)?)\s*$/)?.[1]);
+  if (agoraMin === null || !/^\d{4}-\d{2}-\d{2}$/.test(hoje)) return r;
+  const agoraMs = diaUTC(hoje) + agoraMin * 60000;
+  for (const a of r.acoes || []) {
+    if (a.avisoDaquiMin == null && !a.avisoHora) continue;
+    const ev = a.data && a.hora ? { data: a.data, min: minutosDoDia(a.hora) } : horarioNaAgenda(agenda, a.eventoId, a.soNaData, idioma, agoraMs);
+    if (ev && ev.min !== null) {
+      const evMs = diaUTC(a.data || ev.data) + (a.hora ? minutosDoDia(a.hora) : ev.min) * 60000;
+      const avisoMs = a.avisoDaquiMin != null ? agoraMs + a.avisoDaquiMin * 60000 : diaUTC(a.data || ev.data) + (minutosDoDia(a.avisoHora) ?? 0) * 60000;
+      a.lembreteMin = Math.max(0, Math.round((evMs - avisoMs) / 60000));
+    }
+    delete a.avisoDaquiMin; delete a.avisoHora;
+  }
+  return r;
+}
 async function pensar(env, dados) {
   const r = await pensarUmaVez(env, dados);
   if (!confirmaSemAcao(r) && r.tipo !== "nao_entendi") return r;
@@ -615,7 +658,7 @@ async function pensarUmaVez(env, { texto, agora, hoje, agenda, notas, avisoPadra
     }],
   });
   if (resp.stop_reason === "refusal") return { tipo: "nao_entendi", resposta: idioma === "en" ? "Sorry, I couldn't help with that." : "Desculpa, não consegui ajudar com isso.", acoes: [] };
-  return { ...JSON.parse(resp.content.find((b) => b.type === "text").text), modelo: resp.model };
+  return avisosNaHoraCerta({ ...JSON.parse(resp.content.find((b) => b.type === "text").text), modelo: resp.model }, { agora, hoje, agenda, idioma });
 }
 
 // Áudio do WhatsApp: baixa da Meta e transforma em texto com o Whisper da Cloudflare
