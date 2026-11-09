@@ -151,7 +151,8 @@ export class AvisosWhatsapp extends DurableObject {
       CREATE TABLE IF NOT EXISTS envios (uid TEXT NOT NULL, dia TEXT NOT NULL, n INTEGER, PRIMARY KEY (uid, dia));
       CREATE TABLE IF NOT EXISTS tipos (titulo TEXT PRIMARY KEY, tipo TEXT);
       CREATE TABLE IF NOT EXISTS enviados (uid TEXT NOT NULL, chave TEXT NOT NULL, titulo TEXT, hora TEXT, dia TEXT, tipo TEXT, em INTEGER, PRIMARY KEY (uid, chave));
-      CREATE TABLE IF NOT EXISTS pendentes (id INTEGER PRIMARY KEY AUTOINCREMENT, uid TEXT NOT NULL, dados TEXT, em INTEGER);`);
+      CREATE TABLE IF NOT EXISTS pendentes (id INTEGER PRIMARY KEY AUTOINCREMENT, uid TEXT NOT NULL, dados TEXT, em INTEGER);
+      CREATE TABLE IF NOT EXISTS assinaturas (uid TEXT PRIMARY KEY, ativa INTEGER, em INTEGER);`);
     // Colunas que chegaram depois da primeira versão
     for (const c of ["avisos ADD COLUMN dia TEXT", "avisos ADD COLUMN tipo TEXT", "ligacoes ADD COLUMN tz TEXT", "ligacoes ADD COLUMN lembrete INTEGER", "ligacoes ADD COLUMN agenda TEXT", "ligacoes ADD COLUMN notas TEXT"]) {
       try { this.sql.exec(`ALTER TABLE ${c}`); } catch {}
@@ -161,6 +162,46 @@ export class AvisosWhatsapp extends DurableObject {
   async iniciar(uid, codigo, idioma, nome) {
     this.sql.exec("DELETE FROM codigos WHERE expira < ? OR uid = ?", Date.now(), uid);
     this.sql.exec("INSERT OR REPLACE INTO codigos VALUES (?, ?, ?, ?, ?)", codigo, uid, idioma, nome, Date.now() + 30 * 60000);
+  }
+  // Assinatura ativa no RevenueCat (o app usa o mesmo código anônimo lá). A resposta vale por 6 horas.
+  // Se o RevenueCat não responder, a Bee continua funcionando: assinante nenhum fica sem lembrete por erro nosso.
+  async assinou(uid, fresco = false) {
+    if (!this.env.RC_SECRET) return true;
+    const guardada = this.linha("SELECT ativa, em FROM assinaturas WHERE uid = ?", uid);
+    if (guardada && !fresco && Date.now() - guardada.em < 6 * 3600000) return !!guardada.ativa;
+    try {
+      const auth = { Authorization: `Bearer ${this.env.RC_SECRET}` };
+      let projeto = await this.ctx.storage.get("rcProjeto");
+      if (!projeto) {
+        const lista = await (await fetch("https://api.revenuecat.com/v2/projects", { headers: auth })).json();
+        projeto = lista.items?.[0]?.id;
+        if (!projeto) throw new Error("projeto do RevenueCat não encontrado");
+        await this.ctx.storage.put("rcProjeto", projeto);
+      }
+      const base = `https://api.revenuecat.com/v2/projects/${projeto}/customers/${encodeURIComponent(uid)}`;
+      const ent = await fetch(`${base}/active_entitlements`, { headers: auth });
+      let ativa = false;
+      if (ent.ok) ativa = ((await ent.json()).items || []).length > 0;
+      else if (ent.status !== 404) throw new Error(`RevenueCat ${ent.status}`);
+      if (!ativa && ent.status !== 404) {
+        const subs = await fetch(`${base}/subscriptions`, { headers: auth });
+        if (!subs.ok) throw new Error(`RevenueCat ${subs.status}`);
+        ativa = ((await subs.json()).items || []).some((x) => x.gives_access || x.status === "active" || x.status === "trialing");
+      }
+      this.sql.exec("INSERT OR REPLACE INTO assinaturas VALUES (?, ?, ?)", uid, ativa ? 1 : 0, Date.now());
+      return ativa;
+    } catch (e) {
+      console.error("Assinatura: não conferiu", e.message);
+      return guardada ? !!guardada.ativa : true;
+    }
+  }
+  // Assinatura acabou: desliga o WhatsApp, avisa o app para voltar aos avisos do iPhone e tenta se despedir
+  async desligarSemAssinatura(uid) {
+    const l = this.linha("SELECT telefone, idioma FROM ligacoes WHERE uid = ?", uid);
+    this.sql.exec("INSERT INTO pendentes (uid, dados, em) VALUES (?, ?, ?)", uid, JSON.stringify({ tipo: "saiu", motivo: "assinatura" }), Date.now());
+    this.sql.exec("DELETE FROM avisos WHERE uid = ?", uid);
+    this.sql.exec("DELETE FROM ligacoes WHERE uid = ?", uid);
+    if (l) await textoWhatsapp(this.env, l.telefone, RESPOSTAS_WA.fim[l.idioma === "en_US" ? "en_US" : "pt_BR"]());
   }
   async ligacao(telefone) { return this.linha("SELECT * FROM ligacoes WHERE telefone = ?", telefone) || null; }
   // Mensagem que chegou: liga o número se trouxer um código válido, desliga com SAIR/STOP
@@ -177,7 +218,7 @@ export class AvisosWhatsapp extends DurableObject {
       this.sql.exec("DELETE FROM ligacoes WHERE telefone = ? OR uid = ?", telefone, codigo.uid);
       this.sql.exec("INSERT INTO ligacoes (uid, telefone, idioma, nome, criado) VALUES (?, ?, ?, ?, ?)", codigo.uid, telefone, codigo.idioma, codigo.nome, Date.now());
       this.sql.exec("DELETE FROM codigos WHERE codigo = ?", codigo.codigo);
-      return { tipo: "ligado", idioma: codigo.idioma, nome: codigo.nome };
+      return { tipo: "ligado", idioma: codigo.idioma, nome: codigo.nome, uid: codigo.uid };
     }
     return { tipo: ligado ? "pedido" : "outro", idioma: ligado?.idioma };
   }
@@ -212,6 +253,7 @@ export class AvisosWhatsapp extends DurableObject {
   // O app manda a lista inteira dos próximos avisos e o resumo da agenda; a lista antiga é trocada pela nova
   async sincronizar(uid, lista, idioma, nome, extra) {
     if (!this.linha("SELECT uid FROM ligacoes WHERE uid = ?", uid)) return { ligado: false };
+    if (!(await this.assinou(uid))) { await this.desligarSemAssinatura(uid); return { ligado: false, motivo: "assinatura" }; }
     this.sql.exec("UPDATE ligacoes SET idioma = ?, nome = ?, tz = ?, lembrete = ?, agenda = ?, notas = ? WHERE uid = ?", idioma, nome, extra.tz, extra.lembrete, extra.agenda, extra.notas, uid);
     const agora = Date.now(), ate = agora + 8 * 86400000, validos = lista.filter((a) => a.quando > agora - 60000 && a.quando < ate);
     const tipos = await this.tiposDe(validos.map((a) => a.titulo));
@@ -260,9 +302,11 @@ export class AvisosWhatsapp extends DurableObject {
         for (const m of lista.data || []) if (m.status === "APPROVED") aprovados.add(`${m.name}|${m.language}`);
       } catch (e) { console.error("WhatsApp: não leu os modelos", e.message); }
     }
+    const semAssinatura = new Set();
+    for (const uid of new Set(vencidos.map((a) => a.uid))) if (!(await this.assinou(uid))) { semAssinatura.add(uid); await this.desligarSemAssinatura(uid); }
     for (const a of vencidos) {
       this.sql.exec("DELETE FROM avisos WHERE uid = ? AND chave = ?", a.uid, a.chave);
-      if (agora - a.quando > 15 * 60000) continue;
+      if (agora - a.quando > 15 * 60000 || semAssinatura.has(a.uid)) continue;
       const n = this.linha("SELECT n FROM envios WHERE uid = ? AND dia = ?", a.uid, dia)?.n || 0;
       if (n >= LIMITE_DIA_WA) continue;
       const idioma = a.idioma === "en_US" ? "en_US" : "pt_BR", nome = a.nome || (idioma === "en_US" ? "there" : "você");
@@ -439,6 +483,8 @@ const RESPOSTAS_WA = {
   adiar: { pt_BR: () => "Combinado! Te lembro de novo em 10 minutos ⏰", en_US: () => "Deal! I'll remind you again in 10 minutes ⏰" },
   perdido: { pt_BR: () => "Esse lembrete já passou, mas tá tudo certo na sua agenda. 🐝", en_US: () => "That reminder has passed, but your calendar is all set. 🐝" },
   audio: { pt_BR: () => "Não consegui ouvir esse áudio direito. Pode mandar de novo ou escrever? 🐝", en_US: () => "I couldn't hear that voice message well. Can you send it again or type it? 🐝" },
+  fim: { pt_BR: () => "Sua assinatura do Tap Bee terminou, então eu parei de te avisar por aqui. Seus avisos voltam a funcionar quando você assinar de novo no app. 🐝", en_US: () => "Your Tap Bee subscription ended, so I stopped reminding you here. Reminders work again when you subscribe in the app. 🐝" },
+  assine: { pt_BR: () => "Os avisos pelo WhatsApp são para quem assina o Tap Bee. Assine no app e ative de novo em Ajustes. 🐝", en_US: () => "WhatsApp reminders are for Tap Bee subscribers. Subscribe in the app and turn it on again in Settings. 🐝" },
   erro: { pt_BR: () => "Tive um probleminha agora. Tenta de novo daqui a pouco? 🐝", en_US: () => "I had a little problem just now. Try again in a moment? 🐝" },
 };
 
@@ -551,6 +597,8 @@ async function whatsapp(req, env) {
 async function tratarMensagem(env, msg) {
   const avisos = env.AVISOS.get(env.AVISOS.idFromName("avisos")), de = msg.from;
   const avisar = (tipo, idioma, nome) => textoWhatsapp(env, de, RESPOSTAS_WA[tipo][idioma === "en_US" ? "en_US" : "pt_BR"](nome));
+  const lig = await avisos.ligacao(de);
+  if (lig && !(await avisos.assinou(lig.uid))) return avisos.desligarSemAssinatura(lig.uid);
   // Botões do aviso
   const payload = msg.type === "button" ? msg.button?.payload : msg.type === "interactive" ? msg.interactive?.button_reply?.id : "";
   if (payload && /^(feito|adiar)\|/.test(payload)) {
@@ -559,12 +607,12 @@ async function tratarMensagem(env, msg) {
     return avisar(r.ok ? acao : "perdido", r.idioma);
   }
   let texto = msg.type === "text" ? msg.text?.body || "" : "";
-  const lig = await avisos.ligacao(de);
   if (msg.type === "audio" && lig) {
     try { texto = await ouvirAudio(env, msg.audio.id, lig.idioma); } catch (e) { console.error("WhatsApp: áudio", e.message); }
     if (!texto) return avisar("audio", lig.idioma);
   }
   const r = await avisos.receber(de, texto);
+  if (r.tipo === "ligado" && !(await avisos.assinou(r.uid, true))) { await avisos.sair(r.uid); return avisar("assine", r.idioma); }
   if (r.tipo !== "pedido") return avisar(r.tipo, r.idioma, r.nome);
   if (!texto.trim()) return avisar("outro", r.idioma);
   try { await pedidoWhatsapp(env, avisos, lig, de, texto); } catch (e) { console.error("WhatsApp: pedido", e.message); await avisar("erro", r.idioma); }
@@ -582,6 +630,7 @@ async function whatsappDoApp(req, env) {
   const avisos = env.AVISOS.get(env.AVISOS.idFromName("avisos"));
   if (e.acao === "iniciar") {
     if (!/^[A-Z0-9]{6}$/.test(e.codigo || "")) return responder({ erro: "código inválido" }, 400, origem);
+    if (!(await avisos.assinou(e.uid, true))) return responder({ erro: "sem_assinatura" }, 402, origem);
     await avisos.iniciar(e.uid, e.codigo, idioma, nome);
     return responder({ ok: true, numero: "5519990055701" }, 200, origem);
   }

@@ -6835,13 +6835,14 @@ const rcIniciar = (rc) => rcIniciado ||= rc.configure({ apiKey: RC_CHAVE }).then
 // ---------- Avisos pelo WhatsApp: a Bee também manda um recadinho na hora do lembrete ----------
 // A pessoa liga mandando um código pelo próprio WhatsApp (assim ninguém liga o número de outra pessoa).
 // Depois, a cada mudança, o app manda ao servidor só os avisos dos próximos dias: nome, hora e quando avisar.
-const waLiberado = () => NATIVO || new URLSearchParams(location.search).has('wa');
+// Só no app (quem assina). No site de teste, só com agenda.waTeste ligado à mão
+const waLiberado = () => NATIVO || lerPref('agenda.waTeste', '') === '1';
 const waLigado = () => lerPref('agenda.whats', '') === '1';
 const NUMERO_BEE = '5519990055701';
 async function waPedir(acao, extra = {}) {
   const r = await fetch(IA_URL + 'whatsapp/app', { method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ acao, uid: meuId(), idioma: EM_INGLES ? 'en' : 'pt', nome: lerPref('agenda.nome', '').trim(), ...extra }) });
-  if (!r.ok) throw new Error(`WhatsApp ${r.status}`);
+  if (!r.ok) throw Object.assign(new Error(`WhatsApp ${r.status}`), { status: r.status });
   return r.json();
 }
 function marcarWhats() {
@@ -6939,7 +6940,9 @@ async function abrirWhats() {
     return;
   }
   const letras = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', codigo = Array.from(crypto.getRandomValues(new Uint8Array(6)), n => letras[n % letras.length]).join('');
-  try { await waPedir('iniciar', { codigo }); } catch { return toast('Não deu para ligar agora. Confira sua internet e tente de novo.', 3500); }
+  try { await waPedir('iniciar', { codigo }); } catch (e) {
+    return toast(e.status === 402 ? 'Os avisos pelo WhatsApp são para quem assina o Tap Bee.' : 'Não deu para ligar agora. Confira sua internet e tente de novo.', 3500);
+  }
   const msg = `${EM_INGLES ? 'Turn on Tap Bee reminders' : 'Ativar avisos do Tap Bee'}: ${codigo}`;
   abrirFolha(`<div class="dois-toques" id="waFolha">
     <h3>Avisos pelo WhatsApp</h3>
