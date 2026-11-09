@@ -182,10 +182,67 @@ const WA_NUMERO = "1388653214339890";
 async function estadoWhatsapp(req, env) {
   if (!env.FUNIL_CHAVE || req.headers.get("x-chave") !== env.FUNIL_CHAVE) return new Response("não autorizado", { status: 401 });
   const r = await fetch(`${WA_API}${WA_NUMERO}?fields=display_phone_number,verified_name,name_status,quality_rating,messaging_limit_tier,status`, { headers: { Authorization: `Bearer ${env.WA_TOKEN}` } });
-  return new Response(await r.text(), { status: r.status, headers: { "Content-Type": "application/json" } });
+  const conta = new URL(req.url).searchParams.get("conta");
+  if (/^\d{10,20}$/.test(conta || "")) {
+    const ler = async (c) => (await fetch(`${WA_API}${c}`, { headers: { Authorization: `Bearer ${env.WA_TOKEN}` } })).json();
+    return new Response(JSON.stringify({ conta: await ler(`${conta}?fields=id,name`), numeros: await ler(`${conta}/phone_numbers`), modelos: await ler(`${conta}/message_templates?limit=1`) }), { headers: { "Content-Type": "application/json" } });
+  }
+  // Quais contas do WhatsApp a chave alcança (sem mostrar a chave)
+  const d = await (await fetch(`${WA_API}debug_token?input_token=${env.WA_TOKEN}`, { headers: { Authorization: `Bearer ${env.WA_TOKEN}` } })).json();
+  const escopos = (d.data?.granular_scopes || []).map((g) => ({ escopo: g.scope, ids: g.target_ids }));
+  return new Response(JSON.stringify({ numero: await r.json(), escopos }), { status: r.status, headers: { "Content-Type": "application/json" } });
+}
+const WA_CONTA = "2476906269502510";
+// Avisos da Bee: a Meta só deixa a empresa puxar conversa com textos aprovados; o servidor sorteia um a cada aviso
+const MODELOS_BEE = {
+  pt_BR: [
+    "Ei, {{nome}}! 🐝 Daqui a pouco tem *{{compromisso}}*, às {{hora}}. Bora que dá tempo!",
+    "Oi, {{nome}}, passando pra lembrar: *{{compromisso}}* hoje às {{hora}}. Não vai me deixar falando sozinha, hein? 🐝",
+    "Bzzz! 🐝 Lembrete da Bee: *{{compromisso}}* às {{hora}}. Já tá se arrumando, {{nome}}? Bora!",
+    "Oi, {{nome}}! Sua secretária aqui 🐝 Às {{hora}} você tem *{{compromisso}}*. Conta comigo!",
+    "Alerta de abelha! 🐝 *{{compromisso}}* começa às {{hora}}. Vai com tudo, {{nome}}, eu tô torcendo!",
+    "Ei, {{nome}}, não esquece: *{{compromisso}}* às {{hora}}. Eu lembro, você arrasa. 🐝",
+  ],
+  en_US: [
+    "Hey {{nome}}! 🐝 Coming up soon: *{{compromisso}}* at {{hora}}. You've got this!",
+    "Hi {{nome}}, just a reminder: *{{compromisso}}* today at {{hora}}. Don't leave me talking to myself! 🐝",
+    "Bzzz! 🐝 Bee reminder: *{{compromisso}}* at {{hora}}. Getting ready, {{nome}}? Let's go!",
+    "Hi {{nome}}! Your secretary here 🐝 At {{hora}} you have *{{compromisso}}*. Count on me!",
+    "Bee alert! 🐝 *{{compromisso}}* starts at {{hora}}. Go get it, {{nome}}, I'm rooting for you!",
+    "Hey {{nome}}, don't forget: *{{compromisso}}* at {{hora}}. I remember, you shine. 🐝",
+  ],
+};
+const EXEMPLO_BEE = { pt_BR: ["Gui", "Pagar o boleto", "10:00"], en_US: ["Gui", "Pay the bill", "10:00 AM"] };
+// Só para nós: GET mostra a situação dos modelos na Meta; POST manda os que faltam para aprovação
+async function modelosWhatsapp(req, env) {
+  if (!env.FUNIL_CHAVE || req.headers.get("x-chave") !== env.FUNIL_CHAVE) return new Response("não autorizado", { status: 401 });
+  const auth = { Authorization: `Bearer ${env.WA_TOKEN}`, "Content-Type": "application/json" };
+  const lista = await (await fetch(`${WA_API}${WA_CONTA}/message_templates?fields=name,language,status,category&limit=100`, { headers: auth })).json();
+  if (req.method === "GET") return new Response(JSON.stringify(lista), { headers: { "Content-Type": "application/json" } });
+  const existe = new Set((lista.data || []).map((m) => `${m.name}|${m.language}`));
+  const resultado = [];
+  for (const [idioma, textos] of Object.entries(MODELOS_BEE)) {
+    for (const [i, texto] of textos.entries()) {
+      const name = `bee_lembrete_${i + 1}`;
+      if (existe.has(`${name}|${idioma}`)) { resultado.push({ name, idioma, ja: true }); continue; }
+      const [nome, compromisso, hora] = EXEMPLO_BEE[idioma];
+      const r = await fetch(`${WA_API}${WA_CONTA}/message_templates`, {
+        method: "POST", headers: auth,
+        body: JSON.stringify({
+          name, language: idioma, category: "UTILITY", parameter_format: "NAMED",
+          components: [{ type: "BODY", text: texto, example: { body_text_named_params: [
+            { param_name: "nome", example: nome }, { param_name: "compromisso", example: compromisso }, { param_name: "hora", example: hora },
+          ] } }],
+        }),
+      });
+      resultado.push({ name, idioma, status: r.status, resposta: await r.json() });
+    }
+  }
+  return new Response(JSON.stringify(resultado), { headers: { "Content-Type": "application/json" } });
 }
 async function whatsapp(req, env) {
   if (new URL(req.url).pathname === "/whatsapp/estado") return estadoWhatsapp(req, env);
+  if (new URL(req.url).pathname === "/whatsapp/modelos") return modelosWhatsapp(req, env);
   if (req.method === "GET") {
     const u = new URL(req.url).searchParams;
     if (u.get("hub.mode") === "subscribe" && env.WA_VERIFY_TOKEN && u.get("hub.verify_token") === env.WA_VERIFY_TOKEN) return new Response(u.get("hub.challenge") || "", { status: 200 });
