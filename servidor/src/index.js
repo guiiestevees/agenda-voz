@@ -176,7 +176,16 @@ async function assinaturaOk(req, corpo, env) {
   const certa = [...new Uint8Array(await crypto.subtle.sign("HMAC", chave, new TextEncoder().encode(corpo)))].map((b) => b.toString(16).padStart(2, "0")).join("");
   return assinatura.length === certa.length && crypto.subtle.timingSafeEqual(new TextEncoder().encode(assinatura), new TextEncoder().encode(certa));
 }
+const WA_API = "https://graph.facebook.com/v23.0/";
+const WA_NUMERO = "1388653214339890";
+// Só para nós: confere se a chave da Meta funciona e como está o número do Tap Bee
+async function estadoWhatsapp(req, env) {
+  if (!env.FUNIL_CHAVE || req.headers.get("x-chave") !== env.FUNIL_CHAVE) return new Response("não autorizado", { status: 401 });
+  const r = await fetch(`${WA_API}${WA_NUMERO}?fields=display_phone_number,verified_name,name_status,quality_rating,messaging_limit_tier,status`, { headers: { Authorization: `Bearer ${env.WA_TOKEN}` } });
+  return new Response(await r.text(), { status: r.status, headers: { "Content-Type": "application/json" } });
+}
 async function whatsapp(req, env) {
+  if (new URL(req.url).pathname === "/whatsapp/estado") return estadoWhatsapp(req, env);
   if (req.method === "GET") {
     const u = new URL(req.url).searchParams;
     if (u.get("hub.mode") === "subscribe" && env.WA_VERIFY_TOKEN && u.get("hub.verify_token") === env.WA_VERIFY_TOKEN) return new Response(u.get("hub.challenge") || "", { status: 200 });
@@ -197,7 +206,7 @@ export default {
   async fetch(req, env) {
     const origem = req.headers.get("Origin") || "";
     if (req.method === "OPTIONS") return new Response(null, { headers: cabecalhos(origem) });
-    if (new URL(req.url).pathname === "/whatsapp") return whatsapp(req, env);
+    if (new URL(req.url).pathname.startsWith("/whatsapp")) return whatsapp(req, env);
     if (new URL(req.url).pathname === "/funil") return funil(req, env, origem);
     if (new URL(req.url).pathname === "/convite") {
       if (!ORIGENS.includes(origem)) return responder({ erro: "origem não permitida" }, 403, origem);
