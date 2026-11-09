@@ -636,6 +636,7 @@
   }
   .botoes button:active { transform: scale(.97); }
   .botoes button.primario { background: var(--accent); color: #fff; box-shadow: 0 4px 14px rgba(var(--accent-rgb),.28); }
+  .botoes a.primario { flex: 1; display: flex; align-items: center; justify-content: center; height: 52px; border-radius: 14px; font-weight: 650; font-size: 16px; text-decoration: none; background: var(--accent); color: #fff; box-shadow: 0 4px 14px rgba(var(--accent-rgb),.28); }
   .botoes button.perigo { color: var(--danger); background: var(--danger-soft); }
 
   form.editar label { display: block; font-size: 13px; color: var(--muted); font-weight: 600; margin: 16px 0 6px; }
@@ -2145,6 +2146,7 @@
   <button class="icon-btn linha-ajuste" id="btnComoUsar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7M12 17h.01"/></svg><span>Como usar o app</span></button>
   <h2 class="sec">Avisos</h2>
   <button class="icon-btn" id="btnNotif"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span>Ativar avisos</span></button>
+  <button class="icon-btn linha-ajuste" id="btnWhats" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21l1.7-5A8.5 8.5 0 1 1 8 19.3z"/><path d="M9 10h.01M12 10h.01M15 10h.01"/></svg><span id="whatsRot">Avisos pelo WhatsApp: desligados</span></button>
   <h2 class="sec so-iphone">Atalho do iPhone</h2>
   <button class="dt-ajuste" id="btnDoisToques" hidden></button>
   <details class="ajuda" id="ajudaAtalhoWeb">
@@ -2387,6 +2389,7 @@ function salvar() {
   setTimeout(atualizarWidget, 0);
   try { localStorage.setItem(CHAVE, JSON.stringify(eventos)); } catch {}
   agendarLembretes();
+  enviarWhats();
 }
 // Lembretes de verdade no app nativo: o próprio iPhone avisa, mesmo com o app fechado.
 // O iOS guarda até 64 avisos por app, então vão os próximos 60 (o resto entra quando o app abrir de novo).
@@ -6810,6 +6813,86 @@ const rcIniciar = (rc) => rcIniciado ||= rc.configure({ apiKey: RC_CHAVE }).then
   try { await rc.logIn({ appUserID: meuId() }); } catch (e) { console.error('[Compra]', e); }
   Metricas?.identificar({ id: meuId() }).catch(() => {});
 });
+
+// ---------- Avisos pelo WhatsApp: a Bee também manda um recadinho na hora do lembrete ----------
+// A pessoa liga mandando um código pelo próprio WhatsApp (assim ninguém liga o número de outra pessoa).
+// Depois, a cada mudança, o app manda ao servidor só os avisos dos próximos dias: nome, hora e quando avisar.
+const waLiberado = () => NATIVO || new URLSearchParams(location.search).has('wa');
+const waLigado = () => lerPref('agenda.whats', '') === '1';
+const NUMERO_BEE = '5519990055701';
+async function waPedir(acao, extra = {}) {
+  const r = await fetch(IA_URL + 'whatsapp/app', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ acao, uid: meuId(), idioma: EM_INGLES ? 'en' : 'pt', nome: lerPref('agenda.nome', '').trim(), ...extra }) });
+  if (!r.ok) throw new Error(`WhatsApp ${r.status}`);
+  return r.json();
+}
+function marcarWhats() {
+  const b = document.getElementById('btnWhats');
+  b.style.display = waLiberado() ? '' : 'none';
+  document.getElementById('whatsRot').textContent = `Avisos pelo WhatsApp: ${waLigado() ? 'ligados' : 'desligados'}`;
+}
+let timerWhats;
+function enviarWhats() {
+  clearTimeout(timerWhats);
+  timerWhats = setTimeout(async () => {
+    if (!waLiberado() || !waLigado()) return;
+    const agora = Date.now();
+    const avisos = ocorrencias(new Date(agora), new Date(agora + 8 * 86400000))
+      .filter(o => o.ev.lembreteMin !== null && o.ev.lembreteMin !== undefined && !estaFeito(o.ev, o.inicio))
+      .map(o => ({ chave: `${o.ev.id}|${chaveDia(o.inicio)}`, quando: o.inicio.getTime() - o.ev.lembreteMin * 60000, titulo: o.ev.titulo, hora: fmtHora(o.inicio) }))
+      .filter(a => a.quando > agora).sort((a, b) => a.quando - b.quando).slice(0, 60);
+    try {
+      const r = await waPedir('sincronizar', { avisos });
+      // Quem mandou SAIR pelo WhatsApp fica desligado aqui também
+      if (r.ligado === false) { gravarPref('agenda.whats', ''); marcarWhats(); }
+    } catch (e) { console.warn('Avisos pelo WhatsApp', e); }
+  }, 1500);
+}
+async function abrirWhats() {
+  if (waLigado()) {
+    let final = '';
+    try { const r = await waPedir('situacao'); if (!r.ligado) { gravarPref('agenda.whats', ''); marcarWhats(); return abrirWhats(); } final = r.final; } catch {}
+    abrirFolha(`<div class="dois-toques">
+      <h3>Avisos pelo WhatsApp</h3>
+      <p>${final ? `Ligados no número com final ${esc(final)}.` : 'Ligados.'}</p>
+      <p>Além do aviso do iPhone, a Bee manda um recadinho por lá na hora do lembrete.</p>
+      <div class="botoes"><button id="waDesligar">Desligar</button></div>
+    </div>`);
+    document.getElementById('waDesligar').onclick = async () => {
+      try { await waPedir('sair'); } catch {}
+      gravarPref('agenda.whats', ''); marcarWhats(); fecharFolha(); toast('Pronto: não vou mais avisar pelo WhatsApp.');
+    };
+    return;
+  }
+  const letras = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', codigo = Array.from(crypto.getRandomValues(new Uint8Array(6)), n => letras[n % letras.length]).join('');
+  try { await waPedir('iniciar', { codigo }); } catch { return toast('Não deu para ligar agora. Confira sua internet e tente de novo.', 3500); }
+  const msg = `${EM_INGLES ? 'Turn on Tap Bee reminders' : 'Ativar avisos do Tap Bee'}: ${codigo}`;
+  abrirFolha(`<div class="dois-toques" id="waFolha">
+    <h3>Avisos pelo WhatsApp</h3>
+    <p>A Bee também te avisa dos compromissos pelo WhatsApp, com um recadinho divertido.</p>
+    <p>Toque no botão: o WhatsApp abre com uma mensagem pronta. <b>É só enviar.</b></p>
+    <div class="botoes"><a class="primario" id="waAtivar" href="https://wa.me/${NUMERO_BEE}?text=${encodeURIComponent(msg)}">Ativar no WhatsApp</a></div>
+    <p><small>Para parar, é só mandar SAIR por lá.</small></p>
+  </div>`);
+  // Fica de olho enquanto a folha está aberta: assim que a mensagem chega, liga sozinho
+  const fim = Date.now() + 10 * 60000;
+  const conferir = async () => {
+    if (!document.getElementById('waFolha') || !overlay.classList.contains('show') || Date.now() > fim) return;
+    try {
+      if ((await waPedir('situacao')).ligado) {
+        gravarPref('agenda.whats', '1'); marcarWhats(); fecharFolha(); enviarWhats();
+        tocarSom(true); vibrar('sucesso');
+        return toast('Pronto! A Bee também vai te avisar pelo WhatsApp. 🐝', 3500);
+      }
+    } catch {}
+    setTimeout(conferir, 3000);
+  };
+  setTimeout(conferir, 3000);
+}
+document.getElementById('btnWhats').onclick = abrirWhats;
+marcarWhats();
+enviarWhats();
+document.addEventListener('visibilitychange', () => { if (!document.hidden) enviarWhats(); });
 const rcAtivo = (info) => Object.keys(info?.entitlements?.active || {}).length > 0 || (info?.activeSubscriptions || []).some(id => Object.values(RC_PRODUTO).includes(id));
 // true = comprou, false = desistiu na tela da Apple, null = deu erro (quem teve erro não desistiu, então não vê a oferta)
 async function rcComprar(rc, plano) {
