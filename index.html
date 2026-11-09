@@ -181,6 +181,29 @@
   .dt-fone.grande { width: 92px; height: 150px; border-radius: 22px; box-shadow: inset 0 0 0 5px #3a2a06, 0 14px 30px rgba(0,0,0,.2); }
   .dt-fone.grande i { left: 14px; top: 14px; width: 26px; height: 26px; border-radius: 9px; box-shadow: 0 32px 0 #555; }
   .dt-fone.grande b { width: 70px; height: 70px; margin: -35px; border-width: 4px; border-color: #f5b21b; }
+  .wa-folha { text-align: center; padding-top: 4px; }
+  .wa-folha h3 { font-size: 24px; margin: 18px 0 6px; }
+  .wa-folha > p { font-size: 15px; }
+  .wa-hero { position: relative; margin: 6px auto 0; max-width: 330px; padding: 16px 14px 14px 58px; border-radius: 22px; background: linear-gradient(160deg, #e7f8ec, #d4f0dc); text-align: left; }
+  .wa-bee { position: absolute; left: -6px; top: -14px; width: 70px; height: 70px; object-fit: contain; filter: drop-shadow(0 6px 10px rgba(0,0,0,.15)); }
+  .wa-bolha { position: relative; padding: 10px 12px 18px; border-radius: 4px 14px 14px 14px; background: #fff; color: #1b1b1b; font-size: 14px; line-height: 1.4; box-shadow: 0 1px 1px rgba(0,0,0,.08); }
+  .wa-bolha i { position: absolute; right: 10px; bottom: 4px; font-style: normal; font-size: 11px; color: #8a8a8a; }
+  .wa-bts { display: flex; gap: 6px; margin-top: 6px; }
+  .wa-bts span { flex: 1; padding: 8px 4px; border-radius: 10px; background: #fff; color: #0a7cff; font-size: 13px; font-weight: 650; text-align: center; box-shadow: 0 1px 1px rgba(0,0,0,.08); }
+  .wa-lista { list-style: none; margin: 14px auto 0; padding: 0; max-width: 330px; text-align: left; display: grid; gap: 10px; }
+  .wa-lista li { display: flex; gap: 10px; align-items: center; font-size: 16px; font-weight: 600; color: var(--text); }
+  .wa-lista svg { flex: none; width: 22px; height: 22px; padding: 3px; border-radius: 50%; background: #25d366; color: #fff; }
+  .wa-bt { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 56px; margin-top: 22px; border-radius: 16px; background: #25d366; color: #fff; font-size: 17px; font-weight: 800; text-decoration: none; box-shadow: 0 8px 20px rgba(37,211,102,.32); }
+  .wa-bt svg { width: 24px; height: 24px; }
+  .wa-sec { display: block; width: 100%; min-height: 48px; margin-top: 10px; border: 0; border-radius: 14px; background: var(--field); color: var(--text); font-size: 15px; font-weight: 700; line-height: 48px; text-decoration: none; cursor: pointer; }
+  .wa-nota { margin-top: 12px !important; font-size: 13px !important; }
+  .wa-ativo { position: relative; width: 96px; margin: 8px auto 0; }
+  .wa-ativo img { width: 96px; height: 96px; object-fit: contain; }
+  .wa-ativo span { position: absolute; right: -2px; bottom: 4px; width: 32px; height: 32px; border-radius: 50%; background: #25d366; color: #fff; display: grid; place-items: center; box-shadow: 0 0 0 4px var(--card); }
+  .wa-ativo span svg { width: 18px; height: 18px; }
+  .wa-espera { padding: 8px 0 4px; }
+  .wa-espera .bee-voz { width: 90px; height: 90px; }
+  .wa-espera .pontos { margin: 14px 0 18px; }
   .wa-card { margin: 14px 0 0; padding: 14px; border-radius: 20px; background: var(--card); box-shadow: inset 0 0 0 1px var(--line); }
   .wa-topo { display: flex; align-items: center; gap: 12px; }
   .wa-ico { flex: none; width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; background: #25d366; color: #fff; }
@@ -6923,15 +6946,20 @@ async function buscarDoWhatsapp() {
   } catch (e) { console.warn('Pedidos do WhatsApp', e); }
   finally { buscandoWhats = false; }
 }
+// Código fácil de ler na mensagem de ativação: "favo 27". Ele liga o WhatsApp de quem enviou a este app
+const PALAVRAS_WA = EM_INGLES ? ['honey', 'hive', 'bloom', 'sunny', 'garden', 'petal', 'breeze', 'buzz', 'daisy', 'clover'] : ['mel', 'favo', 'flor', 'sol', 'jardim', 'colmeia', 'abelha', 'brisa', 'girassol', 'pétala'];
+const sortearCodigoWA = () => { const [a, b] = crypto.getRandomValues(new Uint8Array(2)); return { palavra: PALAVRAS_WA[a % PALAVRAS_WA.length], num: 10 + (b % 90) }; };
+const codigoWA = ({ palavra, num }) => `${palavra.normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase()}${num}`;
 async function abrirWhats() {
   if (waLigado()) {
     let final = '';
     try { const r = await waPedir('situacao'); if (!r.ligado) { gravarPref('agenda.whats', ''); marcarWhats(); return abrirWhats(); } final = r.final; } catch {}
-    abrirFolha(`<div class="dois-toques">
-      <h3>Avisos pelo WhatsApp</h3>
-      <p>${final ? `Ligados no número com final ${esc(final)}.` : 'Ligados.'}</p>
-      <p>Seus lembretes chegam pelo WhatsApp, e não como notificação do iPhone. Lá você pode responder, mandar áudio e pedir coisas para a Bee.</p>
-      <div class="botoes"><button id="waDesligar">Voltar para avisos do iPhone</button></div>
+    abrirFolha(`<div class="wa-folha">
+      <div class="wa-ativo"><img src="${MASCOTES.bee}" alt=""><span>${ICO.ok}</span></div>
+      <h3>A Bee está no seu WhatsApp</h3>
+      <p>${final ? `Ativo no número com final ${esc(final)}.` : 'Ativo.'}</p>
+      <a class="wa-bt" href="https://wa.me/${NUMERO_BEE}">${ICO_WA}<span>Abrir conversa</span></a>
+      <button class="wa-sec" id="waDesligar">Voltar para avisos do iPhone</button>
     </div>`);
     document.getElementById('waDesligar').onclick = async () => {
       try { await waPedir('sair'); } catch {}
@@ -6939,27 +6967,57 @@ async function abrirWhats() {
     };
     return;
   }
-  const letras = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', codigo = Array.from(crypto.getRandomValues(new Uint8Array(6)), n => letras[n % letras.length]).join('');
-  try { await waPedir('iniciar', { codigo }); } catch (e) {
-    return toast(e.status === 402 ? 'Os avisos pelo WhatsApp são para quem assina o Tap Bee.' : 'Não deu para ligar agora. Confira sua internet e tente de novo.', 3500);
+  let cod;
+  for (let tentativa = 0; tentativa < 4; tentativa++) {
+    cod = sortearCodigoWA();
+    try { await waPedir('iniciar', { codigo: codigoWA(cod) }); break; } catch (e) {
+      if (e.status === 409 && tentativa < 3) continue;
+      return toast(e.status === 402 ? 'Os avisos pelo WhatsApp são para quem assina o Tap Bee.' : 'Não deu para ligar agora. Confira sua internet e tente de novo.', 3500);
+    }
   }
-  const msg = `${EM_INGLES ? 'Turn on Tap Bee reminders' : 'Ativar avisos do Tap Bee'}: ${codigo}`;
-  abrirFolha(`<div class="dois-toques" id="waFolha">
-    <h3>Avisos pelo WhatsApp</h3>
-    <p>A Bee te avisa dos compromissos pelo WhatsApp, com um recadinho que combina com cada um. E você pode responder, mandar áudio e marcar coisas por lá.</p>
-    <p>Os avisos passam a chegar só pelo WhatsApp, sem repetir no iPhone.</p>
-    <p>Toque no botão: o WhatsApp abre com uma mensagem pronta. <b>É só enviar.</b></p>
-    <div class="botoes"><a class="primario" id="waAtivar" href="https://wa.me/${NUMERO_BEE}?text=${encodeURIComponent(msg)}">Ativar no WhatsApp</a></div>
-    <p><small>Para parar, é só mandar SAIR por lá.</small></p>
+  const msg = EM_INGLES
+    ? `Hi Bee! 🐝 I'd like to get my reminders and plan things with you here on WhatsApp. My code is ${cod.palavra} ${cod.num}.`
+    : `Oi, Bee! 🐝 Quero receber meus lembretes e marcar compromissos com você aqui pelo WhatsApp. Meu código é ${cod.palavra} ${cod.num}.`;
+  const link = `https://wa.me/${NUMERO_BEE}?text=${encodeURIComponent(msg)}`, nome = esc(lerPref('agenda.nome', '').trim());
+  const bolha = EM_INGLES
+    ? `Hi${nome ? ` ${nome}` : ''}! 🐝 Medicine time: <b>Vitamin D</b> today at 8:00 AM. Taking care of you comes first 💛`
+    : `Oi${nome ? `, ${nome}` : ''}! 🐝 Hora do remédio: <b>Vitamina D</b> hoje às 8:00. Cuidar de você vem primeiro 💛`;
+  abrirFolha(`<div class="wa-folha" id="waFolha">
+    <div class="wa-hero">
+      <img class="wa-bee" src="${MASCOTES.bee}" alt="">
+      <div class="wa-chat" aria-hidden="true">
+        <div class="wa-bolha">${bolha}<i>8:00</i></div>
+        <div class="wa-bts"><span>${EM_INGLES ? 'Done' : 'Feito'}</span><span>${EM_INGLES ? 'Remind me in 10 min' : 'Lembrar em 10 min'}</span></div>
+      </div>
+    </div>
+    <h3>Sua secretária no WhatsApp</h3>
+    <ul class="wa-lista">
+      <li>${ICO.ok}<span>Lembretes na hora certa, direto no WhatsApp</span></li>
+      <li>${ICO.ok}<span>Marque compromissos por mensagem ou áudio</span></li>
+      <li>${ICO.ok}<span>Responda “Feito” ou peça para lembrar depois</span></li>
+    </ul>
+    <a class="wa-bt" id="waAtivar" href="${link}">${ICO_WA}<span>Ativar no WhatsApp</span></a>
+    <p class="wa-nota">Seus lembretes passam a chegar por lá. Dá para voltar ao iPhone quando quiser.</p>
   </div>`);
-  // Fica de olho enquanto a folha está aberta: assim que a mensagem chega, liga sozinho
+  // Depois do toque, a folha espera a mensagem chegar e liga sozinha
+  document.getElementById('waAtivar').addEventListener('click', () => setTimeout(() => {
+    const f = document.getElementById('waFolha');
+    if (!f) return;
+    f.innerHTML = `<div class="wa-espera">
+      <img class="bee-voz voando" src="${MASCOTES.bee}" alt="">
+      <h3>Agora é só enviar a mensagem</h3>
+      <p>Assim que ela chegar, eu ativo tudo por aqui.</p>
+      <div class="pontos"><i></i><i></i><i></i></div>
+      <a class="wa-sec" href="${link}">Abrir o WhatsApp de novo</a>
+    </div>`;
+  }, 600));
   const fim = Date.now() + 10 * 60000;
   const conferir = async () => {
     if (!document.getElementById('waFolha') || !overlay.classList.contains('show') || Date.now() > fim) return;
     try {
       if ((await waPedir('situacao')).ligado) {
         gravarPref('agenda.whats', '1'); marcarWhats(); fecharFolha(); enviarWhats(); agendarLembretes(); render();
-        tocarSom(true); vibrar('sucesso');
+        tocarSom(true); vibrar('sucesso'); confete(innerWidth / 2, innerHeight / 3, true);
         return toast('Pronto! Agora a Bee te avisa pelo WhatsApp. 🐝', 3500);
       }
     } catch {}

@@ -162,7 +162,9 @@ export class AvisosWhatsapp extends DurableObject {
   linha(q, ...v) { return this.sql.exec(q, ...v).toArray()[0]; }
   async iniciar(uid, codigo, idioma, nome) {
     this.sql.exec("DELETE FROM codigos WHERE expira < ? OR uid = ?", Date.now(), uid);
+    if (this.linha("SELECT uid FROM codigos WHERE codigo = ?", codigo)) return false;
     this.sql.exec("INSERT OR REPLACE INTO codigos VALUES (?, ?, ?, ?, ?)", codigo, uid, idioma, nome, Date.now() + 30 * 60000);
+    return true;
   }
   // Assinatura ativa no RevenueCat (o app usa o mesmo código anônimo lá). A resposta vale por 6 horas.
   // Se o RevenueCat não responder, a Bee continua funcionando: assinante nenhum fica sem lembrete por erro nosso.
@@ -207,7 +209,10 @@ export class AvisosWhatsapp extends DurableObject {
       this.sql.exec("DELETE FROM ligacoes WHERE telefone = ?", telefone);
       return { tipo: "saiu", idioma: ligado?.idioma };
     }
-    const codigo = (texto.toUpperCase().match(/\b[A-Z0-9]{6}\b/g) || []).map((c) => this.linha("SELECT * FROM codigos WHERE codigo = ? AND expira > ?", c, Date.now())).find(Boolean);
+    // Código fácil ("favo 27") ou o antigo de 6 letras e números
+    const limpo = texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+    const candidatos = [...[...limpo.matchAll(/([A-Z]{3,10})[\s-]*(\d{2})\b/g)].map((m) => m[1] + m[2]), ...(limpo.match(/\b[A-Z0-9]{6}\b/g) || [])];
+    const codigo = candidatos.map((c) => this.linha("SELECT * FROM codigos WHERE codigo = ? AND expira > ?", c, Date.now())).find(Boolean);
     if (codigo) {
       this.sql.exec("DELETE FROM ligacoes WHERE telefone = ? OR uid = ?", telefone, codigo.uid);
       this.sql.exec("INSERT INTO ligacoes (uid, telefone, idioma, nome, criado) VALUES (?, ?, ?, ?, ?)", codigo.uid, telefone, codigo.idioma, codigo.nome, Date.now());
@@ -473,7 +478,7 @@ async function enviarWhatsapp(env, para, corpo) {
 }
 const textoWhatsapp = (env, para, texto) => enviarWhatsapp(env, para, { type: "text", text: { body: texto } });
 const RESPOSTAS_WA = {
-  ligado: { pt_BR: (n) => `Pronto${n ? `, ${n}` : ""}! 🐝 A partir de agora eu te aviso dos seus compromissos por aqui.\n\nTambém dá para me pedir coisas, escrevendo ou mandando áudio. Por exemplo: "marca dentista sexta às 3". Para parar, é só mandar SAIR.`, en_US: (n) => `All set${n ? `, ${n}` : ""}! 🐝 From now on I'll remind you about your plans here.\n\nYou can also ask me things, by text or voice message. For example: "dentist Friday at 3". To stop, just send STOP.` },
+  ligado: { pt_BR: (n) => `Oi${n ? `, ${n}` : ""}! Que bom te ver por aqui 🐝\n\nA partir de agora, seus lembretes chegam nesta conversa, na hora certa.\n\nE pode me pedir o que precisar, escrevendo ou mandando áudio. Por exemplo: "marca dentista sexta às 3".\n\nSe um dia quiser parar, é só mandar SAIR.`, en_US: (n) => `Hi${n ? ` ${n}` : ""}! So glad to see you here 🐝\n\nFrom now on, your reminders will arrive in this chat, right on time.\n\nAnd you can ask me anything, by text or voice message. For example: "dentist Friday at 3".\n\nIf you ever want to stop, just send STOP.` },
   saiu: { pt_BR: () => "Tudo bem! Não vou mais te avisar por aqui. Os avisos voltam para o iPhone. Para voltar, é só ativar de novo no Tap Bee. 🐝", en_US: () => "No problem! I won't remind you here anymore. Reminders go back to your iPhone. To come back, just turn it on again in Tap Bee. 🐝" },
   outro: { pt_BR: () => "Oi! 🐝 Eu sou a Bee, a secretária do Tap Bee. Para eu te avisar por aqui, ative em Ajustes → Avisos pelo WhatsApp no app.", en_US: () => "Hi! 🐝 I'm Bee, the Tap Bee secretary. To get reminders here, turn it on in Settings → WhatsApp reminders in the app." },
   feito: { pt_BR: () => "Boa! Marquei como feito ✅ 🐝", en_US: () => "Nice! Marked as done ✅ 🐝" },
@@ -626,9 +631,9 @@ async function whatsappDoApp(req, env) {
   const idioma = e.idioma === "en" ? "en_US" : "pt_BR", nome = String(e.nome || "").trim().slice(0, 30);
   const avisos = env.AVISOS.get(env.AVISOS.idFromName("avisos"));
   if (e.acao === "iniciar") {
-    if (!/^[A-Z0-9]{6}$/.test(e.codigo || "")) return responder({ erro: "código inválido" }, 400, origem);
+    if (!/^([A-Z]{3,10}\d{2}|[A-Z0-9]{6})$/.test(e.codigo || "")) return responder({ erro: "código inválido" }, 400, origem);
     if (!(await avisos.assinou(e.uid, true))) return responder({ erro: "sem_assinatura" }, 402, origem);
-    await avisos.iniciar(e.uid, e.codigo, idioma, nome);
+    if (!(await avisos.iniciar(e.uid, e.codigo, idioma, nome))) return responder({ erro: "código em uso" }, 409, origem);
     return responder({ ok: true, numero: "5519990055701" }, 200, origem);
   }
   if (e.acao === "situacao") return responder(await avisos.situacao(e.uid), 200, origem);
