@@ -28,12 +28,14 @@ Cada ação:
 - acao "tirar_nota": a pessoa já fez ou quer apagar uma anotação ("já troquei a lâmpada", "apaga a anotação do presente"). Preencha notaId.
 
 Regras:
+- Nome de uma palavra só também é compromisso válido ("feira no sábado às 10" → "Feira"; "missa domingo às 9" → "Missa"). Só use "nao_entendi" se não der para saber o que é.
 - titulo: só o nome do compromisso, curto e com inicial maiúscula ("Médico", "Academia", "Reunião com o João", "Tomar remédio"). Nunca inclua data, hora, lembrete ou palavras como "tenho", "marca", "me lembra".
-- data no formato AAAA-MM-DD e hora HH:MM (24h), no fuso da pessoa. Use a lista de datas abaixo para saber o dia certo de "terça", "amanhã" etc. Hora de 1 a 12 SEM período ("às 7", "7 horas"), para HOJE ou sem dia: use a tabela "Hora SEM período" que vem na mensagem; ela já escolheu o próximo horário que ainda vai chegar (manhã ou noite). Nunca jogue para amanhã um "hoje" que ainda dá tempo de acontecer hoje. Se a pessoa disser o período ("da manhã", "da tarde", "da noite", "meio-dia", "madrugada") ou a hora em 24h ("19h", "às 15"), obedeça exatamente. Para outro dia ("terça às 4"), sem período: de 1 a 6 é tarde (16:00), de 7 a 11 é manhã, 12 é meio-dia. Com hora mas sem dia → hoje, se o horário ainda vai chegar; senão amanhã. Com dia mas sem hora → 09:00. Sem dia E sem hora, é uma tarefa para lembrar → "anotar" (a não ser que a pessoa peça claramente para marcar agora). Se a pessoa falar vários compromissos e só disser o dia no primeiro, os seguintes são no mesmo dia.
+- data no formato AAAA-MM-DD e hora HH:MM (24h), no fuso da pessoa. Use a lista de datas abaixo para saber o dia certo de "terça", "amanhã" etc. Hora de 1 a 12 SEM período ("às 7", "7 horas"), para HOJE ou sem dia: use a tabela "Hora SEM período" que vem na mensagem; ela já escolheu o próximo horário que ainda vai chegar (manhã ou noite). Nunca jogue para amanhã um "hoje" que ainda dá tempo de acontecer hoje. Se a pessoa disser o período ("da manhã", "da tarde", "da noite", "meio-dia", "madrugada") ou a hora em 24h ("19h", "às 15"), obedeça exatamente. Para outro dia ("terça às 4"), sem período: de 1 a 5 soma 12 ("às 3" → 15:00, "às 4" → 16:00), de 6 a 11 é manhã, 12 é meio-dia; mas se o próprio compromisso indica o período, siga ele (jantar, festa, balada, culto à noite → noite: "jantar sexta às 8" → 20:00; café da manhã → manhã). "3 da tarde" é 15:00, "8 da noite" é 20:00, "meio-dia e meia" é 12:30, "7 e meia" é :30, "7 e quinze" é :15, "quinze pras 8" é 7:45. Com hora mas sem dia → hoje, se o horário ainda vai chegar; senão amanhã. Com dia mas sem hora → 09:00. Sem dia E sem hora, é uma tarefa para lembrar → "anotar" (a não ser que a pessoa peça claramente para marcar agora). Se a pessoa falar vários compromissos e só disser o dia no primeiro, os seguintes são no mesmo dia.
 - lembreteMin: minutos de antecedência do aviso. "me lembre 15 min antes" → 15; "me lembra de tomar remédio às 8" → 0; "1 dia antes" → 1440. Se a pessoa não falar nada sobre aviso ao criar, use o aviso padrão informado na mensagem; para aniversário, use 0. Em "mudar", null = não mexer e -1 = tirar o aviso.
 - repetir: "nenhuma", "diaria", "semanal", "mensal" ou "anual". Para semanal, diasSemana com os dias (0=domingo, 1=segunda … 6=sábado), ex.: "toda segunda e quarta" → [1,3]; "de segunda a sexta" → [1,2,3,4,5]. Aniversário → "anual". Nos outros casos diasSemana = [].
 - notaId: só em "agendar" e "tirar_nota", escolhido na lista de anotações pelo texto; nas outras ações, null.
-- Para mudar/desmarcar, escolha o eventoId na agenda pelo nome e pela data mencionados. Se o compromisso se repete e a pessoa fala de um dia só ("desmarca a academia de amanhã"), preencha soNaData com a data daquela ocorrência; se fala da série toda ("cancela a academia"), soNaData = null.
+- Antes de criar, confira a agenda: se a pessoa fala de um compromisso que JÁ EXISTE (mesmo nome ou quase) e diz outro dia ou horário para ele ("buscar a Júlia é amanhã", "o dentista na verdade é às 5", "a reunião passou pra sexta", "mudou o horário do jantar"), é "mudar" esse compromisso, e não "criar" outro igual. Só crie um novo com o mesmo nome se a pessoa disser claramente que é mais um ("outro dentista", "mais uma reunião"). Se o nome tiver um detalhe diferente (outro lugar ou outra pessoa: "buscar a Júlia no inglês" não é "buscar a Júlia na clínica"), é outro compromisso → "criar". "No mesmo horário" = mantém a hora (hora null).
+- Para mudar/desmarcar, escolha o eventoId na agenda pelo nome e pela data mencionados. Se o compromisso se repete e a pessoa cita QUALQUER dia ("desse domingo", "de amanhã", "de hoje", "da semana que vem", "dia 22", "na segunda que vem"), mexa SÓ naquele dia: soNaData = a data daquela ocorrência. Só mexa na série toda (soNaData = null) quando a pessoa não cita dia nenhum ou diz claramente que é para sempre ("cancela a academia", "não vou mais na missa", "a academia agora é sempre às 6"). Na dúvida, mexa só em um dia: apagar a série por engano é muito pior.
 - Se não achar o compromisso para mudar/desmarcar, use tipo "responder" e diga isso em "resposta".
 - resposta: curta e simpática, como uma secretária falaria, confirmando tudo o que foi feito ou respondendo a pergunta. Ex.: "Anotado: médico terça às 16h, te aviso 15 minutos antes." Fale horários como "16h" ou "16h30" e dias como "terça" ou "amanhã". Sem emojis.
 - Quando o tipo for "responder", organize a resposta em tópicos para leitura rápida, usando quebras de linha (\\n):
@@ -82,7 +84,7 @@ function proximosDias(dataISO) {
   return Array.from({ length: 15 }, (_, i) => {
     const d = new Date(base.getTime() + i * 86400000);
     // "terça" é a PRÓXIMA terça (mesmo que seja amanhã); a de depois é "terça da semana que vem"
-    const nome = nomes[d.getUTCDay()], rotulo = i === 0 ? `hoje (${nome})` : i === 1 ? `amanhã = ${nome}` : i < 7 ? nome : `${nome} da semana que vem`;
+    const nome = nomes[d.getUTCDay()], rotulo = i === 0 ? `hoje (${nome})` : i === 1 ? `amanhã = ${nome}` : i === 2 ? `depois de amanhã = ${nome}` : i < 7 ? nome : `${nome} da semana que vem`;
     return `${rotulo}: ${d.toISOString().slice(0, 10)}`;
   }).join("\n");
 }
@@ -560,18 +562,33 @@ const horaFalada = (hora, idioma) => {
 // O mesmo cérebro do app, usado também pelo WhatsApp
 // "às 7" sem período: o próximo 7:00 ou 19:00 que ainda vai chegar, já calculado para a Bee não adivinhar
 function tabelaHoras(agora, hoje) {
-  const m = String(agora).match(/(\d{1,2}):(\d{2})\s*$/);
+  // "17:05" (pt) ou "5:05 PM" (en)
+  const m = String(agora).match(/(\d{1,2}):(\d{2})\s*([AaPp])?\.?\s*[Mm]?\.?\s*$/);
   if (!m || !/^\d{4}-\d{2}-\d{2}$/.test(hoje)) return "";
-  const minAgora = +m[1] * 60 + +m[2], amanha = new Date(Date.parse(`${hoje}T12:00:00Z`) + 86400000).toISOString().slice(0, 10);
+  const h24 = m[3] ? (+m[1] % 12) + (/p/i.test(m[3]) ? 12 : 0) : +m[1];
+  const minAgora = h24 * 60 + +m[2], amanha = new Date(Date.parse(`${hoje}T12:00:00Z`) + 86400000).toISOString().slice(0, 10);
   const pad = (n) => String(n).padStart(2, "0");
   return Array.from({ length: 12 }, (_, i) => {
-    const h = i + 1, opcoes = h === 12 ? [12 * 60] : [h * 60, (h + 12) * 60];
+    // 1 a 5 é tarde (ninguém marca 3 da madrugada sem dizer); 6 a 10 pode ser manhã ou noite; 11 e 12 são de dia
+    const h = i + 1, opcoes = h <= 5 ? [(h + 12) * 60] : h <= 10 ? [h * 60, (h + 12) * 60] : [h * 60];
     const prox = opcoes.find((x) => x > minAgora);
     const [dia, min] = prox === undefined ? [amanha, opcoes[0]] : [hoje, prox];
     return `"às ${h}" → ${dia} ${pad(Math.floor(min / 60))}:00`;
   }).join("\n");
 }
-async function pensar(env, { texto, agora, hoje, agenda, notas, avisoPadrao, idioma, model = MODELOS[0], extra = "" }) {
+// Resposta que se contradiz ("Anotado!" sem nenhuma ação, ou "agir" vazio) não pode chegar na pessoa:
+// ela acharia que salvou. Nesse caso, pergunta de novo ao modelo mais forte.
+const confirmaSemAcao = (r) => (r.tipo === "agir" && !(r.acoes || []).length) || (r.tipo !== "agir" && /^(anotad|pront|marquei|ajustei|mudei|desmarquei|cancelei|agendei|feito|done|added|all set|moved|changed|cancel)/i.test(String(r.resposta || "").trim()));
+async function pensar(env, dados) {
+  const r = await pensarUmaVez(env, dados);
+  if (!confirmaSemAcao(r) && r.tipo !== "nao_entendi") return r;
+  try {
+    const r2 = await pensarUmaVez(env, { ...dados, model: "claude-sonnet-5-5" });
+    if (!confirmaSemAcao(r2)) return r2;
+  } catch (e) { console.error("Segunda tentativa falhou:", e.message); }
+  return confirmaSemAcao(r) ? { tipo: "nao_entendi", resposta: dados.idioma === "en" ? "I didn't quite get that. Can you say it again?" : "Não entendi direito. Pode falar de novo?", acoes: [] } : r;
+}
+async function pensarUmaVez(env, { texto, agora, hoje, agenda, notas, avisoPadrao, idioma, model = MODELOS[0], extra = "" }) {
   const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
   const resp = await client.beta.messages.create({
     model,
@@ -579,7 +596,7 @@ async function pensar(env, { texto, agora, hoje, agenda, notas, avisoPadrao, idi
     // Sonnet 5.5 aceita o desvio automático para outro modelo em caso de recusa; o Haiku não
     ...(model === "claude-sonnet-5-5" ? { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" } : {}),
     output_config: { effort: "low", format: { type: "json_schema", schema: ESQUEMA } },
-    system: (idioma === "en" ? `${SISTEMA}\n\nIdioma desta pessoa: ela fala INGLÊS. Entenda o pedido em inglês e escreva títulos, anotações, hábitos e "resposta" em inglês natural.` : SISTEMA) + extra,
+    system: (idioma === "en" ? `${SISTEMA}\n\nIdioma desta pessoa: ela fala INGLÊS. Entenda o pedido em inglês e escreva títulos, anotações, hábitos e "resposta" em inglês natural. Na resposta em inglês, escreva horários como "4 PM", "4:30 PM", "noon".` : SISTEMA) + extra,
     messages: [{
       role: "user",
       content: `Agora: ${agora}\nAviso padrão desta pessoa: ${avisoPadrao} minutos antes\n\nDatas dos próximos dias:\n${proximosDias(hoje)}\n\nHora SEM período para hoje ou sem dia (use exatamente esta tabela; se a pessoa disser manhã/tarde/noite ou outro dia, ela não vale):\n${tabelaHoras(agora, hoje)}\n\nAgenda (próximas ocorrências, uma por linha: id | dia | hora | nome | repetição):\n${agenda}\n\nAnotações sem data (id | texto):\n${notas}\n\nA pessoa disse: "${texto}"`,
