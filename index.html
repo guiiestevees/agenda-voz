@@ -2700,7 +2700,16 @@ function interpretar(fraseOriginal, agora = new Date()) {
   }
   if (hora !== null && periodo !== 'fixo') {
     if ((periodo === 'tarde' || periodo === 'noite') && hora < 12) hora += 12;
-    else if (!periodo && hora >= 1 && hora <= 7) hora += 12; // "às 4" quase sempre é 16h
+    else if (!periodo && hora >= 1 && hora <= 10) {
+      // Mesma regra da Bee: 1 a 5 é tarde; 6 a 10, para hoje, é o próximo que ainda vai chegar (7:00 ou 19:00)
+      const paraHoje = !data || data.getTime() === hoje.getTime();
+      if (hora <= 5) hora += 12;
+      else if (paraHoje && new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate(), hora, minuto) <= agora) {
+        // Já passou de manhã: vale a da noite; se a da noite também passou, é amanhã de manhã
+        if (new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate(), hora + 12, minuto) > agora) hora += 12;
+        else data = maisDias(1);
+      }
+    }
   }
   if (hora === null && periodo) hora = { manha: 9, tarde: 15, noite: 20, madrugada: 2 }[periodo];
 
@@ -5125,6 +5134,8 @@ function aplicarAcao(a, frase) {
     if (a.duracaoMin > 0) ev.duracaoMin = a.duracaoMin;
     if (a.lembreteMin !== null && a.lembreteMin !== undefined) ev.lembreteMin = a.lembreteMin < 0 ? null : a.lembreteMin;
     if (a.repetir && a.repetir !== 'manter') ev.repetir = montarRepetir(a.repetir, a.diasSemana);
+    // "Agora é toda semana" sem dizer os dias: repete no dia da semana do próprio compromisso
+    if (ev.repetir?.freq === 'semanal' && !ev.repetir.dias.length) ev.repetir.dias = [new Date(ev.inicio).getDay()];
     ev.avisados = []; ev.avisado = false;
     return ev;
   }
