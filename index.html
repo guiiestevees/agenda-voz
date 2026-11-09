@@ -6785,6 +6785,7 @@ function qzAtualizarBotao() {
 }
 function qzAvancar() { qz.i = Math.min(qz.i + 1, TELAS_QUIZ.length - 1); qzDesenhar(); }
 function qzEntrar() {
+  Metricas?.concluir().catch(() => {});
   gravarPref('agenda.assinante', 'sim'); gravarPref('agenda.quizVersao', QUIZ_VERSAO);
   if (qz.r.nome) gravarPref('agenda.nome', qz.r.nome.trim());
   const el = document.getElementById('quiz');
@@ -6797,7 +6798,18 @@ function qzEntrar() {
 }
 const rcPlugin = () => RC_CHAVE ? pluginNativo('Purchases') : null;
 let rcIniciado;
-const rcIniciar = (rc) => rcIniciado ||= rc.configure({ apiKey: RC_CHAVE });
+const Metricas = pluginNativo('Metricas');
+// Código anônimo da pessoa neste aparelho: o mesmo no RevenueCat e no Paywallo liga cada venda à sua origem
+const meuId = () => {
+  let id = lerPref('agenda.uid', '');
+  if (!id) { id = crypto.randomUUID?.() || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`; gravarPref('agenda.uid', id); }
+  return id;
+};
+// Quem já assinava sem código continua com a assinatura: o RevenueCat junta a conta anônima ao código novo
+const rcIniciar = (rc) => rcIniciado ||= rc.configure({ apiKey: RC_CHAVE }).then(async () => {
+  try { await rc.logIn({ appUserID: meuId() }); } catch (e) { console.error('[Compra]', e); }
+  Metricas?.identificar({ id: meuId() }).catch(() => {});
+});
 const rcAtivo = (info) => Object.keys(info?.entitlements?.active || {}).length > 0 || (info?.activeSubscriptions || []).some(id => Object.values(RC_PRODUTO).includes(id));
 // true = comprou, false = desistiu na tela da Apple, null = deu erro (quem teve erro não desistiu, então não vê a oferta)
 async function rcComprar(rc, plano) {
@@ -7036,7 +7048,7 @@ function qzDigitarFala() {
 }
 function qzDesenhar() {
   const palco = document.getElementById('qzPalco'), t = TELAS_QUIZ[qz.i];
-  if (!qz.vistas.has(t.id)) { qz.vistas.add(t.id); funil(t.id); }
+  if (!qz.vistas.has(t.id)) { qz.vistas.add(t.id); funil(t.id); Metricas?.etapa({ nome: t.id, ordem: qz.i }).catch(() => {}); }
   clearInterval(qz.slides); qz.timers.forEach(clearTimeout); qz.timers = [];
   const pct = Math.round(qz.i / (TELAS_QUIZ.length - 1) * 100);
   palco.innerHTML = `

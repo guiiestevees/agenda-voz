@@ -3,6 +3,7 @@ import AVFoundation
 import Speech
 import Capacitor
 import WidgetKit
+import PaywalloSDK
 
 // Tela principal do app: registra os plugins próprios do Tap Bee
 class TapBeeViewController: CAPBridgeViewController {
@@ -10,6 +11,7 @@ class TapBeeViewController: CAPBridgeViewController {
         bridge?.registerPluginInstance(NuvemPlugin())
         bridge?.registerPluginInstance(VozPlugin())
         bridge?.registerPluginInstance(BeeWidgetPlugin())
+        bridge?.registerPluginInstance(MetricasPlugin())
         // App nativo não dá zoom: um toque duplo sem querer mudava o tamanho da tela
         webView?.scrollView.minimumZoomScale = 1
         webView?.scrollView.maximumZoomScale = 1
@@ -208,5 +210,53 @@ public class BeeWidgetPlugin: CAPPlugin, CAPBridgedPlugin {
             WidgetCenter.shared.reloadAllTimelines()
         }
         call.resolve()
+    }
+}
+
+// ---------- Métricas: manda instalações, telas do quiz e quem comprou para o Paywallo ----------
+// As compras continuam no RevenueCat; o Paywallo só mede. As notificações ficam com os lembretes da Bee.
+@objc(MetricasPlugin)
+public class MetricasPlugin: CAPPlugin, CAPBridgedPlugin {
+    public let identifier = "MetricasPlugin"
+    public let jsName = "Metricas"
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "identificar", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "etapa", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "concluir", returnType: CAPPluginReturnPromise),
+    ]
+
+    public override func load() {
+        Task {
+            try? await PaywalloClient.shared.initialize(
+                PaywalloInitConfig(appKey: "pk_fbd995148dfb41cbaef271060be87a08", notifications: false)
+            )
+        }
+    }
+
+    // O mesmo código anônimo vai para o RevenueCat, para cada venda ficar ligada à origem
+    @objc func identificar(_ call: CAPPluginCall) {
+        guard let id = call.getString("id"), !id.isEmpty else { return call.resolve() }
+        Task {
+            try? await PaywalloClient.shared.identify(["userId": AnyCodable(id)])
+            call.resolve()
+        }
+    }
+
+    @objc func etapa(_ call: CAPPluginCall) {
+        guard let nome = call.getString("nome"), !nome.isEmpty else { return call.resolve() }
+        let ordem = call.getDouble("ordem") ?? 0
+        Task {
+            await PaywalloClient.shared.waitUntilReady()
+            try? await PaywalloClient.shared.onboardingStep(stepName: nome, order: ordem)
+            call.resolve()
+        }
+    }
+
+    @objc func concluir(_ call: CAPPluginCall) {
+        Task {
+            await PaywalloClient.shared.waitUntilReady()
+            try? await PaywalloClient.shared.onboardingComplete()
+            call.resolve()
+        }
     }
 }
