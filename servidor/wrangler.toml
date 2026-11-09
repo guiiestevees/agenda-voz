@@ -28,3 +28,7 @@ class_name = "AvisosWhatsapp"
 [[migrations]]
 tag = "v2"
 new_sqlite_classes = ["AvisosWhatsapp"]
+
+# Whisper: transforma os áudios do WhatsApp em texto
+[ai]
+binding = "AI"
