@@ -155,9 +155,10 @@ export class AvisosWhatsapp extends DurableObject {
       CREATE TABLE IF NOT EXISTS tipos (titulo TEXT PRIMARY KEY, tipo TEXT);
       CREATE TABLE IF NOT EXISTS enviados (uid TEXT NOT NULL, chave TEXT NOT NULL, titulo TEXT, hora TEXT, dia TEXT, tipo TEXT, em INTEGER, PRIMARY KEY (uid, chave));
       CREATE TABLE IF NOT EXISTS pendentes (id INTEGER PRIMARY KEY AUTOINCREMENT, uid TEXT NOT NULL, dados TEXT, em INTEGER);
-      CREATE TABLE IF NOT EXISTS assinaturas (uid TEXT PRIMARY KEY, ativa INTEGER, em INTEGER);`);
+      CREATE TABLE IF NOT EXISTS assinaturas (uid TEXT PRIMARY KEY, ativa INTEGER, em INTEGER);
+      CREATE TABLE IF NOT EXISTS estilos (chave TEXT PRIMARY KEY, tipo TEXT, recado TEXT);`);
     // Colunas que chegaram depois da primeira versão
-    for (const c of ["avisos ADD COLUMN dia TEXT", "avisos ADD COLUMN tipo TEXT", "ligacoes ADD COLUMN tz TEXT", "ligacoes ADD COLUMN lembrete INTEGER", "ligacoes ADD COLUMN agenda TEXT", "ligacoes ADD COLUMN notas TEXT"]) {
+    for (const c of ["avisos ADD COLUMN dia TEXT", "avisos ADD COLUMN tipo TEXT", "ligacoes ADD COLUMN tz TEXT", "ligacoes ADD COLUMN lembrete INTEGER", "ligacoes ADD COLUMN agenda TEXT", "ligacoes ADD COLUMN notas TEXT", "avisos ADD COLUMN recado TEXT", "enviados ADD COLUMN recado TEXT"]) {
       try { this.sql.exec(`ALTER TABLE ${c}`); } catch {}
     }
   }
@@ -231,25 +232,33 @@ export class AvisosWhatsapp extends DurableObject {
     this.sql.exec("DELETE FROM avisos WHERE uid = ?", uid);
     this.sql.exec("DELETE FROM ligacoes WHERE uid = ?", uid);
   }
-  // A IA diz que tipo de texto combina com cada compromisso; a resposta fica guardada por nome
-  async tiposDe(titulos) {
-    const faltam = [...new Set(titulos)].filter((t) => !this.linha("SELECT tipo FROM tipos WHERE titulo = ?", t.toLowerCase()));
+  // A IA escolhe o tipo de lembrete e escreve um recado curto que combine com cada compromisso.
+  // Fica guardado por idioma e nome do compromisso, então cada nome passa pela IA uma vez só.
+  async estilosDe(titulos, idioma) {
+    const chave = (t) => `${idioma}|${t.toLowerCase()}`;
+    const faltam = [...new Set(titulos)].filter((t) => !this.linha("SELECT tipo FROM estilos WHERE chave = ?", chave(t)));
     if (faltam.length && this.env.ANTHROPIC_API_KEY) {
       try {
         const client = new Anthropic({ apiKey: this.env.ANTHROPIC_API_KEY });
+        const ingles = idioma === "en_US";
         const resp = await client.beta.messages.create({
-          model: MODELOS[0], max_tokens: 1500,
+          model: MODELOS[0], max_tokens: 2500,
           output_config: { effort: "low", format: { type: "json_schema", schema: {
-            type: "object", additionalProperties: false, required: ["tipos"],
-            properties: { tipos: { type: "array", items: { type: "object", additionalProperties: false, required: ["i", "tipo"], properties: { i: { type: "integer" }, tipo: { type: "string", enum: TIPOS_AVISO } } } } },
+            type: "object", additionalProperties: false, required: ["itens"],
+            properties: { itens: { type: "array", items: { type: "object", additionalProperties: false, required: ["i", "tipo", "recado"], properties: { i: { type: "integer" }, tipo: { type: "string", enum: TIPOS_AVISO }, recado: { type: "string" } } } } },
           } } },
-          messages: [{ role: "user", content: `Para cada compromisso, escolha o tipo de lembrete que combina:\nconta = pagar, resolver, entregar, renovar, comprar algo\nremedio = tomar remédio, vitamina, insulina\nconsulta = médico, dentista, exame, terapia, cabeleireiro, banco, cartório\ntrabalho = reunião, aula dada, entrega de trabalho, call\ntreino = academia, corrida, pilates, esporte\nfesta = aniversário, festa, jantar, encontro, viagem, passeio\ngeral = o resto\n\n${faltam.map((t, i) => `${i}. ${t}`).join("\n")}` }],
+          messages: [{ role: "user", content: `Você é a Bee, secretária simpática de um app de agenda. Para cada compromisso abaixo:
+1. tipo: conta (pagar, resolver, entregar, renovar, comprar), remedio (remédio, vitamina, insulina), consulta (médico, dentista, exame, terapia, cabeleireiro, banco, cartório), trabalho (reunião, call, entrega de trabalho), treino (academia, corrida, pilates, esporte), festa (aniversário, festa, jantar, encontro, viagem, passeio) ou geral.
+2. recado: UMA frase curta (até 70 caracteres), ${ingles ? "em inglês" : "em português do Brasil"}, calorosa e que combine de verdade com aquele compromisso, para vir logo depois de "Oi, Gui!". Fale com a pessoa, sem citar nome, horário nem o nome do compromisso. Nada de "conta comigo", "pode contar comigo" ou promessas da Bee. Sem gênero (nada de "pronto/pronta", "tranquilo/tranquila"). No máximo 1 emoji, no fim. Sem quebra de linha.
+Exemplos: "Centro espírita" → "Que seja um momento de paz e boas energias 🙏"; "Pagar boleto da luz" → "Resolvendo isso, é um peso a menos na cabeça."; "Buscar a Júlia na clínica" → "Sai com uns minutinhos de folga pra não correr."; "Aniversário da Ana" → "Leva aquele abraço caprichado 🎉".
+
+${faltam.map((t, i) => `${i}. ${t}`).join("\n")}` }],
         });
         const r = JSON.parse(resp.content.find((b) => b.type === "text").text);
-        for (const { i, tipo } of r.tipos) if (faltam[i]) this.sql.exec("INSERT OR REPLACE INTO tipos VALUES (?, ?)", faltam[i].toLowerCase(), tipo);
-      } catch (e) { console.error("WhatsApp: não classificou os avisos", e.message); }
+        for (const { i, tipo, recado } of r.itens) if (faltam[i]) this.sql.exec("INSERT OR REPLACE INTO estilos VALUES (?, ?, ?)", chave(faltam[i]), tipo, limparRecado(recado));
+      } catch (e) { console.error("WhatsApp: não escreveu os recados", e.message); }
     }
-    return Object.fromEntries(titulos.map((t) => [t, this.linha("SELECT tipo FROM tipos WHERE titulo = ?", t.toLowerCase())?.tipo || "geral"]));
+    return Object.fromEntries(titulos.map((t) => { const e = this.linha("SELECT tipo, recado FROM estilos WHERE chave = ?", chave(t)); return [t, { tipo: e?.tipo || "geral", recado: e?.recado || "" }]; }));
   }
   // O app manda a lista inteira dos próximos avisos e o resumo da agenda; a lista antiga é trocada pela nova
   async sincronizar(uid, lista, idioma, nome, extra) {
@@ -257,9 +266,9 @@ export class AvisosWhatsapp extends DurableObject {
     if (!(await this.assinou(uid))) { await this.desligarSemAssinatura(uid); return { ligado: false, motivo: "assinatura" }; }
     this.sql.exec("UPDATE ligacoes SET idioma = ?, nome = ?, tz = ?, lembrete = ?, agenda = ?, notas = ? WHERE uid = ?", idioma, nome, extra.tz, extra.lembrete, extra.agenda, extra.notas, uid);
     const agora = Date.now(), ate = agora + 8 * 86400000, validos = lista.filter((a) => a.quando > agora - 60000 && a.quando < ate);
-    const tipos = await this.tiposDe(validos.map((a) => a.titulo));
+    const estilos = await this.estilosDe(validos.map((a) => a.titulo), idioma);
     this.sql.exec("DELETE FROM avisos WHERE uid = ?", uid);
-    for (const a of validos) this.sql.exec("INSERT OR REPLACE INTO avisos (uid, chave, quando, titulo, hora, dia, tipo) VALUES (?, ?, ?, ?, ?, ?, ?)", uid, a.chave, a.quando, a.titulo, a.hora, a.dia, tipos[a.titulo]);
+    for (const a of validos) this.sql.exec("INSERT OR REPLACE INTO avisos (uid, chave, quando, titulo, hora, dia, tipo, recado) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", uid, a.chave, a.quando, a.titulo, a.hora, a.dia, estilos[a.titulo].tipo, estilos[a.titulo].recado);
     await this.agendar();
     return { ligado: true };
   }
@@ -267,8 +276,9 @@ export class AvisosWhatsapp extends DurableObject {
   async pedidoDoWhatsapp(uid, dados, novosAvisos, removerEventos) {
     this.sql.exec("INSERT INTO pendentes (uid, dados, em) VALUES (?, ?, ?)", uid, JSON.stringify(dados), Date.now());
     for (const id of removerEventos) this.sql.exec("DELETE FROM avisos WHERE uid = ? AND chave LIKE ?", uid, `${id}|%`);
-    const tipos = await this.tiposDe(novosAvisos.map((a) => a.titulo));
-    for (const a of novosAvisos) this.sql.exec("INSERT OR REPLACE INTO avisos (uid, chave, quando, titulo, hora, dia, tipo) VALUES (?, ?, ?, ?, ?, ?, ?)", uid, a.chave, a.quando, a.titulo, a.hora, a.dia, tipos[a.titulo]);
+    const idioma = this.linha("SELECT idioma FROM ligacoes WHERE uid = ?", uid)?.idioma || "pt_BR";
+    const estilos = await this.estilosDe(novosAvisos.map((a) => a.titulo), idioma);
+    for (const a of novosAvisos) this.sql.exec("INSERT OR REPLACE INTO avisos (uid, chave, quando, titulo, hora, dia, tipo, recado) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", uid, a.chave, a.quando, a.titulo, a.hora, a.dia, estilos[a.titulo].tipo, estilos[a.titulo].recado);
     await this.agendar();
   }
   async avisoDoEvento(uid, eventoId) { return this.linha("SELECT * FROM avisos WHERE uid = ? AND chave LIKE ?", uid, `${eventoId}|%`) || null; }
@@ -282,7 +292,7 @@ export class AvisosWhatsapp extends DurableObject {
     }
     const e = this.linha("SELECT * FROM enviados WHERE uid = ? AND chave = ?", l.uid, chave);
     if (!e) return { idioma: l.idioma, ok: false };
-    this.sql.exec("INSERT OR REPLACE INTO avisos (uid, chave, quando, titulo, hora, dia, tipo) VALUES (?, ?, ?, ?, ?, ?, ?)", l.uid, `${chave}#${Date.now()}`, Date.now() + 10 * 60000, e.titulo, e.hora, e.dia, e.tipo);
+    this.sql.exec("INSERT OR REPLACE INTO avisos (uid, chave, quando, titulo, hora, dia, tipo, recado) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", l.uid, `${chave}#${Date.now()}`, Date.now() + 10 * 60000, e.titulo, e.hora, e.dia, e.tipo, e.recado);
     await this.agendar();
     return { idioma: l.idioma, ok: true };
   }
@@ -310,21 +320,19 @@ export class AvisosWhatsapp extends DurableObject {
       if (agora - a.quando > 15 * 60000 || semAssinatura.has(a.uid)) continue;
       const n = this.linha("SELECT n FROM envios WHERE uid = ? AND dia = ?", a.uid, dia)?.n || 0;
       if (n >= LIMITE_DIA_WA) continue;
-      const idioma = a.idioma === "en_US" ? "en_US" : "pt_BR", nome = a.nome || (idioma === "en_US" ? "there" : "você");
+      const idioma = a.idioma === "en_US" ? "en_US" : "pt_BR", nome = a.nome || (idioma === "en_US" ? "there" : "tudo bem");
       const chave = a.chave.split("#")[0], quandoTxt = `${a.dia || ""} ${idioma === "en_US" ? "at" : "às"} ${a.hora}`.trim();
-      const modelo = textoDoAviso(a.tipo, idioma, aprovados);
+      const modelo = textoDoAviso(a.tipo, a.recado, idioma, aprovados);
       if (!modelo) continue;
-      const parametros = modelo.novo
-        ? [{ type: "text", parameter_name: "nome", text: nome }, { type: "text", parameter_name: "compromisso", text: a.titulo }, { type: "text", parameter_name: "quando", text: quandoTxt }]
-        : [{ type: "text", parameter_name: "nome", text: nome }, { type: "text", parameter_name: "compromisso", text: a.titulo }, { type: "text", parameter_name: "hora", text: a.hora }];
-      const componentes = [{ type: "body", parameters: parametros }];
-      if (modelo.novo) componentes.push(
+      const valores = { nome, compromisso: a.titulo, quando: quandoTxt, hora: a.hora, recado: a.recado };
+      const componentes = [{ type: "body", parameters: modelo.campos.map((c) => ({ type: "text", parameter_name: c, text: valores[c] })) }];
+      if (modelo.botoes) componentes.push(
         { type: "button", sub_type: "quick_reply", index: "0", parameters: [{ type: "payload", payload: `feito|${chave}` }] },
         { type: "button", sub_type: "quick_reply", index: "1", parameters: [{ type: "payload", payload: `adiar|${chave}` }] });
       const ok = await enviarWhatsapp(this.env, a.telefone, { type: "template", template: { name: modelo.nome, language: { code: idioma }, components: componentes } });
       if (ok) {
         this.sql.exec("INSERT OR REPLACE INTO envios VALUES (?, ?, ?)", a.uid, dia, n + 1);
-        this.sql.exec("INSERT OR REPLACE INTO enviados VALUES (?, ?, ?, ?, ?, ?, ?)", a.uid, chave, a.titulo, a.hora, a.dia, a.tipo, agora);
+        this.sql.exec("INSERT OR REPLACE INTO enviados (uid, chave, titulo, hora, dia, tipo, em, recado) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", a.uid, chave, a.titulo, a.hora, a.dia, a.tipo, agora, a.recado);
       }
     }
     this.sql.exec("DELETE FROM avisos WHERE uid NOT IN (SELECT uid FROM ligacoes)");
@@ -380,6 +388,9 @@ const WA_NUMERO = "1388653214339890";
 async function estadoWhatsapp(req, env) {
   if (!env.FUNIL_CHAVE || req.headers.get("x-chave") !== env.FUNIL_CHAVE) return new Response("não autorizado", { status: 401 });
   const r = await fetch(`${WA_API}${WA_NUMERO}?fields=display_phone_number,verified_name,name_status,quality_rating,messaging_limit_tier,status`, { headers: { Authorization: `Bearer ${env.WA_TOKEN}` } });
+  // Mostra os recados que a Bee escreveria para uma lista de compromissos (separados por |)
+  const recados = new URL(req.url).searchParams.get("recados");
+  if (recados) return new Response(JSON.stringify(await env.AVISOS.get(env.AVISOS.idFromName("avisos")).estilosDe(recados.split("|").slice(0, 20), new URL(req.url).searchParams.get("idioma") === "en" ? "en_US" : "pt_BR")), { headers: { "Content-Type": "application/json; charset=utf-8" } });
   // Confere se um código tem assinatura ativa no RevenueCat (sem guardar a resposta antiga)
   const rc = new URL(req.url).searchParams.get("rc");
   if (rc && ID_APARELHO.test(rc)) return new Response(JSON.stringify({ ativa: await env.AVISOS.get(env.AVISOS.idFromName("avisos")).assinou(rc, true) }), { headers: { "Content-Type": "application/json" } });
@@ -434,13 +445,43 @@ const MODELOS_POR_TIPO = {
     geral: "Hi {{nome}}! 🐝 Just a friendly reminder about your plan: *{{compromisso}}* {{quando}}. You can count on me!",
   },
 };
+// Segunda geração: o compromisso vem primeiro, para bater o olho e saber do que se trata
+const ASSINATURA_BEE = { pt_BR: "— Bee, sua secretária do Tap Bee", en_US: "— Bee, your Tap Bee secretary" };
+const MODELOS_V2 = {
+  pt_BR: {
+    recado: "Oi, {{nome}}! {{recado}}\n\nQuando terminar, é só tocar em Feito aqui embaixo.",
+    conta: "Oi, {{nome}}! Não deixa pra depois, hein? Resolvendo isso, é um peso a menos.",
+    remedio: "Oi, {{nome}}! Hora de se cuidar. Sua saúde vem primeiro 💛",
+    consulta: "Oi, {{nome}}! Separa os documentos e sai com calma, pra chegar sem pressa.",
+    trabalho: "Oi, {{nome}}! Respira fundo e vai com tudo, você vai mandar bem.",
+    treino: "Oi, {{nome}}! Bora mexer o corpo! Leva a garrafinha d'água 💪",
+    festa: "Oi, {{nome}}! Aproveita bastante e curte cada momento 🎉",
+    geral: "Oi, {{nome}}! Passando pra te lembrar com carinho 💛",
+  },
+  en_US: {
+    recado: "Hi {{nome}}! {{recado}}\n\nWhen you're done, just tap Done below.",
+    conta: "Hi {{nome}}! Don't leave it for later. One less thing on your mind.",
+    remedio: "Hi {{nome}}! Time to take care of yourself. Your health comes first 💛",
+    consulta: "Hi {{nome}}! Grab your documents and leave early, so you don't have to rush.",
+    trabalho: "Hi {{nome}}! Take a deep breath and go for it, you'll do great.",
+    treino: "Hi {{nome}}! Time to move! Bring your water bottle 💪",
+    festa: "Hi {{nome}}! Have a great time and enjoy every moment 🎉",
+    geral: "Hi {{nome}}! Just a friendly reminder, with care 💛",
+  },
+};
+const textoV2 = (idioma, meio) => `🐝 *{{compromisso}}*\n🕐 {{quando}}\n\n${meio}\n\n${ASSINATURA_BEE[idioma]}`;
+// O recado da IA cabe numa variável do WhatsApp: uma linha, sem formatação, curto
+const limparRecado = (t) => String(t || "").replace(/[\r\n\t*_~`]+/g, " ").replace(/\s{2,}/g, " ").trim().slice(0, 90);
 const BOTOES_BEE = { pt_BR: ["Feito", "Lembrar em 10 min"], en_US: ["Done", "Remind me in 10 min"] };
-const EXEMPLO_BEE = { pt_BR: ["Gui", "Pagar o boleto", "10:00", "hoje às 10:00"], en_US: ["Gui", "Pay the bill", "10:00 AM", "today at 10:00 AM"] };
-// O texto da situação, se já aprovado; senão o geral com botões; senão um dos primeiros, sorteado
-function textoDoAviso(tipo, idioma, aprovados) {
-  for (const t of [tipo, "geral"]) if (t && aprovados.has(`bee_${t}|${idioma}`)) return { nome: `bee_${t}`, novo: true };
-  const velhos = [1, 2, 3, 4, 5, 6].map((i) => `bee_lembrete_${i}`).filter((n) => aprovados.has(`${n}|${idioma}`));
-  return velhos.length ? { nome: velhos[Math.floor(Math.random() * velhos.length)], novo: false } : null;
+const EXEMPLO_BEE = { pt_BR: ["Gui", "Pagar o boleto", "10:00", "hoje às 10:00", "Resolvendo isso, é um peso a menos na cabeça."], en_US: ["Gui", "Pay the bill", "10:00 AM", "today at 10:00 AM", "Getting this done is one less thing on your mind."] };
+// Ordem de preferência: recado escrito pela IA; texto da situação (nova e primeira geração); um dos gerais
+function textoDoAviso(tipo, recado, idioma, aprovados) {
+  const ok = (n) => aprovados.has(`${n}|${idioma}`);
+  if (recado && ok("bee2_recado")) return { nome: "bee2_recado", campos: ["compromisso", "quando", "nome", "recado"], botoes: true };
+  for (const t of [tipo, "geral"]) if (t && ok(`bee2_${t}`)) return { nome: `bee2_${t}`, campos: ["compromisso", "quando", "nome"], botoes: true };
+  for (const t of [tipo, "geral"]) if (t && ok(`bee_${t}`)) return { nome: `bee_${t}`, campos: ["nome", "compromisso", "quando"], botoes: true };
+  const velhos = [1, 2, 3, 4, 5, 6].map((i) => `bee_lembrete_${i}`).filter(ok);
+  return velhos.length ? { nome: velhos[Math.floor(Math.random() * velhos.length)], campos: ["nome", "compromisso", "hora"], botoes: false } : null;
 }
 // Só para nós: GET mostra a situação dos modelos na Meta; POST manda os que faltam para aprovação
 async function modelosWhatsapp(req, env) {
@@ -452,13 +493,14 @@ async function modelosWhatsapp(req, env) {
   const pedidos = [];
   for (const [idioma, textos] of Object.entries(MODELOS_BEE)) textos.forEach((texto, i) => pedidos.push({ name: `bee_lembrete_${i + 1}`, idioma, texto, quarto: "hora" }));
   for (const [idioma, textos] of Object.entries(MODELOS_POR_TIPO)) for (const [tipo, texto] of Object.entries(textos)) pedidos.push({ name: `bee_${tipo}`, idioma, texto, quarto: "quando", botoes: BOTOES_BEE[idioma] });
+  for (const [idioma, meios] of Object.entries(MODELOS_V2)) for (const [tipo, meio] of Object.entries(meios)) pedidos.push({ name: `bee2_${tipo}`, idioma, texto: textoV2(idioma, meio), quarto: "quando", botoes: BOTOES_BEE[idioma], recado: tipo === "recado" });
   const resultado = [];
   for (const p of pedidos) {
     if (existe.has(`${p.name}|${p.idioma}`)) continue;
-    const [nome, compromisso, hora, quando] = EXEMPLO_BEE[p.idioma];
-    const componentes = [{ type: "BODY", text: p.texto, example: { body_text_named_params: [
-      { param_name: "nome", example: nome }, { param_name: "compromisso", example: compromisso }, { param_name: p.quarto, example: p.quarto === "hora" ? hora : quando },
-    ] } }];
+    const [nome, compromisso, hora, quando, recado] = EXEMPLO_BEE[p.idioma];
+    const exemplos = [{ param_name: "nome", example: nome }, { param_name: "compromisso", example: compromisso }, { param_name: p.quarto, example: p.quarto === "hora" ? hora : quando }];
+    if (p.recado) exemplos.push({ param_name: "recado", example: recado });
+    const componentes = [{ type: "BODY", text: p.texto, example: { body_text_named_params: exemplos } }];
     if (p.botoes) componentes.push({ type: "BUTTONS", buttons: p.botoes.map((text) => ({ type: "QUICK_REPLY", text })) });
     const r = await fetch(`${WA_API}${WA_CONTA}/message_templates`, {
       method: "POST", headers: auth,
