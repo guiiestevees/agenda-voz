@@ -196,15 +196,24 @@ export class AvisosWhatsapp extends DurableObject {
   async alarm() {
     const agora = Date.now(), dia = new Date().toISOString().slice(0, 10);
     const vencidos = this.sql.exec("SELECT a.*, l.telefone, l.idioma, l.nome FROM avisos a JOIN ligacoes l ON l.uid = a.uid WHERE a.quando <= ?", agora + 20000).toArray();
+    // Sorteia só entre os textos que a Meta já aprovou em cada idioma
+    const aprovados = { pt_BR: [], en_US: [] };
+    if (vencidos.length) {
+      try {
+        const lista = await (await fetch(`${WA_API}${WA_CONTA}/message_templates?fields=name,language,status&limit=100`, { headers: { Authorization: `Bearer ${this.env.WA_TOKEN}` } })).json();
+        for (const m of lista.data || []) if (m.status === "APPROVED" && m.name.startsWith("bee_lembrete_")) aprovados[m.language]?.push(m.name);
+      } catch (e) { console.error("WhatsApp: não leu os modelos", e.message); }
+    }
     for (const a of vencidos) {
       this.sql.exec("DELETE FROM avisos WHERE uid = ? AND chave = ?", a.uid, a.chave);
       if (agora - a.quando > 15 * 60000) continue;
       const n = this.linha("SELECT n FROM envios WHERE uid = ? AND dia = ?", a.uid, dia)?.n || 0;
       if (n >= LIMITE_DIA_WA) continue;
       this.sql.exec("INSERT OR REPLACE INTO envios VALUES (?, ?, ?)", a.uid, dia, n + 1);
-      const ingles = a.idioma === "en_US", nome = a.nome || (ingles ? "there" : "você");
+      const ingles = a.idioma === "en_US", nome = a.nome || (ingles ? "there" : "você"), opcoes = aprovados[ingles ? "en_US" : "pt_BR"];
+      if (!opcoes.length) continue;
       await enviarWhatsapp(this.env, a.telefone, { type: "template", template: {
-        name: `bee_lembrete_${1 + Math.floor(Math.random() * 6)}`, language: { code: ingles ? "en_US" : "pt_BR" },
+        name: opcoes[Math.floor(Math.random() * opcoes.length)], language: { code: ingles ? "en_US" : "pt_BR" },
         components: [{ type: "body", parameters: [
           { type: "text", parameter_name: "nome", text: nome }, { type: "text", parameter_name: "compromisso", text: a.titulo }, { type: "text", parameter_name: "hora", text: a.hora },
         ] }],
