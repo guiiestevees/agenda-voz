@@ -181,6 +181,14 @@
   .dt-fone.grande { width: 92px; height: 150px; border-radius: 22px; box-shadow: inset 0 0 0 5px #3a2a06, 0 14px 30px rgba(0,0,0,.2); }
   .dt-fone.grande i { left: 14px; top: 14px; width: 26px; height: 26px; border-radius: 9px; box-shadow: 0 32px 0 #555; }
   .dt-fone.grande b { width: 70px; height: 70px; margin: -35px; border-width: 4px; border-color: #f5b21b; }
+  .wa-card { margin: 14px 0 0; padding: 14px; border-radius: 20px; background: var(--card); box-shadow: inset 0 0 0 1px var(--line); }
+  .wa-topo { display: flex; align-items: center; gap: 12px; }
+  .wa-ico { flex: none; width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; background: #25d366; color: #fff; }
+  .wa-ico svg { width: 26px; height: 26px; }
+  .wa-card .dt-txt small { color: var(--muted); opacity: 1; }
+  .wa-escolha { display: flex; gap: 8px; margin-top: 12px; }
+  .wa-escolha button { flex: 1; min-height: 46px; border: 0; border-radius: 14px; font-weight: 750; font-size: 15px; cursor: pointer; background: var(--field); color: var(--text); }
+  .wa-escolha button[data-wa-sim] { background: #25d366; color: #fff; }
   .dt-ajuste { width: 100%; display: flex; align-items: center; gap: 12px; padding: 14px 16px; border: 0; border-radius: 16px; background: var(--card); box-shadow: inset 0 0 0 1px var(--line);
     color: var(--text); text-align: left; cursor: pointer; margin-bottom: 10px; }
   .dt-ajuste > span:last-child { display: flex; flex-direction: column; gap: 2px; }
@@ -2411,7 +2419,15 @@ function agendarLembretes() {
   timerLembretes = setTimeout(async () => {
     const LN = pluginNativo('LocalNotifications');
     if (!LN) return;
+    let porWhats = false;
+    try { porWhats = waLiberado() && waLigado(); } catch {}
     try {
+      if (porWhats) {
+        const antigos = JSON.parse(localStorage.getItem('agenda.lembretesIds') || '[]');
+        if (antigos.length) await LN.cancel({ notifications: antigos.map(id => ({ id })) });
+        localStorage.setItem('agenda.lembretesIds', '[]');
+        return;
+      }
       const agora = Date.now();
       const proximos = ocorrencias(new Date(agora), new Date(agora + 30 * 86400000))
         .filter(o => o.ev.lembreteMin !== null && o.ev.lembreteMin !== undefined && !estaFeito(o.ev, o.inicio) && !o.ev.avisado && !(o.ev.avisados || []).includes(chaveDia(o.inicio)))
@@ -2860,7 +2876,7 @@ function telaHoje() {
   const tudo = total > 0 && feitos === total;
   // Um destaque só por vez: o check-in (enquanto não feito) ou o próximo compromisso
   chaveProximo = proximoDeHoje(agora);
-  let html = '<div class="hoje-topo">' + htmlLinhaStatus() + htmlDoisToques() + htmlResgate() + '</div><div class="hoje-dir">';   // no fim do dia, o botão da câmera no cartão do bicho vira "Postar"
+  let html = '<div class="hoje-topo">' + htmlLinhaStatus() + htmlDoisToques() + htmlCartaoWhats() + htmlResgate() + '</div><div class="hoje-dir">';   // no fim do dia, o botão da câmera no cartão do bicho vira "Postar"
   if (diaHojeBase !== chaveDia(hoje)) { diaHojeBase = chaveDia(hoje); diaHoje = 0; }
   const dia = maisDias(hoje, diaHoje);
   const tituloDia = !diaHoje ? 'Agenda de hoje' : diaHoje === 1 ? 'Amanhã' : `${maiuscula(dia.toLocaleDateString(LOCALE, { weekday: 'long' }).replace('-feira', ''))}, ${dia.getDate()}`;
@@ -3358,6 +3374,8 @@ document.getElementById('lista').addEventListener('click', (ev) => {
   if (ev.target.closest('[data-fechar-ontem]')) return fecharOntem();
   if (ev.target.closest('[data-fogo]')) return mostrarSequencia();
   if (ev.target.closest('[data-dois-toques]')) return abrirDoisToques();
+  if (ev.target.closest('[data-wa-sim]')) return abrirWhats();
+  if (ev.target.closest('[data-wa-nao]')) { gravarPref('agenda.waCartao', 'nao'); vibrar('leve'); render(); return toast('Combinado: os avisos continuam no iPhone. Dá para mudar em Ajustes.', 4000); }
   const nt = ev.target.closest('[data-nova-nota], [data-nota-feita], [data-nota-agendar], [data-nota]');
   if (nt) {
     if ('novaNota' in nt.dataset) return abrirNota(null);
@@ -6830,6 +6848,26 @@ function marcarWhats() {
   const b = document.getElementById('btnWhats');
   b.style.display = waLiberado() ? '' : 'none';
   document.getElementById('whatsRot').textContent = `Avisos pelo WhatsApp: ${waLigado() ? 'ligados' : 'desligados'}`;
+  document.getElementById('btnNotif').style.display = waLigado() ? 'none' : '';
+}
+const ICO_WA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21l1.7-5A8.5 8.5 0 1 1 8 19.3z"/><path d="M9 10h.01M12 10h.01M15 10h.01"/></svg>';
+// Cartão da tela Hoje: aparece depois do cartão dos 2 toques, até a pessoa escolher onde quer os avisos
+function htmlCartaoWhats() {
+  try {
+    if (!waLiberado() || waLigado() || lerPref('agenda.waCartao', '') === 'nao' || !eventos.length) return '';
+    if (NATIVO && !EH_IPAD && !doisToquesOk()) return '';
+  } catch { return ''; }
+  return `<div class="wa-card">
+    <div class="wa-topo"><span class="wa-ico">${ICO_WA}</span><span class="dt-txt"><b>Onde a Bee te avisa?</b><small>Receba os lembretes no WhatsApp ou como notificação do iPhone.</small></span></div>
+    <div class="wa-escolha"><button data-wa-sim>WhatsApp</button><button data-wa-nao>iPhone</button></div>
+  </div>`;
+}
+// "hoje às 15:00", "amanhã às 9:00", "sexta-feira às 10:00"
+function diaFaladoWA(d) {
+  const hoje = inicioDoDia(new Date()), dia = inicioDoDia(d), dif = Math.round((dia - hoje) / 86400000);
+  if (dif === 0) return EM_INGLES ? 'today' : 'hoje';
+  if (dif === 1) return EM_INGLES ? 'tomorrow' : 'amanhã';
+  return d.toLocaleDateString(LOCALE, { weekday: 'long' });
 }
 let timerWhats;
 function enviarWhats() {
@@ -6839,14 +6877,50 @@ function enviarWhats() {
     const agora = Date.now();
     const avisos = ocorrencias(new Date(agora), new Date(agora + 8 * 86400000))
       .filter(o => o.ev.lembreteMin !== null && o.ev.lembreteMin !== undefined && !estaFeito(o.ev, o.inicio))
-      .map(o => ({ chave: `${o.ev.id}|${chaveDia(o.inicio)}`, quando: o.inicio.getTime() - o.ev.lembreteMin * 60000, titulo: o.ev.titulo, hora: fmtHora(o.inicio) }))
+      .map(o => ({ chave: `${o.ev.id}|${chaveDia(o.inicio)}`, quando: o.inicio.getTime() - o.ev.lembreteMin * 60000, titulo: o.ev.titulo, hora: fmtHora(o.inicio), dia: diaFaladoWA(o.inicio) }))
       .filter(a => a.quando > agora).sort((a, b) => a.quando - b.quando).slice(0, 60);
     try {
-      const r = await waPedir('sincronizar', { avisos });
-      // Quem mandou SAIR pelo WhatsApp fica desligado aqui também
-      if (r.ligado === false) { gravarPref('agenda.whats', ''); marcarWhats(); }
+      const r = await waPedir('sincronizar', { avisos, tz: Intl.DateTimeFormat().resolvedOptions().timeZone, lembretePadrao: lembretePadrao(), agenda: agendaParaIA(), notas: notasParaIA() });
+      // Quem mandou SAIR pelo WhatsApp volta para os avisos do iPhone
+      if (r.ligado === false) voltarParaIphone();
     } catch (e) { console.warn('Avisos pelo WhatsApp', e); }
   }, 1500);
+}
+function voltarParaIphone() {
+  gravarPref('agenda.whats', ''); marcarWhats(); agendarLembretes(); render();
+}
+// O que a pessoa pediu pelo WhatsApp (criar, mudar, desmarcar, "Feito") entra na agenda quando o app abre
+let buscandoWhats = false;
+async function buscarDoWhatsapp() {
+  if (buscandoWhats || !waLiberado() || !lerPref('agenda.uid', '')) return;
+  buscandoWhats = true;
+  try {
+    const { itens = [] } = await waPedir('pendentes');
+    if (!itens.length) return;
+    const antes = JSON.stringify({ e: eventos, h: habitos, n: notas }), criados = [];
+    let feitos = 0, saiu = false;
+    for (const p of itens) {
+      if (p.tipo === 'saiu') saiu = true;
+      if (p.tipo === 'acoes') for (const a of p.acoes || []) { const ev = aplicarAcao(a, p.frase || ''); if (ev && a.acao === 'criar') criados.push(ev); }
+      if (p.tipo === 'feito') {
+        const [id, dia] = String(p.chave || '').split('|'), ev = eventos.find(e => e.id === id);
+        if (ev && dia && !(ev.feitos || []).includes(dia)) {
+          ev.feitos = [...(ev.feitos || []).slice(-200), dia]; feitos++;
+          if (dia <= chaveDia(new Date())) ganhar(PONTOS.feito, { x: innerWidth / 2, y: innerHeight / 3 });
+        }
+      }
+    }
+    const depois = JSON.parse(antes);
+    if (habitos.length !== depois.h.length) salvarHabitos();
+    if (JSON.stringify(notas) !== JSON.stringify(depois.n)) salvarNotas();
+    if (JSON.stringify({ e: eventos, h: habitos, n: notas }) !== antes) { salvar(); destacarId = criados.map(e => e.id); render(); }
+    await waPedir('confirmar', { ids: itens.map(p => p.id) });
+    if (saiu) voltarParaIphone();
+    if (criados.length) toast(`A Bee anotou pelo WhatsApp: ${criados.map(e => `${e.titulo}, ${fmtQuando(new Date(e.inicio))}`).join(' · ')}`, 6000);
+    else if (feitos) toast(feitos > 1 ? `${feitos} compromissos marcados como feitos pelo WhatsApp.` : 'Marcado como feito pelo WhatsApp. ✅', 4000);
+    else if (itens.some(p => p.tipo === 'acoes')) toast('A Bee atualizou sua agenda pelo WhatsApp.', 4000);
+  } catch (e) { console.warn('Pedidos do WhatsApp', e); }
+  finally { buscandoWhats = false; }
 }
 async function abrirWhats() {
   if (waLigado()) {
@@ -6855,12 +6929,12 @@ async function abrirWhats() {
     abrirFolha(`<div class="dois-toques">
       <h3>Avisos pelo WhatsApp</h3>
       <p>${final ? `Ligados no número com final ${esc(final)}.` : 'Ligados.'}</p>
-      <p>Além do aviso do iPhone, a Bee manda um recadinho por lá na hora do lembrete.</p>
-      <div class="botoes"><button id="waDesligar">Desligar</button></div>
+      <p>Seus lembretes chegam pelo WhatsApp, e não como notificação do iPhone. Lá você pode responder, mandar áudio e pedir coisas para a Bee.</p>
+      <div class="botoes"><button id="waDesligar">Voltar para avisos do iPhone</button></div>
     </div>`);
     document.getElementById('waDesligar').onclick = async () => {
       try { await waPedir('sair'); } catch {}
-      gravarPref('agenda.whats', ''); marcarWhats(); fecharFolha(); toast('Pronto: não vou mais avisar pelo WhatsApp.');
+      voltarParaIphone(); fecharFolha(); toast('Pronto: os avisos voltaram para o iPhone.');
     };
     return;
   }
@@ -6869,7 +6943,8 @@ async function abrirWhats() {
   const msg = `${EM_INGLES ? 'Turn on Tap Bee reminders' : 'Ativar avisos do Tap Bee'}: ${codigo}`;
   abrirFolha(`<div class="dois-toques" id="waFolha">
     <h3>Avisos pelo WhatsApp</h3>
-    <p>A Bee também te avisa dos compromissos pelo WhatsApp, com um recadinho divertido.</p>
+    <p>A Bee te avisa dos compromissos pelo WhatsApp, com um recadinho que combina com cada um. E você pode responder, mandar áudio e marcar coisas por lá.</p>
+    <p>Os avisos passam a chegar só pelo WhatsApp, sem repetir no iPhone.</p>
     <p>Toque no botão: o WhatsApp abre com uma mensagem pronta. <b>É só enviar.</b></p>
     <div class="botoes"><a class="primario" id="waAtivar" href="https://wa.me/${NUMERO_BEE}?text=${encodeURIComponent(msg)}">Ativar no WhatsApp</a></div>
     <p><small>Para parar, é só mandar SAIR por lá.</small></p>
@@ -6880,9 +6955,9 @@ async function abrirWhats() {
     if (!document.getElementById('waFolha') || !overlay.classList.contains('show') || Date.now() > fim) return;
     try {
       if ((await waPedir('situacao')).ligado) {
-        gravarPref('agenda.whats', '1'); marcarWhats(); fecharFolha(); enviarWhats();
+        gravarPref('agenda.whats', '1'); marcarWhats(); fecharFolha(); enviarWhats(); agendarLembretes(); render();
         tocarSom(true); vibrar('sucesso');
-        return toast('Pronto! A Bee também vai te avisar pelo WhatsApp. 🐝', 3500);
+        return toast('Pronto! Agora a Bee te avisa pelo WhatsApp. 🐝', 3500);
       }
     } catch {}
     setTimeout(conferir, 3000);
@@ -6892,7 +6967,8 @@ async function abrirWhats() {
 document.getElementById('btnWhats').onclick = abrirWhats;
 marcarWhats();
 enviarWhats();
-document.addEventListener('visibilitychange', () => { if (!document.hidden) enviarWhats(); });
+setTimeout(buscarDoWhatsapp, 1200);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { enviarWhats(); buscarDoWhatsapp(); } });
 const rcAtivo = (info) => Object.keys(info?.entitlements?.active || {}).length > 0 || (info?.activeSubscriptions || []).some(id => Object.values(RC_PRODUTO).includes(id));
 // true = comprou, false = desistiu na tela da Apple, null = deu erro (quem teve erro não desistiu, então não vê a oferta)
 async function rcComprar(rc, plano) {
