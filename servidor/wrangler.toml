@@ -19,3 +19,12 @@ class_name = "ContadorUso"
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["ContadorUso"]
+
+# Avisos pelo WhatsApp: números ligados e próximos avisos de cada pessoa
+[[durable_objects.bindings]]
+name = "AVISOS"
+class_name = "AvisosWhatsapp"
+
+[[migrations]]
+tag = "v2"
+new_sqlite_classes = ["AvisosWhatsapp"]

@@ -136,6 +136,86 @@ export class ContadorUso extends DurableObject {
     return Object.fromEntries(await this.ctx.storage.list());
   }
 }
+// ---------- Avisos pelo WhatsApp: quem ligou o número e os próximos avisos de cada pessoa ----------
+// Guarda só o necessário: o número, o nome e os avisos dos próximos dias. Cada aviso é apagado ao ser enviado.
+const LIMITE_DIA_WA = 40;
+export class AvisosWhatsapp extends DurableObject {
+  constructor(ctx, env) {
+    super(ctx, env);
+    this.sql = ctx.storage.sql;
+    this.sql.exec(`CREATE TABLE IF NOT EXISTS ligacoes (uid TEXT PRIMARY KEY, telefone TEXT NOT NULL, idioma TEXT, nome TEXT, criado INTEGER);
+      CREATE TABLE IF NOT EXISTS codigos (codigo TEXT PRIMARY KEY, uid TEXT NOT NULL, idioma TEXT, nome TEXT, expira INTEGER);
+      CREATE TABLE IF NOT EXISTS avisos (uid TEXT NOT NULL, chave TEXT NOT NULL, quando INTEGER NOT NULL, titulo TEXT, hora TEXT, PRIMARY KEY (uid, chave));
+      CREATE TABLE IF NOT EXISTS envios (uid TEXT NOT NULL, dia TEXT NOT NULL, n INTEGER, PRIMARY KEY (uid, dia));`);
+  }
+  linha(q, ...v) { return this.sql.exec(q, ...v).toArray()[0]; }
+  async iniciar(uid, codigo, idioma, nome) {
+    this.sql.exec("DELETE FROM codigos WHERE expira < ? OR uid = ?", Date.now(), uid);
+    this.sql.exec("INSERT OR REPLACE INTO codigos VALUES (?, ?, ?, ?, ?)", codigo, uid, idioma, nome, Date.now() + 30 * 60000);
+  }
+  // Mensagem que chegou no WhatsApp: liga o número se trouxer um código válido, desliga com SAIR/STOP
+  async receber(telefone, texto) {
+    const ligado = this.linha("SELECT uid, idioma, nome FROM ligacoes WHERE telefone = ?", telefone);
+    if (/^\s*(sair|parar|stop|cancelar)\s*$/i.test(texto)) {
+      this.sql.exec("DELETE FROM avisos WHERE uid IN (SELECT uid FROM ligacoes WHERE telefone = ?)", telefone);
+      this.sql.exec("DELETE FROM ligacoes WHERE telefone = ?", telefone);
+      return { tipo: "saiu", idioma: ligado?.idioma };
+    }
+    const codigo = (texto.toUpperCase().match(/\b[A-Z0-9]{6}\b/g) || []).map((c) => this.linha("SELECT * FROM codigos WHERE codigo = ? AND expira > ?", c, Date.now())).find(Boolean);
+    if (codigo) {
+      this.sql.exec("DELETE FROM ligacoes WHERE telefone = ? OR uid = ?", telefone, codigo.uid);
+      this.sql.exec("INSERT INTO ligacoes VALUES (?, ?, ?, ?, ?)", codigo.uid, telefone, codigo.idioma, codigo.nome, Date.now());
+      this.sql.exec("DELETE FROM codigos WHERE codigo = ?", codigo.codigo);
+      return { tipo: "ligado", idioma: codigo.idioma, nome: codigo.nome };
+    }
+    return { tipo: "outro", idioma: ligado?.idioma };
+  }
+  async situacao(uid) {
+    const l = this.linha("SELECT telefone FROM ligacoes WHERE uid = ?", uid);
+    return l ? { ligado: true, final: l.telefone.slice(-4) } : { ligado: false };
+  }
+  async sair(uid) {
+    this.sql.exec("DELETE FROM avisos WHERE uid = ?", uid);
+    this.sql.exec("DELETE FROM ligacoes WHERE uid = ?", uid);
+  }
+  // O app manda a lista inteira dos próximos avisos; a lista antiga é trocada pela nova
+  async sincronizar(uid, lista, idioma, nome) {
+    if (!this.linha("SELECT uid FROM ligacoes WHERE uid = ?", uid)) return { ligado: false };
+    this.sql.exec("UPDATE ligacoes SET idioma = ?, nome = ? WHERE uid = ?", idioma, nome, uid);
+    this.sql.exec("DELETE FROM avisos WHERE uid = ?", uid);
+    const agora = Date.now(), ate = agora + 8 * 86400000;
+    for (const a of lista) if (a.quando > agora - 60000 && a.quando < ate) this.sql.exec("INSERT OR REPLACE INTO avisos VALUES (?, ?, ?, ?, ?)", uid, a.chave, a.quando, a.titulo, a.hora);
+    await this.agendar();
+    return { ligado: true };
+  }
+  async agendar() {
+    const prox = this.linha("SELECT MIN(quando) AS q FROM avisos")?.q;
+    if (prox) await this.ctx.storage.setAlarm(Math.max(prox, Date.now() + 1000));
+  }
+  // Hora de avisar: manda um dos textos aprovados da Bee, sorteado. Aviso atrasado demais é descartado
+  async alarm() {
+    const agora = Date.now(), dia = new Date().toISOString().slice(0, 10);
+    const vencidos = this.sql.exec("SELECT a.*, l.telefone, l.idioma, l.nome FROM avisos a JOIN ligacoes l ON l.uid = a.uid WHERE a.quando <= ?", agora + 20000).toArray();
+    for (const a of vencidos) {
+      this.sql.exec("DELETE FROM avisos WHERE uid = ? AND chave = ?", a.uid, a.chave);
+      if (agora - a.quando > 15 * 60000) continue;
+      const n = this.linha("SELECT n FROM envios WHERE uid = ? AND dia = ?", a.uid, dia)?.n || 0;
+      if (n >= LIMITE_DIA_WA) continue;
+      this.sql.exec("INSERT OR REPLACE INTO envios VALUES (?, ?, ?)", a.uid, dia, n + 1);
+      const ingles = a.idioma === "en_US", nome = a.nome || (ingles ? "there" : "você");
+      await enviarWhatsapp(this.env, a.telefone, { type: "template", template: {
+        name: `bee_lembrete_${1 + Math.floor(Math.random() * 6)}`, language: { code: ingles ? "en_US" : "pt_BR" },
+        components: [{ type: "body", parameters: [
+          { type: "text", parameter_name: "nome", text: nome }, { type: "text", parameter_name: "compromisso", text: a.titulo }, { type: "text", parameter_name: "hora", text: a.hora },
+        ] }],
+      } });
+    }
+    this.sql.exec("DELETE FROM avisos WHERE uid NOT IN (SELECT uid FROM ligacoes)");
+    this.sql.exec("DELETE FROM envios WHERE dia < ?", dia);
+    this.sql.exec("DELETE FROM codigos WHERE expira < ?", agora);
+    await this.agendar();
+  }
+}
 // Quantas pessoas chegam a cada tela do quiz: só um total por tela, sem identificar ninguém
 const TELAS_FUNIL = new Set(["abertura", "nome", "parabens", "frases", "mente", "desejo", "trava", "existe", "demo", "trocar", "avisos", "chegou", "pote", "plano", "pagamento", "tentou_comprar", "jogo", "oferta", "comprou", "comprou_oferta"]);
 async function funil(req, env, origem) {
@@ -240,9 +320,26 @@ async function modelosWhatsapp(req, env) {
   }
   return new Response(JSON.stringify(resultado), { headers: { "Content-Type": "application/json" } });
 }
+// Mensagens livres só valem dentro da conversa que a pessoa abriu (24 horas); servem para confirmar e responder
+async function enviarWhatsapp(env, para, corpo) {
+  const r = await fetch(`${WA_API}${WA_NUMERO}/messages`, {
+    method: "POST", headers: { Authorization: `Bearer ${env.WA_TOKEN}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ messaging_product: "whatsapp", to: para, ...corpo }),
+  });
+  if (!r.ok) console.error("WhatsApp: falha ao enviar", r.status, (await r.text()).slice(0, 300));
+  return r.ok;
+}
+const textoWhatsapp = (env, para, texto) => enviarWhatsapp(env, para, { type: "text", text: { body: texto } });
+const RESPOSTAS_WA = {
+  ligado: { pt_BR: (n) => `Pronto${n ? `, ${n}` : ""}! 🐝 A partir de agora eu também te aviso dos seus compromissos por aqui. Para parar, é só mandar SAIR.`, en_US: (n) => `All set${n ? `, ${n}` : ""}! 🐝 From now on I'll also remind you about your plans here. To stop, just send STOP.` },
+  saiu: { pt_BR: () => "Tudo bem! Não vou mais te avisar por aqui. Para voltar, é só ativar de novo no Tap Bee. 🐝", en_US: () => "No problem! I won't remind you here anymore. To come back, just turn it on again in Tap Bee. 🐝" },
+  outro: { pt_BR: () => "Oi! 🐝 Por aqui eu te aviso dos seus compromissos. Para marcar algo novo, abra o Tap Bee e fale comigo por lá.", en_US: () => "Hi! 🐝 Here I remind you about your plans. To add something new, open Tap Bee and tell me there." },
+};
 async function whatsapp(req, env) {
-  if (new URL(req.url).pathname === "/whatsapp/estado") return estadoWhatsapp(req, env);
-  if (new URL(req.url).pathname === "/whatsapp/modelos") return modelosWhatsapp(req, env);
+  const caminho = new URL(req.url).pathname;
+  if (caminho === "/whatsapp/estado") return estadoWhatsapp(req, env);
+  if (caminho === "/whatsapp/modelos") return modelosWhatsapp(req, env);
+  if (caminho === "/whatsapp/app") return whatsappDoApp(req, env);
   if (req.method === "GET") {
     const u = new URL(req.url).searchParams;
     if (u.get("hub.mode") === "subscribe" && env.WA_VERIFY_TOKEN && u.get("hub.verify_token") === env.WA_VERIFY_TOKEN) return new Response(u.get("hub.challenge") || "", { status: 200 });
@@ -251,12 +348,42 @@ async function whatsapp(req, env) {
   if (req.method !== "POST") return new Response("use POST", { status: 405 });
   const corpo = await req.text();
   if (!(await assinaturaOk(req, corpo, env))) return new Response("assinatura inválida", { status: 401 });
-  // Por enquanto só confirma o recebimento; marcar compromissos pelo WhatsApp vem depois
   try {
-    const mudanca = JSON.parse(corpo)?.entry?.[0]?.changes?.[0]?.value;
-    if (mudanca?.messages?.length) console.log("WhatsApp: mensagem recebida", mudanca.messages[0].type);
-  } catch {}
+    const msg = JSON.parse(corpo)?.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
+    if (msg?.from) {
+      const texto = msg.type === "text" ? msg.text?.body || "" : msg.type === "button" ? msg.button?.text || "" : "";
+      const r = await env.AVISOS.get(env.AVISOS.idFromName("avisos")).receber(msg.from, texto);
+      const idioma = r.idioma === "en_US" ? "en_US" : "pt_BR";
+      await textoWhatsapp(env, msg.from, RESPOSTAS_WA[r.tipo][idioma](r.nome));
+    }
+  } catch (e) { console.error("WhatsApp: erro ao tratar mensagem", e.message); }
   return new Response("ok", { status: 200 });
+}
+
+// O app liga o número, pergunta se já ligou, manda os próximos avisos e desliga
+async function whatsappDoApp(req, env) {
+  const origem = req.headers.get("Origin") || "";
+  if (!ORIGENS.includes(origem)) return responder({ erro: "origem não permitida" }, 403, origem);
+  if (req.method !== "POST") return responder({ erro: "use POST" }, 405, origem);
+  let e;
+  try { e = await req.json(); } catch { return responder({ erro: "JSON inválido" }, 400, origem); }
+  if (!ID_APARELHO.test(e.uid || "")) return responder({ erro: "id inválido" }, 400, origem);
+  const idioma = e.idioma === "en" ? "en_US" : "pt_BR", nome = String(e.nome || "").trim().slice(0, 30);
+  const avisos = env.AVISOS.get(env.AVISOS.idFromName("avisos"));
+  if (e.acao === "iniciar") {
+    if (!/^[A-Z0-9]{6}$/.test(e.codigo || "")) return responder({ erro: "código inválido" }, 400, origem);
+    await avisos.iniciar(e.uid, e.codigo, idioma, nome);
+    return responder({ ok: true, numero: "5519990055701" }, 200, origem);
+  }
+  if (e.acao === "situacao") return responder(await avisos.situacao(e.uid), 200, origem);
+  if (e.acao === "sair") { await avisos.sair(e.uid); return responder({ ok: true }, 200, origem); }
+  if (e.acao === "sincronizar") {
+    const lista = (Array.isArray(e.avisos) ? e.avisos : []).slice(0, 60)
+      .map((a) => ({ chave: String(a.chave || "").slice(0, 80), quando: +a.quando, titulo: String(a.titulo || "").trim().slice(0, 60), hora: String(a.hora || "").slice(0, 12) }))
+      .filter((a) => a.chave && a.titulo && a.hora && Number.isFinite(a.quando));
+    return responder(await avisos.sincronizar(e.uid, lista, idioma, nome), 200, origem);
+  }
+  return responder({ erro: "ação desconhecida" }, 400, origem);
 }
 
 export default {
