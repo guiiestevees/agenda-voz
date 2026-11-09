@@ -1,5 +1,5 @@
 {
-  "originHash" : "f417ca729f0c9b6193c51ac05b5ea06729c0b696ae7c634b76f8a9bde1860d89",
+  "originHash" : "872cb384c8fd49cb80a2ce28cd58288ca3cabd25e9745dd1e9091c6e9ad59ceb",
   "pins" : [
     {
       "identity" : "capacitor-swift-pm",
@@ -8,6 +8,15 @@
       "state" : {
         "revision" : "e9e932f7748d3b948bc47f5791c761ac5221ec6a",
         "version" : "8.6.0"
+      }
+    },
+    {
+      "identity" : "paywallo-ios-sdk",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Virex-Tech/paywallo-ios-sdk.git",
+      "state" : {
+        "revision" : "b32f32316ef10625c3e34de8e07b0fd47072711e",
+        "version" : "2.9.1"
       }
     },
     {
