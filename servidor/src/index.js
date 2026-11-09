@@ -29,7 +29,7 @@ Cada ação:
 
 Regras:
 - titulo: só o nome do compromisso, curto e com inicial maiúscula ("Médico", "Academia", "Reunião com o João", "Tomar remédio"). Nunca inclua data, hora, lembrete ou palavras como "tenho", "marca", "me lembra".
-- data no formato AAAA-MM-DD e hora HH:MM (24h), no fuso da pessoa. Use a lista de datas abaixo para saber o dia certo de "terça", "amanhã" etc. "às 4" sem período quase sempre é 16:00; de 8 a 11 sem período é manhã. Com hora mas sem dia → hoje, ou amanhã se o horário de hoje já passou. Com dia mas sem hora → 09:00. Sem dia E sem hora, é uma tarefa para lembrar → "anotar" (a não ser que a pessoa peça claramente para marcar agora). Se a pessoa falar vários compromissos e só disser o dia no primeiro, os seguintes são no mesmo dia.
+- data no formato AAAA-MM-DD e hora HH:MM (24h), no fuso da pessoa. Use a lista de datas abaixo para saber o dia certo de "terça", "amanhã" etc. Hora de 1 a 12 SEM período ("às 7", "7 horas"), para HOJE ou sem dia: use a tabela "Hora SEM período" que vem na mensagem; ela já escolheu o próximo horário que ainda vai chegar (manhã ou noite). Nunca jogue para amanhã um "hoje" que ainda dá tempo de acontecer hoje. Se a pessoa disser o período ("da manhã", "da tarde", "da noite", "meio-dia", "madrugada") ou a hora em 24h ("19h", "às 15"), obedeça exatamente. Para outro dia ("terça às 4"), sem período: de 1 a 6 é tarde (16:00), de 7 a 11 é manhã, 12 é meio-dia. Com hora mas sem dia → hoje, se o horário ainda vai chegar; senão amanhã. Com dia mas sem hora → 09:00. Sem dia E sem hora, é uma tarefa para lembrar → "anotar" (a não ser que a pessoa peça claramente para marcar agora). Se a pessoa falar vários compromissos e só disser o dia no primeiro, os seguintes são no mesmo dia.
 - lembreteMin: minutos de antecedência do aviso. "me lembre 15 min antes" → 15; "me lembra de tomar remédio às 8" → 0; "1 dia antes" → 1440. Se a pessoa não falar nada sobre aviso ao criar, use o aviso padrão informado na mensagem; para aniversário, use 0. Em "mudar", null = não mexer e -1 = tirar o aviso.
 - repetir: "nenhuma", "diaria", "semanal", "mensal" ou "anual". Para semanal, diasSemana com os dias (0=domingo, 1=segunda … 6=sábado), ex.: "toda segunda e quarta" → [1,3]; "de segunda a sexta" → [1,2,3,4,5]. Aniversário → "anual". Nos outros casos diasSemana = [].
 - notaId: só em "agendar" e "tirar_nota", escolhido na lista de anotações pelo texto; nas outras ações, null.
@@ -81,7 +81,9 @@ function proximosDias(dataISO) {
   const nomes = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
   return Array.from({ length: 15 }, (_, i) => {
     const d = new Date(base.getTime() + i * 86400000);
-    return `${i === 0 ? "hoje" : i === 1 ? "amanhã" : nomes[d.getUTCDay()]}: ${d.toISOString().slice(0, 10)} (${nomes[d.getUTCDay()]})`;
+    // "terça" é a PRÓXIMA terça (mesmo que seja amanhã); a de depois é "terça da semana que vem"
+    const nome = nomes[d.getUTCDay()], rotulo = i === 0 ? `hoje (${nome})` : i === 1 ? `amanhã = ${nome}` : i < 7 ? nome : `${nome} da semana que vem`;
+    return `${rotulo}: ${d.toISOString().slice(0, 10)}`;
   }).join("\n");
 }
 
@@ -514,6 +516,19 @@ const horaFalada = (hora, idioma) => {
 };
 
 // O mesmo cérebro do app, usado também pelo WhatsApp
+// "às 7" sem período: o próximo 7:00 ou 19:00 que ainda vai chegar, já calculado para a Bee não adivinhar
+function tabelaHoras(agora, hoje) {
+  const m = String(agora).match(/(\d{1,2}):(\d{2})\s*$/);
+  if (!m || !/^\d{4}-\d{2}-\d{2}$/.test(hoje)) return "";
+  const minAgora = +m[1] * 60 + +m[2], amanha = new Date(Date.parse(`${hoje}T12:00:00Z`) + 86400000).toISOString().slice(0, 10);
+  const pad = (n) => String(n).padStart(2, "0");
+  return Array.from({ length: 12 }, (_, i) => {
+    const h = i + 1, opcoes = h === 12 ? [12 * 60] : [h * 60, (h + 12) * 60];
+    const prox = opcoes.find((x) => x > minAgora);
+    const [dia, min] = prox === undefined ? [amanha, opcoes[0]] : [hoje, prox];
+    return `"às ${h}" → ${dia} ${pad(Math.floor(min / 60))}:00`;
+  }).join("\n");
+}
 async function pensar(env, { texto, agora, hoje, agenda, notas, avisoPadrao, idioma, model = MODELOS[0], extra = "" }) {
   const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
   const resp = await client.beta.messages.create({
@@ -525,7 +540,7 @@ async function pensar(env, { texto, agora, hoje, agenda, notas, avisoPadrao, idi
     system: (idioma === "en" ? `${SISTEMA}\n\nIdioma desta pessoa: ela fala INGLÊS. Entenda o pedido em inglês e escreva títulos, anotações, hábitos e "resposta" em inglês natural.` : SISTEMA) + extra,
     messages: [{
       role: "user",
-      content: `Agora: ${agora}\nAviso padrão desta pessoa: ${avisoPadrao} minutos antes\n\nDatas dos próximos dias:\n${proximosDias(hoje)}\n\nAgenda (próximas ocorrências, uma por linha: id | dia | hora | nome | repetição):\n${agenda}\n\nAnotações sem data (id | texto):\n${notas}\n\nA pessoa disse: "${texto}"`,
+      content: `Agora: ${agora}\nAviso padrão desta pessoa: ${avisoPadrao} minutos antes\n\nDatas dos próximos dias:\n${proximosDias(hoje)}\n\nHora SEM período para hoje ou sem dia (use exatamente esta tabela; se a pessoa disser manhã/tarde/noite ou outro dia, ela não vale):\n${tabelaHoras(agora, hoje)}\n\nAgenda (próximas ocorrências, uma por linha: id | dia | hora | nome | repetição):\n${agenda}\n\nAnotações sem data (id | texto):\n${notas}\n\nA pessoa disse: "${texto}"`,
     }],
   });
   if (resp.stop_reason === "refusal") return { tipo: "nao_entendi", resposta: idioma === "en" ? "Sorry, I couldn't help with that." : "Desculpa, não consegui ajudar com isso.", acoes: [] };
