@@ -237,7 +237,7 @@ export class AvisosWhatsapp extends DurableObject {
   // A IA escolhe o tipo de lembrete e escreve um recado curto que combine com cada compromisso.
   // Fica guardado por idioma e nome do compromisso, então cada nome passa pela IA uma vez só.
   async estilosDe(titulos, idioma) {
-    const chave = (t) => `${idioma}|${t.toLowerCase()}`;
+    const chave = (t) => `v2|${idioma}|${t.toLowerCase()}`;   // v2: regras mais cuidadosas, recados antigos não valem mais
     const faltam = [...new Set(titulos)].filter((t) => !this.linha("SELECT tipo FROM estilos WHERE chave = ?", chave(t)));
     if (faltam.length && this.env.ANTHROPIC_API_KEY) {
       try {
@@ -250,9 +250,9 @@ export class AvisosWhatsapp extends DurableObject {
             properties: { itens: { type: "array", items: { type: "object", additionalProperties: false, required: ["i", "tipo", "recado"], properties: { i: { type: "integer" }, tipo: { type: "string", enum: TIPOS_AVISO }, recado: { type: "string" } } } } },
           } } },
           messages: [{ role: "user", content: `Você é a Bee, secretária simpática de um app de agenda. Para cada compromisso abaixo:
-1. tipo: conta (pagar, resolver, entregar, renovar, comprar), remedio (remédio, vitamina, insulina), consulta (médico, dentista, exame, terapia, cabeleireiro, banco, cartório), trabalho (reunião, call, entrega de trabalho), treino (academia, corrida, pilates, esporte), festa (aniversário, festa, jantar, encontro, viagem, passeio) ou geral.
-2. recado: UMA frase curta (até 70 caracteres), ${ingles ? "em inglês" : "em português do Brasil"}, calorosa e que combine de verdade com aquele compromisso, para vir logo depois de "Oi, Gui!". Fale com a pessoa, sem citar nome, horário nem o nome do compromisso. Nada de "conta comigo", "pode contar comigo" ou promessas da Bee. Sem gênero (nada de "pronto/pronta", "tranquilo/tranquila"). No máximo 1 emoji, no fim. Sem quebra de linha.
-Exemplos: "Centro espírita" → "Que seja um momento de paz e boas energias 🙏"; "Pagar boleto da luz" → "Resolvendo isso, é um peso a menos na cabeça."; "Buscar a Júlia na clínica" → "Sai com uns minutinhos de folga pra não correr."; "Aniversário da Ana" → "Leva aquele abraço caprichado 🎉".
+1. tipo: conta (pagar, resolver, entregar, renovar, comprar), remedio (remédio, vitamina, insulina), consulta (SÓ quando a própria pessoa vai ser atendida: médico, dentista, exame, terapia, cabeleireiro; levar ou buscar alguém é geral), trabalho (reunião, call, entrega de trabalho), treino (academia, corrida, pilates, esporte), festa (aniversário, festa, jantar, encontro, viagem, passeio) ou geral.
+2. recado: UMA frase curta (até 70 caracteres), ${ingles ? "em inglês" : "em português do Brasil"}, para vir logo depois de "Oi, Gui!". Tem que servir para QUALQUER versão daquele compromisso, sem supor detalhes que a pessoa não disse (nada de documentos, roupas, presentes, comidas, trânsito ou objetos que não estão no nome). Prático e gentil, sem exagero, sem elogio e sem promessa da Bee ("conta comigo", "você vai arrasar"). Sem gênero (nada de "pronto/pronta", "tranquilo/tranquila"). No máximo 1 emoji, no fim. Sem quebra de linha. Se não tiver CERTEZA do que é o compromisso ou de uma frase que combine, devolva recado vazio "": é melhor não dizer nada do que dizer algo que não combina.
+Exemplos: "Centro espírita" → "Que seja um momento de paz 🙏"; "Pagar boleto da luz" → "Resolvendo isso, é um peso a menos."; "Buscar a Júlia na clínica" → "Sai com uns minutinhos de folga pra não correr."; "Tomar losartana" → "Hora de cuidar da pressão 💛"; "Reunião X" ou "Projeto Y" → "" (não dá pra saber o que é).
 
 ${faltam.map((t, i) => `${i}. ${t}`).join("\n")}` }],
         });
@@ -311,8 +311,9 @@ ${faltam.map((t, i) => `${i}. ${t}`).join("\n")}` }],
     const aprovados = new Set();
     if (vencidos.length) {
       try {
-        const lista = await (await fetch(`${WA_API}${WA_CONTA}/message_templates?fields=name,language,status&limit=100`, { headers: { Authorization: `Bearer ${this.env.WA_TOKEN}` } })).json();
-        for (const m of lista.data || []) if (m.status === "APPROVED") aprovados.add(`${m.name}|${m.language}`);
+        const lista = await (await fetch(`${WA_API}${WA_CONTA}/message_templates?fields=name,language,status,category&limit=100`, { headers: { Authorization: `Bearer ${this.env.WA_TOKEN}` } })).json();
+        // Só os de utilidade: os que a Meta passou para marketing custam bem mais e podem nem ser entregues
+        for (const m of lista.data || []) if (m.status === "APPROVED" && m.category === "UTILITY") aprovados.add(`${m.name}|${m.language}`);
       } catch (e) { console.error("WhatsApp: não leu os modelos", e.message); }
     }
     const semAssinatura = new Set();
@@ -471,17 +472,27 @@ const MODELOS_V2 = {
     geral: "Hi {{nome}}! Just a friendly reminder, with care 💛",
   },
 };
+// Terceira geração: curta, sem assinatura e com tom de lembrete (a Meta cobra "marketing" quando o texto anima ou elogia)
+const MODELOS_V3 = {
+  pt_BR: {
+    lembrete: "🐝 *{{compromisso}}*\n🕐 {{quando}}\n\nOi, {{nome}}! Passando pra te lembrar desse compromisso.",
+    recado: "🐝 *{{compromisso}}*\n🕐 {{quando}}\n\nOi, {{nome}}! {{recado}}\n\nQualquer mudança, é só me falar por aqui.",
+  },
+  en_US: {
+    lembrete: "🐝 *{{compromisso}}*\n🕐 {{quando}}\n\nHi {{nome}}! Just reminding you about this plan.",
+    recado: "🐝 *{{compromisso}}*\n🕐 {{quando}}\n\nHi {{nome}}! {{recado}}\n\nIf anything changes, just tell me here.",
+  },
+};
 const textoV2 = (idioma, meio) => `🐝 *{{compromisso}}*\n🕐 {{quando}}\n\n${meio}\n\n${ASSINATURA_BEE[idioma]}`;
 // O recado da IA cabe numa variável do WhatsApp: uma linha, sem formatação, curto
 const limparRecado = (t) => String(t || "").replace(/[\r\n\t*_~`]+/g, " ").replace(/\s{2,}/g, " ").trim().slice(0, 90);
 const BOTOES_BEE = { pt_BR: ["Feito", "Lembrar em 10 min"], en_US: ["Done", "Remind me in 10 min"] };
 const EXEMPLO_BEE = { pt_BR: ["Gui", "Pagar o boleto", "10:00", "hoje às 10:00", "Resolvendo isso, é um peso a menos na cabeça."], en_US: ["Gui", "Pay the bill", "10:00 AM", "today at 10:00 AM", "Getting this done is one less thing on your mind."] };
-// Ordem de preferência: recado escrito pela IA; texto da situação (nova e primeira geração); um dos gerais
+// Recado da IA quando ela teve certeza do que é o compromisso; senão o lembrete simples; senão um dos primeiros gerais
 function textoDoAviso(tipo, recado, idioma, aprovados) {
   const ok = (n) => aprovados.has(`${n}|${idioma}`);
-  if (recado && ok("bee2_recado")) return { nome: "bee2_recado", campos: ["compromisso", "quando", "nome", "recado"], botoes: true };
-  for (const t of [tipo, "geral"]) if (t && ok(`bee2_${t}`)) return { nome: `bee2_${t}`, campos: ["compromisso", "quando", "nome"], botoes: true };
-  for (const t of [tipo, "geral"]) if (t && ok(`bee_${t}`)) return { nome: `bee_${t}`, campos: ["nome", "compromisso", "quando"], botoes: true };
+  if (recado && ok("bee3_recado")) return { nome: "bee3_recado", campos: ["compromisso", "quando", "nome", "recado"], botoes: true };
+  if (ok("bee3_lembrete")) return { nome: "bee3_lembrete", campos: ["compromisso", "quando", "nome"], botoes: true };
   const velhos = [1, 2, 3, 4, 5, 6].map((i) => `bee_lembrete_${i}`).filter(ok);
   return velhos.length ? { nome: velhos[Math.floor(Math.random() * velhos.length)], campos: ["nome", "compromisso", "hora"], botoes: false } : null;
 }
@@ -496,6 +507,7 @@ async function modelosWhatsapp(req, env) {
   for (const [idioma, textos] of Object.entries(MODELOS_BEE)) textos.forEach((texto, i) => pedidos.push({ name: `bee_lembrete_${i + 1}`, idioma, texto, quarto: "hora" }));
   for (const [idioma, textos] of Object.entries(MODELOS_POR_TIPO)) for (const [tipo, texto] of Object.entries(textos)) pedidos.push({ name: `bee_${tipo}`, idioma, texto, quarto: "quando", botoes: BOTOES_BEE[idioma] });
   for (const [idioma, meios] of Object.entries(MODELOS_V2)) for (const [tipo, meio] of Object.entries(meios)) pedidos.push({ name: `bee2_${tipo}`, idioma, texto: textoV2(idioma, meio), quarto: "quando", botoes: BOTOES_BEE[idioma], recado: tipo === "recado" });
+  for (const [idioma, textos] of Object.entries(MODELOS_V3)) for (const [tipo, texto] of Object.entries(textos)) pedidos.push({ name: `bee3_${tipo}`, idioma, texto, quarto: "quando", botoes: BOTOES_BEE[idioma], recado: tipo === "recado" });
   const resultado = [];
   for (const p of pedidos) {
     if (existe.has(`${p.name}|${p.idioma}`)) continue;
@@ -524,7 +536,7 @@ async function enviarWhatsapp(env, para, corpo) {
 }
 const textoWhatsapp = (env, para, texto) => enviarWhatsapp(env, para, { type: "text", text: { body: texto } });
 const RESPOSTAS_WA = {
-  ligado: { pt_BR: (n) => `Oi${n ? `, ${n}` : ""}! Que bom te ver por aqui 🐝\n\nA partir de agora, seus lembretes chegam nesta conversa, na hora certa.\n\nE pode me pedir o que precisar, escrevendo ou mandando áudio. Por exemplo: "marca dentista sexta às 3".\n\nSe um dia quiser parar, é só mandar SAIR.`, en_US: (n) => `Hi${n ? ` ${n}` : ""}! So glad to see you here 🐝\n\nFrom now on, your reminders will arrive in this chat, right on time.\n\nAnd you can ask me anything, by text or voice message. For example: "dentist Friday at 3".\n\nIf you ever want to stop, just send STOP.` },
+  ligado: { pt_BR: (n) => `Oi${n ? `, ${n}` : ""}! Que bom te ver por aqui 🐝\n\nA partir de agora, seus lembretes chegam nesta conversa, na hora certa.\n\nE pode me pedir o que precisar, escrevendo ou mandando áudio. Por exemplo: "marca dentista sexta às 3" ou "o que eu tenho amanhã?".\n\nSe um dia quiser parar, é só mandar SAIR.`, en_US: (n) => `Hi${n ? ` ${n}` : ""}! So glad to see you here 🐝\n\nFrom now on, your reminders will arrive in this chat, right on time.\n\nAnd you can ask me anything, by text or voice message. For example: "dentist Friday at 3" or "what do I have tomorrow?".\n\nIf you ever want to stop, just send STOP.` },
   saiu: { pt_BR: () => "Tudo bem! Não vou mais te avisar por aqui. Os avisos voltam para o iPhone. Para voltar, é só ativar de novo no Tap Bee. 🐝", en_US: () => "No problem! I won't remind you here anymore. Reminders go back to your iPhone. To come back, just turn it on again in Tap Bee. 🐝" },
   outro: { pt_BR: () => "Oi! 🐝 Eu sou a Bee, a secretária do Tap Bee. Para eu te avisar por aqui, ative em Ajustes → Avisos pelo WhatsApp no app.", en_US: () => "Hi! 🐝 I'm Bee, the Tap Bee secretary. To get reminders here, turn it on in Settings → WhatsApp reminders in the app." },
   feito: { pt_BR: () => "Boa! Marquei como feito ✅ 🐝", en_US: () => "Nice! Marked as done ✅ 🐝" },
