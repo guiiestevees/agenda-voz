@@ -140,6 +140,7 @@ export class ContadorUso extends DurableObject {
 // Guarda só o necessário: o número, o nome, o fuso, um resumo da agenda (para a Bee entender pedidos)
 // e os avisos dos próximos dias. Cada aviso é apagado ao ser enviado.
 const LIMITE_DIA_WA = 40;
+const RC_PROJETO = "06160d90";   // projeto Tap Bee no RevenueCat
 const TIPOS_AVISO = ["conta", "remedio", "consulta", "trabalho", "treino", "festa", "geral"];
 export class AvisosWhatsapp extends DurableObject {
   constructor(ctx, env) {
@@ -171,14 +172,7 @@ export class AvisosWhatsapp extends DurableObject {
     if (guardada && !fresco && Date.now() - guardada.em < 6 * 3600000) return !!guardada.ativa;
     try {
       const auth = { Authorization: `Bearer ${this.env.RC_SECRET}` };
-      let projeto = await this.ctx.storage.get("rcProjeto");
-      if (!projeto) {
-        const lista = await (await fetch("https://api.revenuecat.com/v2/projects", { headers: auth })).json();
-        projeto = lista.items?.[0]?.id;
-        if (!projeto) throw new Error("projeto do RevenueCat não encontrado");
-        await this.ctx.storage.put("rcProjeto", projeto);
-      }
-      const base = `https://api.revenuecat.com/v2/projects/${projeto}/customers/${encodeURIComponent(uid)}`;
+      const base = `https://api.revenuecat.com/v2/projects/${RC_PROJETO}/customers/${encodeURIComponent(uid)}`;
       const ent = await fetch(`${base}/active_entitlements`, { headers: auth });
       let ativa = false;
       if (ent.ok) ativa = ((await ent.json()).items || []).length > 0;
@@ -379,6 +373,9 @@ const WA_NUMERO = "1388653214339890";
 async function estadoWhatsapp(req, env) {
   if (!env.FUNIL_CHAVE || req.headers.get("x-chave") !== env.FUNIL_CHAVE) return new Response("não autorizado", { status: 401 });
   const r = await fetch(`${WA_API}${WA_NUMERO}?fields=display_phone_number,verified_name,name_status,quality_rating,messaging_limit_tier,status`, { headers: { Authorization: `Bearer ${env.WA_TOKEN}` } });
+  // Confere se um código tem assinatura ativa no RevenueCat (sem guardar a resposta antiga)
+  const rc = new URL(req.url).searchParams.get("rc");
+  if (rc && ID_APARELHO.test(rc)) return new Response(JSON.stringify({ ativa: await env.AVISOS.get(env.AVISOS.idFromName("avisos")).assinou(rc, true) }), { headers: { "Content-Type": "application/json" } });
   const conta = new URL(req.url).searchParams.get("conta");
   if (/^\d{10,20}$/.test(conta || "")) {
     const ler = async (c) => (await fetch(`${WA_API}${c}`, { headers: { Authorization: `Bearer ${env.WA_TOKEN}` } })).json();
