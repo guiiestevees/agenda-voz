@@ -129,7 +129,7 @@
   }
   .fogo svg { width: 18px; height: 18px; }
   .fogo.apagado { filter: grayscale(1); opacity: .55; }
-  .engrenagem:active, .mais-btn:active, .fogo:active, .icon-btn:active { transform: scale(.94); }
+  .engrenagem:active, .mais-btn:active, .fogo:active, .icon-btn:active { transform: scale(.96); }
 
   /* ============ Seções e cartões ============ */
   .grupo h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 24px 0 10px; font-weight: 650; }
@@ -139,7 +139,7 @@
   .faixa-dias::-webkit-scrollbar { display: none; }
   .fd-dia { flex: none; width: 50px; height: 64px; border: 0; border-radius: 16px; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; cursor: pointer;
     background: color-mix(in srgb, var(--card) 80%, transparent); box-shadow: inset 0 0 0 1px var(--line); color: var(--text); transition: transform .15s var(--ease), background .2s; }
-  .fd-dia:active { transform: scale(.94); }
+  .fd-dia:active { transform: scale(.96); }
   .fd-dia span { font-size: 12px; font-weight: 750; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); }
   .fd-dia b { font-size: 18px; font-weight: 750; font-variant-numeric: tabular-nums; line-height: 1.15; }
   .fd-dia i { display: flex; gap: 3px; height: 5px; }
@@ -261,7 +261,7 @@
     font-size: 15px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
     box-shadow: 0 6px 16px rgba(var(--accent-rgb),.3); transition: transform .15s var(--ease);
   }
-  .novo-mini:active { transform: scale(.95); }
+  .novo-mini:active { transform: scale(.96); }
   .novo-mini svg { width: 18px; height: 18px; stroke-width: 2.6; }
   .evento {
     display: flex; gap: 14px; align-items: center; background: var(--card); border: 1px solid var(--line); border-radius: var(--r);
@@ -324,7 +324,7 @@
     background: linear-gradient(135deg, var(--fogo-a), var(--fogo-b)); animation: chama 2s ease-in-out infinite; transition: transform .15s var(--ease);
   }
   .cf-botao svg { width: 26px; height: 26px; fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
-  .cf-botao:active { transform: scale(.9); }
+  .cf-botao:active { transform: scale(.96); }
   @keyframes chama { 0%, 100% { box-shadow: 0 6px 16px rgba(var(--fogo-rgb),.35), 0 0 0 0 rgba(var(--fogo-rgb),.4); } 60% { box-shadow: 0 6px 16px rgba(var(--fogo-rgb),.35), 0 0 0 12px rgba(var(--fogo-rgb),0); } }
 
   .hero {
@@ -359,7 +359,7 @@
     background: rgba(255,255,255,.14); color: #fff; font-size: 13px; font-weight: 700; transition: transform .15s var(--ease), background .2s;
   }
   .hero-share svg { width: 22px; height: 22px; }
-  .hero-share:active { transform: scale(.94); background: rgba(255,255,255,.24); }
+  .hero-share:active { transform: scale(.96); background: rgba(255,255,255,.24); }
 
   details.feitos { margin-top: 10px; }
   details.feitos summary { list-style: none; cursor: pointer; color: var(--muted); font-size: 13px; font-weight: 650; text-transform: uppercase; letter-spacing: .06em; padding: 10px 0; display: flex; align-items: center; gap: 6px; }
@@ -606,7 +606,7 @@
     background: linear-gradient(160deg, var(--grad-a), var(--grad-b)); color: #fff; box-shadow: 0 6px 18px rgba(var(--accent-rgb),.38);
     display: grid; place-items: center; transition: transform .15s var(--ease);
   }
-  .mic-aba:active .mic { transform: scale(.92); }
+  .mic-aba:active .mic { transform: scale(.96); }
   .mic svg { width: 26px; height: 26px; }
 
   /* ============ Ajustes ============ */
@@ -650,6 +650,11 @@
   }
   .overlay.show { display: flex; animation: fade .25s ease; }
   .overlay.show .sheet { animation: sobeFolha .38s var(--ease); }
+  /* Fechar: desce um pouco mais rápido do que subiu, sem receber toques no caminho */
+  .overlay.saindo { animation: someFundo .28s ease forwards; pointer-events: none; }
+  .overlay.saindo .sheet { animation: desceFolha .28s cubic-bezier(.4,0,1,1) forwards; }
+  @keyframes someFundo { to { opacity: 0; } }
+  @keyframes desceFolha { to { transform: translateY(100%); } }
   @keyframes fade { from { opacity: 0; } }
   @keyframes sobeFolha { from { transform: translateY(100%); } }
   .sheet {
@@ -824,7 +829,7 @@
   .pg-fogo svg { width: 18px; height: 18px; }
   .pg-share { flex: none; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: var(--field); color: var(--text); display: grid; place-items: center; cursor: pointer; padding: 0; }
   .pg-share svg { width: 20px; height: 20px; }
-  .pg-checkin:active, .pg-fogo:active, .pg-share:active { transform: scale(.94); }
+  .pg-checkin:active, .pg-fogo:active, .pg-share:active { transform: scale(.96); }
 
   /* Agenda: navegação */
   .navega { gap: 12px; }
@@ -1077,7 +1082,7 @@
   .nv-conselho { position: absolute; left: 74px; top: -20px; z-index: 2; display: inline-flex; align-items: center; gap: 4px; height: 30px; padding: 0 11px 0 9px;
     border: 0; border-radius: 15px 15px 15px 4px; background: var(--card); color: var(--text); font-size: 13px; font-weight: 750; cursor: pointer;
     box-shadow: 0 4px 12px rgba(0,0,0,.12), inset 0 0 0 1px var(--line); animation: pulinho 3s ease-in-out infinite; }
-  .nv-conselho:active { transform: scale(.94); }
+  .nv-conselho:active { transform: scale(.96); }
   .conselho { text-align: center; padding-top: 4px; }
   .cs-cena { position: relative; display: flex; flex-direction: column; align-items: center; }
   .cs-balao { position: relative; margin: 0 4px 6px; padding: 16px 18px; border-radius: 22px; background: color-mix(in srgb, var(--ta) 16%, var(--card));
@@ -1139,13 +1144,13 @@
   /* ===== Rodada 9: ícones da barra ===== */
   .aba { gap: 3px; padding-top: 2px; }
   .aba-ic { position: relative; width: 52px; height: 30px; border-radius: 15px; display: grid; place-items: center; transition: background .25s; }
-  .aba-ic svg { position: absolute; width: 25px; height: 25px; transition: opacity .2s, transform .35s cubic-bezier(.3,1.6,.5,1); }
+  .aba-ic svg { position: absolute; width: 25px; height: 25px; transition: opacity .2s, transform .25s var(--ease); }
   .aba .ic-cheio { opacity: 0; transform: scale(.6); }
   .aba.ativa .ic-linha { opacity: 0; transform: scale(.6); }
   .aba.ativa .ic-cheio { opacity: 1; transform: scale(1.08); }
   .aba.ativa .aba-ic { background: var(--accent-soft); }
   .aba.ativa { color: var(--text); font-weight: 750; }
-  .aba:active .aba-ic { transform: scale(.9); }
+  .aba:active .aba-ic { transform: scale(.96); }
   .aba[data-aba="hoje"].ativa .ic-cheio { animation: solGira 12s linear infinite; }
   @keyframes solGira { from { transform: scale(1.08) rotate(0); } to { transform: scale(1.08) rotate(360deg); } }
   .mic::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 2px solid var(--accent); opacity: 0; animation: chamaMic 4s ease-out infinite 2s; }
@@ -1245,7 +1250,7 @@
   .nt-item.atual { background: var(--accent-soft); box-shadow: inset 0 0 0 1.5px var(--accent); }
   .nt-item.atual small { color: var(--accent-ink); font-weight: 800; }
   button.nt-item { border: 0; background: none; color: inherit; font: inherit; cursor: pointer; transition: transform .15s var(--ease); }
-  button.nt-item:active { transform: scale(.94); }
+  button.nt-item:active { transform: scale(.96); }
   .nt-item.atual:not(.usando) { background: none; box-shadow: inset 0 0 0 1.5px var(--line); }
   .nt-item.atual:not(.usando) small { color: var(--muted); }
   .nt-item.usando { background: var(--accent-soft); box-shadow: inset 0 0 0 2px var(--accent); }
@@ -1892,7 +1897,7 @@
   .qz-chip { padding: 13px 16px; border: 2.5px solid transparent; border-radius: 999px; background: #fff; color: #1d1a12; font-size: 15.5px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(120,80,10,.1); font-family: inherit; transition: transform .15s; }
   .qz-chips-ver { justify-content: center; margin: 14px 0 0; }
   .qz-chips-ver .qz-chip { padding: 9px 13px; font-size: 14px; cursor: default; }
-  .qz-chip:active { transform: scale(.95); }
+  .qz-chip:active { transform: scale(.96); }
   .qz-chip.on { border-color: #f2a313; background: #fff3cf; }
   .qz-aviso { display: flex; align-items: center; gap: 12px; padding: 13px 15px; border-radius: 24px; background: #fff; box-shadow: 0 12px 30px rgba(120,80,10,.18); }
   .qz-aviso img { width: 44px; height: 44px; object-fit: contain; }
@@ -2038,7 +2043,7 @@
   .abas { left: 12px; right: 12px; bottom: max(10px, calc(env(safe-area-inset-bottom) - 8px)); align-items: center; padding: 6px 4px; border-radius: 32px; }
   .aba.ativa .aba-ic { background: var(--vidro-ativo); }
   #barraTopo { border-width: 0 0 1px; }
-  .engrenagem:active, .icon-btn:active, .navega button:active { transform: scale(.94); }
+  .engrenagem:active, .icon-btn:active, .navega button:active { transform: scale(.96); }
   .icon-btn, .navega button { transition: transform .15s var(--ease); }
   /* ============ Telas grandes: iPad e iPhone Duo aberto ============ */
   /* ============ Fácil para qualquer pessoa ============ */
@@ -2128,6 +2133,8 @@
     .abas { left: 0; right: 0; max-width: 560px; margin: 0 auto; }
     .overlay { align-items: center; padding: 24px; }
     .overlay.show .sheet { animation: sobeFolhaCentro .3s var(--ease); }
+    .overlay.saindo .sheet { animation: someFolhaCentro .22s cubic-bezier(.4,0,1,1) forwards; }
+    @keyframes someFolhaCentro { to { opacity: 0; transform: translateY(10px) scale(.97); } }
     .sheet { border-radius: 26px; padding-bottom: 20px; max-height: 86vh; }
     .sheet::before { display: none; }
     .sheet { padding-top: 24px; }
@@ -3268,8 +3275,9 @@ function comFlip(desenhar) {
   if (calmo) return;
   const lista = document.getElementById('lista');
   if (entrouAba) {
-    [...lista.children].slice(0, 8).forEach((el, i) => el.animate([{ opacity: 0, transform: 'translateY(18px) scale(.98)' }, { opacity: 1, transform: 'none' }],
-      { duration: 520, delay: i * 55, easing: 'cubic-bezier(.34,1.45,.64,1)', fill: 'backwards' }));
+    // Interface do dia a dia: entra rápido e sem pulo (pulo fica para as comemorações)
+    [...lista.children].slice(0, 8).forEach((el, i) => el.animate([{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }],
+      { duration: 250, delay: i * 30, easing: 'cubic-bezier(.2,.9,.3,1)', fill: 'backwards' }));
     return;
   }
   if (primeiraVez) return;
@@ -5172,14 +5180,21 @@ function executar(r, frase) {
 // ---------- Folhas (overlay) ----------
 const overlay = document.getElementById('overlay');
 const sheet = document.getElementById('sheet');
+let timerFecharFolha;
 function abrirFolha(html) {
+  clearTimeout(timerFecharFolha); overlay.classList.remove('saindo');
   const comFechar = !html.includes('class="pensando"');
   sheet.innerHTML = (comFechar ? '<button class="folha-fechar" data-fechar-folha>Fechar</button>' : '') + html;
   sheet.classList.toggle('tem-fechar', comFechar);
   overlay.classList.add('show');
 }
 sheet.addEventListener('click', (e) => { if (e.target.closest('[data-fechar-folha]')) fecharFolha(); });
-function fecharFolha() { overlay.classList.remove('show'); textoFinal = ''; pararReconhecimento(); notaParaAgendar = null; corrigindo = null; }
+function fecharFolha() {
+  if (overlay.classList.contains('show') && !overlay.classList.contains('saindo') && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    overlay.classList.add('saindo');
+    timerFecharFolha = setTimeout(() => overlay.classList.remove('show', 'saindo'), 280);
+  } else if (!overlay.classList.contains('saindo')) overlay.classList.remove('show');
+  textoFinal = ''; pararReconhecimento(); notaParaAgendar = null; corrigindo = null; }
 overlay.addEventListener('click', (e) => { if (e.target === overlay) fecharFolha(); });
 // Com o teclado aberto, a folha cabe no espaço que sobra e o campo em uso continua à vista
 function folhaAcimaDoTeclado() {
