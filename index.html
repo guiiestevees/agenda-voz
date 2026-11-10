@@ -653,7 +653,7 @@
   /* Teclado no app nativo: a folha sobe junto com ele, no mesmo ritmo, só o necessário */
   /* Teclado no iPhone: a própria folha cresce por baixo do teclado, como nos apps da Apple.
      Nada de vão nem de fundo aparecendo: a tela de trás fica parada e o fundo da folha continua atrás do teclado */
-  .sheet { transition: padding-bottom .45s cubic-bezier(.22,.8,.25,1); }
+  .sheet { transition: padding-bottom .3s cubic-bezier(.38,.7,.125,1); }   /* mesma duração e curva do teclado do iPhone */
   html.teclado-aberto .sheet { padding-bottom: calc(var(--teclado, 0px) + 14px); max-height: calc(100vh - env(safe-area-inset-top) - 16px); }
   .overlay.show .sheet { animation: sobeFolha .38s var(--ease); }
   /* Fechar: desce um pouco mais rápido do que subiu, sem receber toques no caminho */
@@ -2140,7 +2140,7 @@
     .overlay { align-items: center; padding: 24px; }
     .overlay.show .sheet { animation: sobeFolhaCentro .3s var(--ease); }
     .overlay.saindo .sheet { animation: someFolhaCentro .22s cubic-bezier(.4,0,1,1) forwards; }
-    .overlay { transition: padding-bottom .45s cubic-bezier(.22,.8,.25,1); }
+    .overlay { transition: padding-bottom .3s cubic-bezier(.38,.7,.125,1); }
     html.teclado-aberto .overlay { padding-bottom: calc(var(--teclado, 0px) + 12px); }
     html.teclado-aberto .sheet { padding-bottom: 20px; max-height: calc(100vh - var(--teclado, 0px) - 48px); }
     @keyframes someFolhaCentro { to { opacity: 0; transform: translateY(10px) scale(.97); } }
@@ -5235,10 +5235,22 @@ if (Teclado) {
   const raiz = document.documentElement;
   // Fundo parado enquanto se digita numa folha. (Não usar o setScroll do módulo: ao religar, ele solta uma peça
   // interna do iPhone e a rolagem do app inteiro perde a suavidade.)
-  document.addEventListener('focusin', (e) => { if (sheet.contains(e.target) && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) travarFundo(); });
+  // A folha começa a subir no próprio toque, com a altura do teclado da última vez: assim sobe junto com ele,
+  // e não depois (o aviso do iPhone com a altura chega atrasado)
+  let semTeclado;
+  const subirJunto = (altura) => { raiz.style.setProperty('--teclado', `${altura}px`); raiz.classList.add('teclado-aberto'); };
+  document.addEventListener('focusin', (e) => {
+    if (!sheet.contains(e.target) || !/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
+    travarFundo();
+    if (raiz.classList.contains('teclado-aberto')) return;
+    subirJunto(+lerPref('agenda.alturaTeclado', '') || Math.round(innerHeight * .4));
+    // Teclado físico (iPad) não abre o teclado da tela: se o aviso não vier, a folha volta ao lugar
+    clearTimeout(semTeclado); semTeclado = setTimeout(() => { raiz.classList.remove('teclado-aberto'); raiz.style.setProperty('--teclado', '0px'); }, 700);
+  });
   Teclado.addListener('keyboardWillShow', ({ keyboardHeight }) => {
-    raiz.style.setProperty('--teclado', `${keyboardHeight}px`);
-    raiz.classList.add('teclado-aberto');
+    clearTimeout(semTeclado);
+    if (keyboardHeight > 100) gravarPref('agenda.alturaTeclado', String(Math.round(keyboardHeight)));
+    subirJunto(keyboardHeight);
     const campo = document.activeElement;
     if (!campo || !/^(INPUT|TEXTAREA)$/.test(campo.tagName)) return;
     // Folha comprida: depois que ela terminar de subir, só rola por dentro se o campo tiver ficado escondido
