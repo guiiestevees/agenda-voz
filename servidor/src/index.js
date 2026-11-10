@@ -380,9 +380,9 @@ async function dentroDoLimite(env, aparelho, ip) {
 }
 
 // ---------- WhatsApp: a Meta confere o endereço (GET) e manda mensagens e status (POST) ----------
-// A assinatura prova que o aviso veio mesmo da Meta; sem o segredo do app guardado, só registra
+// A assinatura prova que o aviso veio mesmo da Meta
 async function assinaturaOk(req, corpo, env) {
-  if (!env.WA_APP_SECRET) return true;
+  if (!env.WA_APP_SECRET) return false;   // sem o segredo, nenhum aviso é aceito: melhor parar do que deixar alguém se passar pela Meta
   const assinatura = (req.headers.get("X-Hub-Signature-256") || "").replace("sha256=", "");
   const chave = await crypto.subtle.importKey("raw", new TextEncoder().encode(env.WA_APP_SECRET), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   const certa = [...new Uint8Array(await crypto.subtle.sign("HMAC", chave, new TextEncoder().encode(corpo)))].map((b) => b.toString(16).padStart(2, "0")).join("");
