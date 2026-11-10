@@ -548,6 +548,7 @@ const RESPOSTAS_WA = {
   audio: { pt_BR: () => "Não consegui ouvir esse áudio direito. Pode mandar de novo ou escrever? 🐝", en_US: () => "I couldn't hear that voice message well. Can you send it again or type it? 🐝" },
   fim: { pt_BR: () => "Sua assinatura do Tap Bee terminou, então eu parei de te avisar por aqui. Seus avisos voltam a funcionar quando você assinar de novo no app. 🐝", en_US: () => "Your Tap Bee subscription ended, so I stopped reminding you here. Reminders work again when you subscribe in the app. 🐝" },
   assine: { pt_BR: () => "Os avisos pelo WhatsApp são para quem assina o Tap Bee. Assine no app e ative de novo em Ajustes. 🐝", en_US: () => "WhatsApp reminders are for Tap Bee subscribers. Subscribe in the app and turn it on again in Settings. 🐝" },
+  limite: { pt_BR: () => "Você falou bastante comigo hoje! Preciso descansar um pouco. Amanhã eu volto. Os lembretes continuam chegando normalmente. 🐝", en_US: () => "You've talked to me a lot today! I need a little rest. I'll be back tomorrow. Your reminders keep coming as usual. 🐝" },
   erro: { pt_BR: () => "Tive um probleminha agora. Tenta de novo daqui a pouco? 🐝", en_US: () => "I had a little problem just now. Try again in a moment? 🐝" },
 };
 
@@ -736,6 +737,13 @@ async function tratarMensagem(env, msg) {
     const [acao, ...resto] = payload.split("|"), r = await avisos.botao(de, acao, resto.join("|"));
     if (r.idioma === null) return avisar("outro", "pt_BR");
     return avisar(r.ok ? acao : "perdido", r.idioma);
+  }
+  // Limite por número: ninguém gasta a IA mandando mensagem sem parar (100 pedidos por dia)
+  if (lig && (msg.type === "text" || msg.type === "audio")) {
+    try {
+      const usados = await env.USO.get(env.USO.idFromName(`wa:${de}`)).contar(new Date().toISOString().slice(0, 10));
+      if (usados > (+env.LIMITE_WHATSAPP || 100)) return usados === (+env.LIMITE_WHATSAPP || 100) + 1 ? avisar("limite", lig.idioma) : undefined;
+    } catch (e) { console.error("Limite do WhatsApp:", e.message); }
   }
   let texto = msg.type === "text" ? msg.text?.body || "" : "";
   if (msg.type === "audio" && lig) {
