@@ -8,6 +8,10 @@
   "plugins": {
     "LocalNotifications": {
       "iconColor": "#F2B01E"
+    },
+    "Keyboard": {
+      "resize": "none",
+      "resizeOnFullScreen": false
     }
   },
   "backgroundColor": "#F5B21B"
