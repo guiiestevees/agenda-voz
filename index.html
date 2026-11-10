@@ -5213,6 +5213,7 @@ function travarFundo() {
 }
 function soltarFundo() {
   if (travaFundoY === null) return;
+  try { Teclado?.setScroll?.({ isDisabled: false }).catch(() => {}); } catch {}
   const y = travaFundoY;
   travaFundoY = null;
   Object.assign(document.body.style, { position: '', top: '', left: '', right: '' });
@@ -5220,7 +5221,11 @@ function soltarFundo() {
 }
 if (Teclado) {
   const raiz = document.documentElement;
-  document.addEventListener('focusin', (e) => { if (sheet.contains(e.target) && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) travarFundo(); });
+  // Fundo parado e rolagem do iPhone desligada enquanto se digita numa folha: o iPhone não tem o que empurrar
+  document.addEventListener('focusin', (e) => {
+    if (!sheet.contains(e.target) || !/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
+    travarFundo(); Teclado.setScroll?.({ isDisabled: true }).catch(() => {});
+  });
   Teclado.addListener('keyboardWillShow', ({ keyboardHeight }) => {
     // Tudo decidido antes de subir: altura do teclado e se a folha precisa encolher. Nada muda no meio do caminho
     const livre = innerHeight - keyboardHeight - 16 - 60;
@@ -5235,8 +5240,16 @@ if (Teclado) {
   });
   Teclado.addListener('keyboardWillHide', () => {
     raiz.classList.remove('teclado-aberto'); raiz.style.setProperty('--teclado', '0px');
-    setTimeout(() => { if (!raiz.classList.contains('teclado-aberto')) { sheet.classList.remove('folha-alta'); soltarFundo(); } }, 380);
+    setTimeout(() => { if (!raiz.classList.contains('teclado-aberto')) { sheet.classList.remove('folha-alta'); Teclado.setScroll?.({ isDisabled: false }).catch(() => {}); soltarFundo(); } }, 380);
   });
+}
+// Cor por trás do app igual ao fundo da tela (muda junto com tema, modo e período do dia)
+const Tela = pluginNativo('Tela');
+if (Tela) {
+  const corDeFundo = () => Tela.fundo({ cor: getComputedStyle(document.documentElement).backgroundColor }).catch(() => {});
+  corDeFundo();
+  new MutationObserver(corDeFundo).observe(document.documentElement, { attributes: true, attributeFilter: ['data-tema', 'data-modo', 'class'] });
+  matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', corDeFundo);
 }
 // No site (sem o módulo), a folha cabe no espaço que sobra e o campo em uso continua à vista
 function folhaAcimaDoTeclado() {

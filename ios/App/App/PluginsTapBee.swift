@@ -12,6 +12,7 @@ class TapBeeViewController: CAPBridgeViewController {
         bridge?.registerPluginInstance(VozPlugin())
         bridge?.registerPluginInstance(BeeWidgetPlugin())
         bridge?.registerPluginInstance(MetricasPlugin())
+        bridge?.registerPluginInstance(TelaPlugin())
         // App nativo não dá zoom: um toque duplo sem querer mudava o tamanho da tela
         webView?.scrollView.minimumZoomScale = 1
         webView?.scrollView.maximumZoomScale = 1
@@ -256,6 +257,31 @@ public class MetricasPlugin: CAPPlugin, CAPBridgedPlugin {
         Task {
             await PaywalloClient.shared.waitUntilReady()
             try? await PaywalloClient.shared.onboardingComplete()
+            call.resolve()
+        }
+    }
+}
+
+// ---------- Cor por trás do app: a mesma do fundo da tela, para nada piscar quando o teclado abre ----------
+@objc(TelaPlugin)
+public class TelaPlugin: CAPPlugin, CAPBridgedPlugin {
+    public let identifier = "TelaPlugin"
+    public let jsName = "Tela"
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "fundo", returnType: CAPPluginReturnPromise),
+    ]
+
+    // Recebe "rgb(246, 245, 243)" do CSS
+    @objc func fundo(_ call: CAPPluginCall) {
+        let numeros = (call.getString("cor") ?? "").split(whereSeparator: { !"0123456789.".contains($0) }).compactMap { Double($0) }
+        guard numeros.count >= 3 else { return call.resolve() }
+        let cor = UIColor(red: numeros[0] / 255, green: numeros[1] / 255, blue: numeros[2] / 255, alpha: 1)
+        DispatchQueue.main.async { [weak self] in
+            guard let web = self?.bridge?.webView else { return }
+            web.isOpaque = false
+            web.backgroundColor = cor
+            web.scrollView.backgroundColor = cor
+            self?.bridge?.viewController?.view.backgroundColor = cor
             call.resolve()
         }
     }
