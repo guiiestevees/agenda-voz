@@ -2907,7 +2907,7 @@ function pedirNome() {
       <input id="nNome" maxlength="20" autocomplete="given-name" value="${esc(lerPref('agenda.nome', ''))}" placeholder="Ex.: Gui">
       <div class="botoes"><button type="button" id="bNomeDepois">Agora não</button><button class="primario" type="submit">Salvar</button></div>
     </form>`);
-  setTimeout(() => document.getElementById('nNome').focus(), 80);
+  focarNaFolha(document.getElementById('nNome'));
   document.getElementById('bNomeDepois').onclick = fecharFolha;
   document.getElementById('fNome').onsubmit = (e) => { e.preventDefault(); gravarPref('agenda.nome', document.getElementById('nNome').value.trim()); fecharFolha(); render(); vibrar('sucesso'); };
 }
@@ -2958,7 +2958,7 @@ function abrirNota(id) {
       <div class="botoes">${n ? '<button type="button" class="perigo" id="bNotaApagar">Apagar</button>' : '<button type="button" id="bNotaCancelar">Cancelar</button>'}<button class="${n ? '' : 'primario'}" type="submit">${n ? 'Salvar' : 'Anotar'}</button></div>
     </form>`);
   const f = document.getElementById('fNota'), txt = document.getElementById('nTxt');
-  if (!n) setTimeout(() => txt.focus(), 80);
+  if (!n) focarNaFolha(txt);
   f.onsubmit = (e) => {
     e.preventDefault();
     const v = txt.value.trim();
@@ -5190,6 +5190,16 @@ function executar(r, frase) {
 const overlay = document.getElementById('overlay');
 const sheet = document.getElementById('sheet');
 let timerFecharFolha;
+// Teclado que abre sozinho espera a folha terminar de subir: primeiro a folha, depois o teclado, sem tranco
+function focarNaFolha(campo) {
+  if (!campo) return;
+  setTimeout(() => {
+    // Espera com setTimeout (e não promessa): o iPhone só abre o teclado se o foco vier logo depois do toque
+    const subindo = sheet.getAnimations?.().find(a => a.playState === 'running');
+    const falta = subindo ? Math.max(0, (subindo.effect?.getComputedTiming?.().endTime || 0) - (subindo.currentTime || 0)) : 0;
+    setTimeout(() => campo.focus(), Math.min(falta, 600));
+  }, 30);
+}
 function abrirFolha(html) {
   clearTimeout(timerFecharFolha); overlay.classList.remove('saindo');
   const comFechar = !html.includes('class="pensando"');
@@ -5393,7 +5403,7 @@ function abrirEdicao(ev, novo = false) {
   });
   // a opção escolhida aparece na tela (as listas rolam de lado)
   document.getElementById('eMais').ontoggle = () => f.querySelectorAll('.chips-sel').forEach(c => { const o = c.querySelector('input:checked')?.parentElement; if (o) c.scrollLeft = o.offsetLeft - (c.clientWidth - o.offsetWidth) / 2; });
-  if (novo) setTimeout(() => f.titulo.focus(), 80);
+  if (novo) focarNaFolha(f.titulo);
   f.onsubmit = (e) => {
     e.preventDefault();
     const [a, mes, dia] = f.dia.value.split('-').map(Number);
@@ -5512,7 +5522,7 @@ function abrirDigitar() {
       ${navigator.onLine === false ? '' : '<div class="exemplo" style="margin-top:12px">Dá pra criar, mudar, desmarcar e perguntar, igual falando.</div>'}
     </div>`);
   const inp = document.getElementById('dTexto');
-  setTimeout(() => inp.focus(), 50);
+  focarNaFolha(inp);
   document.getElementById('fDigitar').onsubmit = (e) => { e.preventDefault(); if (inp.value.trim()) criarDeFrase(inp.value); };
 }
 
