@@ -651,10 +651,10 @@
   }
   .overlay.show { display: flex; animation: fade .25s ease; }
   /* Teclado no app nativo: a folha sobe junto com ele, no mesmo ritmo, só o necessário */
-  .overlay { transition: padding-bottom .36s cubic-bezier(.25,.9,.3,1); }
-  html.teclado-aberto .overlay { padding-bottom: var(--teclado, 0px); }
-  /* Só encolhe a folha quando ela não caberia acima do teclado (o app marca isso antes de subir) */
-  html.teclado-aberto .sheet.folha-alta { max-height: calc(100vh - var(--teclado, 0px) - env(safe-area-inset-top) - 16px); }
+  /* Teclado no iPhone: a própria folha cresce por baixo do teclado, como nos apps da Apple.
+     Nada de vão nem de fundo aparecendo: a tela de trás fica parada e o fundo da folha continua atrás do teclado */
+  .sheet { transition: padding-bottom .45s cubic-bezier(.22,.8,.25,1); }
+  html.teclado-aberto .sheet { padding-bottom: calc(var(--teclado, 0px) + 14px); max-height: calc(100vh - env(safe-area-inset-top) - 16px); }
   .overlay.show .sheet { animation: sobeFolha .38s var(--ease); }
   /* Fechar: desce um pouco mais rápido do que subiu, sem receber toques no caminho */
   .overlay.saindo { animation: someFundo .28s ease forwards; pointer-events: none; }
@@ -2140,6 +2140,9 @@
     .overlay { align-items: center; padding: 24px; }
     .overlay.show .sheet { animation: sobeFolhaCentro .3s var(--ease); }
     .overlay.saindo .sheet { animation: someFolhaCentro .22s cubic-bezier(.4,0,1,1) forwards; }
+    .overlay { transition: padding-bottom .45s cubic-bezier(.22,.8,.25,1); }
+    html.teclado-aberto .overlay { padding-bottom: calc(var(--teclado, 0px) + 12px); }
+    html.teclado-aberto .sheet { padding-bottom: 20px; max-height: calc(100vh - var(--teclado, 0px) - 48px); }
     @keyframes someFolhaCentro { to { opacity: 0; transform: translateY(10px) scale(.97); } }
     .sheet { border-radius: 26px; padding-bottom: 20px; max-height: 86vh; }
     .sheet::before { display: none; }
@@ -5227,20 +5230,19 @@ if (Teclado) {
     travarFundo(); Teclado.setScroll?.({ isDisabled: true }).catch(() => {});
   });
   Teclado.addListener('keyboardWillShow', ({ keyboardHeight }) => {
-    // Tudo decidido antes de subir: altura do teclado e se a folha precisa encolher. Nada muda no meio do caminho
-    const livre = innerHeight - keyboardHeight - 16 - 60;
-    sheet.classList.toggle('folha-alta', sheet.offsetHeight > livre);
     raiz.style.setProperty('--teclado', `${keyboardHeight}px`);
     raiz.classList.add('teclado-aberto');
     const campo = document.activeElement;
-    if (!campo || !/^(INPUT|TEXTAREA)$/.test(campo.tagName) || sheet.contains(campo)) return;
+    if (!campo || !/^(INPUT|TEXTAREA)$/.test(campo.tagName)) return;
+    // Folha comprida: depois que ela terminar de subir, só rola por dentro se o campo tiver ficado escondido
+    if (sheet.contains(campo)) return setTimeout(() => campo.scrollIntoView({ block: 'nearest', behavior: 'smooth' }), 480);
     // Campo fora da folha (ex.: nome no quiz): rola só o suficiente, junto com o teclado
     const r = campo.getBoundingClientRect(), limite = innerHeight - keyboardHeight - 16;
     if (r.bottom > limite) scrollBy({ top: r.bottom - limite, behavior: 'smooth' });
   });
   Teclado.addListener('keyboardWillHide', () => {
     raiz.classList.remove('teclado-aberto'); raiz.style.setProperty('--teclado', '0px');
-    setTimeout(() => { if (!raiz.classList.contains('teclado-aberto')) { sheet.classList.remove('folha-alta'); Teclado.setScroll?.({ isDisabled: false }).catch(() => {}); soltarFundo(); } }, 380);
+    setTimeout(() => { if (!raiz.classList.contains('teclado-aberto')) { Teclado.setScroll?.({ isDisabled: false }).catch(() => {}); soltarFundo(); } }, 380);
   });
 }
 // Cor por trás do app igual ao fundo da tela (muda junto com tema, modo e período do dia)
