@@ -1978,9 +1978,11 @@
   .qz-pag-fones .qz-fone-tela { border-radius: 18px; }
   .qz-pag-fones img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
   .qz-pf-hoje { z-index: 2; width: min(31vw, 120px); margin-left: calc(min(31vw, 120px) / -2) !important; }
-  .qz-pf-semana, .qz-pf-habitos { top: 18px !important; width: min(26vw, 102px); opacity: .92; }
+  .qz-pf-semana, .qz-pf-zap { top: 18px !important; width: min(26vw, 102px); opacity: .92; }
   .qz-pf-semana { margin-left: calc(min(26vw, 102px) * -1.3) !important; transform: rotate(-6deg); }
-  .qz-pf-habitos { margin-left: calc(min(26vw, 102px) * .3) !important; transform: rotate(6deg); }
+  .qz-pag-fones .qz-zap-topo img { width: 24px; height: 24px; object-fit: contain; }
+  .qz-pf-zap .qz-zap { width: 160%; height: 160%; animation: none; transform: scale(.625); transform-origin: 0 0; }   /* a conversa do WhatsApp em tamanho de miniatura */
+  .qz-pf-zap { margin-left: calc(min(26vw, 102px) * .3) !important; transform: rotate(6deg); }
   .qz-oferta { position: absolute; inset: 0; z-index: 4; display: flex; align-items: flex-end; background: rgba(40,26,4,.55); animation: qzFundoOferta .25s both; }
   @keyframes qzFundoOferta { from { opacity: 0; } }
   .qz-oferta-folha { position: relative; width: 100%; box-sizing: border-box; padding: 54px 20px calc(env(safe-area-inset-bottom) + 12px); border-radius: 30px 30px 0 0; background: linear-gradient(180deg, #fff6da, #fffdf6); text-align: center; animation: qzFolhaOferta .5s cubic-bezier(.2,1.2,.4,1) both; }
@@ -2043,7 +2045,7 @@
   .qz-rodape { display: flex; justify-content: center; gap: 18px; margin-top: 6px; font-size: 13px; }
   .qz-rodape button { border: 0; background: none; padding: 0; color: #5d5646; font-size: 13px; cursor: pointer; font-family: inherit; }
   .qz-rodape a { color: #5d5646; }
-  @media (max-height: 700px) { .qz-fone { width: min(40vw, 150px); } .qz-pag-fones { height: 170px; } .qz-pf-hoje { width: 85px; margin-left: -42px !important; } .qz-pf-semana, .qz-pf-habitos { width: 72px; } .qz-pf-semana { margin-left: -94px !important; } .qz-pf-habitos { margin-left: 22px !important; } .qz-cena { width: 128px; } .qz-cenas { padding-inline: calc(50% - 64px); } .qz-balao { font-size: 18px; } .qz-fala img { width: 58px; height: 58px; } .qz-op { min-height: 56px; } .qz-pote { width: 170px; } }
+  @media (max-height: 700px) { .qz-fone { width: min(40vw, 150px); } .qz-pag-fones { height: 170px; } .qz-pf-hoje { width: 85px; margin-left: -42px !important; } .qz-pf-semana, .qz-pf-zap { width: 72px; } .qz-pf-semana { margin-left: -94px !important; } .qz-pf-zap { margin-left: 22px !important; } .qz-cena { width: 128px; } .qz-cenas { padding-inline: calc(50% - 64px); } .qz-balao { font-size: 18px; } .qz-fala img { width: 58px; height: 58px; } .qz-op { min-height: 56px; } .qz-pote { width: 170px; } }
   @media (prefers-reduced-motion: reduce) { .qz-tela, .qz-sobe, .qz-op, .qz-mic, .qz-fala img, .qz-favo, .qz-seguir::after, .qz-bee-grande, .qz-cartao-ouro img, .qz-ouro-luz, .qz-pote-bee, .qz-prog img { animation: none; } }
 
   /* Vidro líquido: barras e botões flutuam sobre o conteúdo */
@@ -2291,21 +2293,13 @@
     <svg class="ic-linha" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2M12 19.5v2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M2.5 12h2M19.5 12h2M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></svg>
     <svg class="ic-cheio" viewBox="0 0 24 24"><g stroke="#f59e0b" stroke-width="2.2" stroke-linecap="round"><path d="M12 1.8v2.4M12 19.8v2.4M4.8 4.8l1.7 1.7M17.5 17.5l1.7 1.7M1.8 12h2.4M19.8 12h2.4M4.8 19.2l1.7-1.7M17.5 6.5l1.7-1.7"/></g><circle cx="12" cy="12" r="5.6" fill="url(#gSol)"/><circle cx="10.2" cy="10.2" r="1.6" fill="#fff" opacity=".55"/></svg>
   </span>Hoje</button>
+  <button class="mic-aba" id="btnMic" aria-label="Falar com a Bee">
+    <span class="mic"><span class="mic-favo"></span><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2Z"/></svg></span>Falar
+  </button>
   <button class="aba" data-aba="semana" aria-label="Agenda"><span class="aba-ic">
     <svg class="ic-linha" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="3.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><text class="ic-dia" x="12" y="18.6" text-anchor="middle" font-size="7.2" font-weight="700" fill="currentColor" stroke="none">30</text></svg>
     <svg class="ic-cheio" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="17" rx="4" fill="#fff" stroke="#e2e8e7" stroke-width="1"/><path d="M3 8.5a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4V10H3Z" fill="url(#gCal)"/><rect x="7" y="2.5" width="2.2" height="4.5" rx="1.1" fill="#1d1a12"/><rect x="14.8" y="2.5" width="2.2" height="4.5" rx="1.1" fill="#1d1a12"/><text class="ic-dia" x="12" y="18.8" text-anchor="middle" font-size="8" font-weight="800" fill="#1f2937">30</text></svg>
   </span>Agenda</button>
-  <button class="mic-aba" id="btnMic" aria-label="Falar com a Bee">
-    <span class="mic"><span class="mic-favo"></span><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2Z"/></svg></span>Falar
-  </button>
-  <button class="aba" data-aba="habitos" aria-label="Hábitos"><span class="aba-ic">
-    <svg class="ic-linha" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c-4.6 0-7.5-3-7.5-6.8 0-3.4 2.4-5.4 3.9-7.6.5 2 1.6 3 2.8 3.5C11 6.6 12.7 4 15.5 2.5c-.4 3 1 5 2.4 7 .9 1.3 1.6 2.6 1.6 4.4C19.5 18 16.6 21 12 21Z"/><path d="M9.3 15.2l2 2 3.6-3.8"/></svg>
-    <svg class="ic-cheio" viewBox="0 0 24 24"><path d="M12 21.5c-4.9 0-8-3.2-8-7.2 0-3.6 2.5-5.7 4.1-8 .5 2.1 1.7 3.2 3 3.7C11 6.7 12.8 4 15.8 2.3c-.4 3.2 1 5.3 2.6 7.4.9 1.4 1.6 2.7 1.6 4.6 0 4-3.1 7.2-8 7.2Z" fill="url(#gFogo)"/><path d="M9 15.2l2.2 2.2 3.9-4.1" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-  </span>Hábitos</button>
-  <button class="aba" data-aba="foco" aria-label="Pomodoro"><span class="aba-ic">
-    <svg class="ic-linha" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="6.5" y="3" width="11" height="3.6" rx="1.4"/><path d="M7.5 6.6C4.8 8 4 10.3 4 13.2 4 18.4 6.8 21 12 21s8-2.6 8-7.8c0-2.9-.8-5.2-3.5-6.6"/><path d="M7.3 13.2c1.6.9 3.1.9 4.7 0s3.1-.9 4.7 0"/></svg>
-    <svg class="ic-cheio" viewBox="0 0 24 24"><rect x="6" y="2.4" width="12" height="4.4" rx="1.6" fill="#a8672f"/><rect x="6" y="4.1" width="12" height="1.1" fill="#7a4520"/><path d="M7.4 6.8C4.6 8.2 3.6 10.5 3.6 13.4c0 5.4 3 8.2 8.4 8.2s8.4-2.8 8.4-8.2c0-2.9-1-5.2-3.8-6.6Z" fill="#fff7e2" stroke="#e7c98a" stroke-width=".8"/><path d="M4.1 12.6c2.6-1 5.2 1 7.9 0s5.3-1 7.9 0c.4 5.6-2.6 8.5-7.9 8.5s-8.3-2.9-7.9-8.5Z" fill="url(#gPote)"/><path d="M6.2 10.4c-.6 1.3-.8 2.6-.6 3.9" stroke="#fff" stroke-width="1.2" stroke-linecap="round" opacity=".8" fill="none"/></svg>
-  </span>Pomodoro</button>
   <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
     <radialGradient id="gSol" cx=".35" cy=".35" r=".8"><stop offset="0" stop-color="#fde68a"/><stop offset=".6" stop-color="#fbbf24"/><stop offset="1" stop-color="#f59e0b"/></radialGradient>
     <linearGradient id="gCal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd25c"/><stop offset="1" stop-color="#f2a313"/></linearGradient>
@@ -2828,6 +2822,7 @@ const maiuscula = (t) => t.replace(/^./, c => c.toUpperCase());
 const DIAS_CURTOS = EM_INGLES ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] : ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 
 let aba = lerPref('agenda.aba', 'hoje');
+if (aba === 'habitos' || aba === 'foco') aba = 'hoje';   // Hábitos e Pomodoro saíram do app
 let diaSel = inicioDoDia(new Date());   // dia escolhido em Semana e Mês
 let diaHoje = 0;   // na tela Hoje: 0 = hoje, 1 = amanhã… (faixa de dias acima da agenda)
 let diaHojeBase = '';   // de que dia a faixa partiu (se virar a meia-noite, volta para hoje)
@@ -4478,10 +4473,8 @@ function abrirNiveis() {
       <details class="nt-mais">
         <summary>Como ganhar pontos</summary>
         <ul>
-          <li><span>Compromisso ou hábito feito</span><b>+${PONTOS.feito}</b></li>
+          <li><span>Compromisso feito</span><b>+${PONTOS.feito}</b></li>
           <li><span>Dia completo</span><b>+${PONTOS.diaCompleto}</b></li>
-          <li><span>Pomodoro de 10 min ou mais</span><b>+${PONTOS.foco}</b></li>
-          <li><span>4 Pomodoros no dia</span><b>+${PONTOS.quatroFocos}</b></li>
           <li><span>Postar seu dia (1 vez por dia)</span><b>+${PONTOS.postar}</b></li>
           <li><span>Check-in do dia</span><b>+${PONTOS.checkin}</b></li>
           <li><span>Amigo que entra com seu código</span><b>+${BONUS_CONVITE}</b></li>
@@ -4520,9 +4513,7 @@ const PREMIO_DESAFIO = 30;
 const naSemana = (diaK, ini, fim) => diaK >= chaveDia(ini) && diaK < chaveDia(fim);
 const DESAFIOS = [
   { meta: 15, texto: (n) => `Conclua ${n} compromissos`, medir: (ini, fim) => ocorrencias(ini, fim).filter(o => estaFeito(o.ev, o.inicio)).length },
-  { meta: 6, texto: (n) => `Faça ${n} focos`, medir: (ini, fim) => focos.filter(f => naSemana(f.dia, ini, fim)).length },
   { meta: 6, texto: (n) => `Faça check-in em ${n} dias`, medir: (ini, fim) => xp.checkins.filter(d => naSemana(d, ini, fim)).length },
-  { meta: 150, texto: (n) => `Some ${n} minutos de foco`, medir: (ini, fim) => focos.filter(f => naSemana(f.dia, ini, fim)).reduce((s, f) => s + f.min, 0) },
   { meta: 3, texto: (n) => `Complete ${n} dias inteiros`, medir: (ini, fim) => xp.bonus.filter(d => naSemana(d, ini, fim)).length },
 ];
 function desafioDaSemana() {
@@ -6737,7 +6728,7 @@ const TELAS_QUIZ = [
       return `<div class="qz-logo"><img src="${MASCOTES.bee}" alt=""><b>Tap Bee</b></div>
       <p class="qz-pag-oi">${qzNome()}, sua agenda está pronta.</p>
       <h1 class="qz-capa qz-capa2"><span>Uma secretária no seu bolso,</span><br>o ano inteiro.</h1>
-      <div class="qz-pag-fones">${['semana', 'habitos', 'hoje'].map(k => `<div class="qz-fone qz-pf-${k}"><div class="qz-fone-tela"><img src="${(EM_INGLES ? window.PRINTS_EN : PRINTS_QUIZ)[k]}" alt=""></div></div>`).join('')}</div>
+      <div class="qz-pag-fones">${['semana', 'zap', 'hoje'].map(k => `<div class="qz-fone qz-pf-${k}"><div class="qz-fone-tela">${k === 'zap' ? CENAS_BEE.at(-1)[1]() : `<img src="${(EM_INGLES ? window.PRINTS_EN : PRINTS_QUIZ)[k]}" alt="">`}</div></div>`).join('')}</div>
       <div class="qz-preco"><b>${PRECO_MES}</b><span>/mês</span></div>
       <p class="qz-preco-sub">${PRECO_ANO} cobrado por ano,<br>menos de ${PRECO_DIA} por dia</p>
       <div class="qz-compara" ${EM_REAIS ? '' : 'hidden'}><div><small>Uma secretária</small><b>${SECRETARIA_ANO}/ano</b><small>${SECRETARIA_MES} por mês</small></div><div class="bee"><small>A Bee</small><b>${PRECO_ANO}/ano</b><small>o ano inteiro</small></div></div>`;
@@ -7327,7 +7318,7 @@ function qzOferta() {
       <img src="${MASCOTES.bee_festa}" alt="">
       <h2>Você achou a Bee, ${qzNome()}!</h2>
       <p class="qz-sub">Agora ela é sua secretária por um ano inteiro.</p>
-      <ul class="qz-oferta-lista">${['Secretária por voz', ...(EH_IPAD ? [] : ['Dois toques atrás do iPhone']), 'Avisos no tempo que você escolher', 'Lembretes e agenda pelo WhatsApp', 'Troca de horários só falando', 'Trackeamento de hábitos e Pomodoro'].map(x => `<li>${ICONE_CHECK}${x}</li>`).join('')}</ul>
+      <ul class="qz-oferta-lista">${['Secretária por voz', ...(EH_IPAD ? [] : ['Dois toques atrás do iPhone']), 'Avisos no tempo que você escolher', 'Lembretes e agenda pelo WhatsApp', 'Troca de horários só falando'].map(x => `<li>${ICONE_CHECK}${x}</li>`).join('')}</ul>
       <div class="qz-oferta-preco"><i>${OFERTA_OFF} OFF</i><s>${PRECO_ANO}</s><b>${OFERTA_ANO}</b><span>/ano</span></div>
       <p class="qz-oferta-dia">${EM_REAIS ? `Menos de ${OFERTA_DIA} por dia. Uma secretária custa ${SECRETARIA_MES} por mês, ${SECRETARIA_ANO} por ano.` : `menos de ${OFERTA_DIA} por dia`}</p>
       <p class="qz-preco-sub">Renova automaticamente, cancele quando quiser.</p>
