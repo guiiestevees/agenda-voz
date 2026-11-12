@@ -231,22 +231,20 @@
   body[data-aba="hoje"] .evento .hora small, body[data-aba="hoje"] .evento .lembrete { display: none; }
   body[data-aba="hoje"] .evento { min-height: 0; padding-top: 12px; padding-bottom: 12px; }
   /* Cartão do dia */
-  .hero-dia { display: flex; align-items: center; gap: 14px; margin: 14px 0 24px; padding: 14px 18px 16px 8px; border-radius: 28px;
-    background: linear-gradient(150deg, #fffaf0 0%, #fff0cc 100%); box-shadow: 0 1px 2px rgba(120,80,10,.06), 0 12px 32px rgba(217,138,6,.14); }
-  .hd-pote { flex: none; width: 104px; }
-  .hd-pote .ampulheta.pote { width: 104px; height: 136px; display: block; }
+  .hero-dia { display: flex; align-items: center; gap: 10px; margin: 12px 0 22px; padding: 8px 10px 8px 6px; border-radius: 20px;
+    background: linear-gradient(150deg, #fffaf0 0%, #fff2d4 100%); box-shadow: 0 1px 2px rgba(120,80,10,.06), 0 6px 16px rgba(217,138,6,.1); }
+  .hd-pote { flex: none; width: 40px; }
+  .hd-pote .ampulheta.pote { width: 40px; height: 52px; display: block; }
   .hd-pote #poteNivel { transition: transform 1.2s cubic-bezier(.3,.9,.3,1); }
   .hd-txt { flex: 1; min-width: 0; }
-  .hd-conta { display: flex; align-items: baseline; gap: 7px; color: #6b4300; }
-  .hd-conta b { font-size: 44px; font-weight: 800; line-height: 1; letter-spacing: -.03em; }
-  .hd-conta span { font-size: 16px; font-weight: 700; }
-  .hd-txt small { display: block; margin-top: 4px; font-size: 13.5px; line-height: 1.35; color: #8a6a35; }
-  .hd-falar { display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; padding: 11px 16px 11px 13px; border: 0; border-radius: 999px; cursor: pointer;
-    background: #1d1a12; color: #ffd25c; font: inherit; font-size: 15px; font-weight: 800; transition: transform .15s var(--ease); }
+  .hd-txt b { display: block; font-size: 15px; font-weight: 800; color: #6b4300; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hd-txt small { display: block; margin-top: 1px; font-size: 12.5px; color: #8a6a35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hd-falar { display: inline-flex; flex: none; align-items: center; gap: 6px; padding: 9px 14px 9px 11px; border: 0; border-radius: 999px; cursor: pointer;
+    background: #1d1a12; color: #ffd25c; font: inherit; font-size: 14px; font-weight: 800; transition: transform .15s var(--ease); }
   .hd-falar:active { transform: scale(.96); }
-  .hd-falar svg { width: 18px; height: 18px; }
+  .hd-falar svg { width: 16px; height: 16px; }
   :root[data-modo="escuro"] .hero-dia { background: linear-gradient(150deg, #2a2213, #3a2b10); box-shadow: none; }
-  :root[data-modo="escuro"] .hd-conta { color: #ffd25c; }
+  :root[data-modo="escuro"] .hd-txt b { color: #ffd25c; }
   :root[data-modo="escuro"] .hd-txt small { color: #d9bf8a; }
   :root[data-modo="escuro"] .hd-falar { background: #ffd25c; color: #1d1a12; }
   /* Semana numa faixa só */
@@ -279,9 +277,6 @@
   .notas-dobra .nota-add { margin: 8px 12px 12px; }
   #ambiente .amb-favo, #ambiente .polen { display: none; }
   /* Agenda e reuniões juntas */
-  .hd-agora { margin: 8px 0 -6px; font-size: 13.5px; color: #8a6a35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .hd-agora b { color: #6b4300; }
-  .hd-txt:has(.hd-agora) small { display: none; }
   .hd-rec { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #ff5b4a; box-shadow: 0 0 0 3px rgba(255,91,74,.25); }
   .hd-falar.gravando .hd-rec { animation: reuPisca 1.2s ease-in-out infinite; }
   .reu-marca { margin-left: 6px; font-size: .85em; }
@@ -3136,11 +3131,10 @@ function reuniaoDeAgora() {
 // Pote de mel do dia: enche conforme a pessoa conclui os compromissos de hoje
 let poteAntes = null;
 // Gravando: atalho para a gravação. Reunião agora: grava ela. Senão: fala com a Bee
-function botaoDoDia() {
-  if (gravacao) return `<button class="hd-falar gravando" data-ir-reunioes><i class="hd-rec"></i>Gravando · ver</button>`;
-  const o = reuniaoDeAgora();
-  if (o) return `<p class="hd-agora">Agora: <b>${esc(o.ev.titulo)}</b></p><button class="hd-falar" data-gravar-ev="${o.ev.id}|${chaveDia(o.inicio)}"><i class="hd-rec"></i>Gravar reunião</button>`;
-  return `<button class="hd-falar" data-falar>${ICONE_MIC}Falar com a Bee</button>`;
+function botaoDoDia(o) {
+  if (gravacao) return `<button class="hd-falar gravando" data-ir-reunioes><i class="hd-rec"></i>Gravando</button>`;
+  if (o) return `<button class="hd-falar" data-gravar-ev="${o.ev.id}|${chaveDia(o.inicio)}"><i class="hd-rec"></i>Gravar</button>`;
+  return `<button class="hd-falar" data-falar aria-label="Falar com a Bee">${ICONE_MIC}Falar</button>`;
 }
 const POTE_CHEIO = 10;   // 10 compromissos feitos no dia enchem o pote
 function htmlPoteDoDia() {
@@ -3157,13 +3151,12 @@ function htmlPoteDoDia() {
   }, 80);
   const rot = feitos >= POTE_CHEIO ? 'Pote cheio!' : feitos === 1 ? 'feito hoje' : 'feitos hoje';
   const dica = !feitos ? 'Cada compromisso feito enche o pote de mel.' : feitos >= POTE_CHEIO ? 'Que dia! Você encheu o pote.' : `Faltam ${POTE_CHEIO - feitos} para encher o pote.`;
+  const agoraReu = !gravacao && reuniaoDeAgora();
   return `<div class="hero-dia ${feitos >= POTE_CHEIO ? 'cheio' : ''}">
     <div class="hd-pote">${htmlAmpulheta(false).replace('translate(0 186)', `translate(0 ${y(de)})`)}</div>
-    <div class="hd-txt">
-      <div class="hd-conta"><b>${feitos}</b><span>${rot}</span></div>
-      <small>${dica}</small>
-      ${botaoDoDia()}
-    </div>
+    <div class="hd-txt">${agoraReu ? `<b>${tr('Agora')}: ${esc(agoraReu.ev.titulo)}</b><small>${tr('Toque para gravar a reunião')}</small>`
+      : `<b>${feitos >= POTE_CHEIO ? rot : `${feitos} ${tr(rot)}`}</b><small>${dica}</small>`}</div>
+    ${botaoDoDia(agoraReu)}
   </div>`;
 }
 // "Pra não esquecer": anotações sem dia nem hora, no fim do Hoje
