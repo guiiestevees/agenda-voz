@@ -818,6 +818,20 @@ Escreva um resumo gostoso de ler, em português do Brasil, falando com a pessoa 
 - proxima: se combinaram um próximo encontro, escreva como a pessoa falaria para marcar (ex.: "Próxima mentoria terça às 10"); senão "".
 Use só o que está na transcrição: não invente nomes, números, remédios nem prazos.
 Se não houver fala com conteúdo, use o título "Gravação sem conversa", um resumo de uma frase dizendo isso e deixe o resto vazio.`;
+// Quebra a transcrição em parágrafos nas pausas da fala (ou quando o trecho fica longo), pra ficar gostosa de ler
+function emParagrafos(r) {
+  const segs = Array.isArray(r.segments) ? r.segments.filter((x) => String(x.text || "").trim()) : [];
+  if (!segs.length) return String(r.text || "").trim();
+  const pars = [];
+  let atual = [], palavras = 0;
+  segs.forEach((g, i) => {
+    const t = String(g.text).trim();
+    atual.push(t); palavras += t.split(/\s+/).length;
+    const prox = segs[i + 1], pausa = prox ? prox.start - g.end : 0, fimFrase = /[.!?…]$/.test(t);
+    if (!prox || pausa > 1.2 || (palavras > 70 && fimFrase) || palavras > 130) { pars.push(atual.join(" ")); atual = []; palavras = 0; }
+  });
+  return pars.join("\n\n").replace(/[ \t]+/g, " ").trim();
+}
 async function reuniao(req, env, origem) {
   if (!ORIGENS.includes(origem)) return responder({ erro: "origem não permitida" }, 403, origem);
   if (req.method !== "POST") return responder({ erro: "use POST" }, 405, origem);
@@ -836,7 +850,7 @@ async function reuniao(req, env, origem) {
       try { usados = await env.USO.get(env.USO.idFromName(`reu:${e.uid}`)).contar(mes); } catch (x) { console.error("Contador de reuniões:", x.message); }
       if (usados > LIMITE_PEDACOS_MES) return responder({ erro: "limite_mes" }, 429, origem);
       const r = await env.AI.run("@cf/openai/whisper-large-v3-turbo", { audio, language: ingles ? "en" : "pt" });
-      return responder({ texto: (r.text || "").trim() }, 200, origem);
+      return responder({ texto: emParagrafos(r) }, 200, origem);
     }
     if (e.acao === "resumir") {
       const texto = String(e.texto || "").slice(0, 300000).trim();

@@ -1832,8 +1832,8 @@
     background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.45) 45%, transparent 60%) no-repeat; background-size: 250% 100%; animation: brilhoMel 6s ease-in-out infinite; }
   @keyframes brilhoMel { 0%, 60% { background-position: 150% 0; } 100% { background-position: -100% 0; } }
   .primario, .novo-mini, .cta-falar, .bk-botoes .primario {
-    background-image: linear-gradient(180deg, rgba(255,255,255,.28), rgba(255,255,255,0) 55%, rgba(0,0,0,.06)) !important;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.6), inset 0 -2px 0 rgba(120,70,0,.18), 0 6px 16px rgba(var(--accent-rgb),.32) !important; }
+    background-image: var(--gradient-honey) !important; color: var(--text-on-honey) !important; border: 0 !important;
+    box-shadow: var(--shadow-button) !important; }
 
   /* Brilho no próximo compromisso */
   .evento.em-foco, .proximo { animation: brilhaProx 3.2s ease-in-out infinite; }
@@ -2718,7 +2718,8 @@
   .bt-mel:active, .bt-sec:active, .tb-redondo:active { transform: scale(.97); }
   .sb-trans { display: flex; flex-direction: column; gap: 18px; }
   .tr-trecho span { display: inline-block; padding: 2px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-text); font-size: 12px; font-weight: 700; }
-  .tr-trecho p { margin: 6px 0 0; font-size: 17px; line-height: 26px; }
+  .tr-trecho p { margin: 10px 0 0; font-size: 17px; line-height: 27px; }
+  .tr-trecho p + p { margin-top: 14px; }
   .menu-reu h3 { margin-bottom: 12px !important; }
   .linha-menu { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 56px; padding: 0 4px; border: 0; border-bottom: 1px solid var(--line); background: none; font: 500 17px var(--font-body); color: var(--text); cursor: pointer; text-align: left; }
   .linha-menu:last-child { border-bottom: 0; }
@@ -2819,6 +2820,43 @@
   .rb-proc .rb-tit { font-size: 22px; }
   html body .ds-vazio img, html body .reu-vazio img { width: auto; height: 170px; }
   html body .dt-teste img { width: auto; height: 190px; }
+
+  /* Voz: carregando e confirmação na cara da marca */
+  html body .pensando { padding: 8px 0 26px; }
+  .pz-bee { position: relative; width: 170px; height: 170px; margin: 0 auto 6px; display: grid; place-items: center; }
+  .pz-bee img { position: relative; height: 150px; width: auto; animation: tb-bob 1.8s ease-in-out infinite; }
+  .pz-halo { position: absolute; inset: 18px; border-radius: 50%; background: radial-gradient(circle, rgba(255,201,79,.45), rgba(255,201,79,0) 70%); animation: pzHalo 2s ease-out infinite; }
+  .pz-halo.b { animation-delay: 1s; }
+  @keyframes pzHalo { from { transform: scale(.7); opacity: 1; } to { transform: scale(1.35); opacity: 0; } }
+  html body .pensando .bee-rot { font: 700 22px var(--font-display); letter-spacing: -.02em; margin: 4px 0 8px; }
+  html body .pensando .frase { display: inline-block; max-width: 300px; margin: 0 auto 16px; padding: 10px 16px; border-radius: 18px; background: var(--accent-soft); color: var(--text); font-style: normal; font-size: 16px; }
+  .pz-onda { justify-content: center; height: 34px !important; margin: 0 !important; }
+  html body .entendi .resposta { font: 700 20px/1.3 var(--font-display); letter-spacing: -.015em; align-items: center; }
+  html body .entendi .resposta .r-ico { width: 40px; height: 40px; border-radius: 12px; margin: 0; background: var(--gradient-honey); color: var(--text-on-honey); box-shadow: var(--shadow-button); }
+  html body .entendi .resposta .r-ico.apagar { background: var(--danger-soft); color: var(--danger); box-shadow: none; }
+  html body .entendi .resposta .r-ico.alerta { background: var(--accent-soft); color: var(--accent-text); box-shadow: none; }
+  html body .entendi .resposta .r-ico svg { width: 20px; height: 20px; }
+  html body .conf-grande { gap: 6px; margin: 14px 0 4px; padding: 18px; border-radius: 22px; background: var(--card); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-card); }
+  html body .conf-grande b { font: 700 26px/1.15 var(--font-display); letter-spacing: -.02em; }
+  html body .conf-grande span, html body .conf-grande small { display: flex; align-items: center; gap: 8px; }
+  html body .conf-grande span { font-size: 17px; font-weight: 600; color: var(--accent-text); }
+  html body .conf-grande small { font-size: 15px; color: var(--muted); }
+  html body .conf-grande svg { width: 18px; height: 18px; flex: none; }
+  html body .conf-desfazer { color: var(--muted); font-family: var(--font-body); }
+  html body .sheet .folha-fechar { border-radius: 999px; background: var(--field); color: var(--text); font-weight: 600; }
+  /* Próximo: o círculo de concluir não parece marcado */
+  html body .px-bt.check { border: 2px solid var(--accent); background: transparent; color: transparent; }
+  html body .px-bt.check svg { opacity: 0; }
+  html body .px-bt.check:active svg { opacity: .5; color: var(--accent-text); }
+  .fm-hora { position: relative; display: flex; align-items: baseline; gap: 12px; padding: 14px 20px; border-radius: 22px; background: var(--card); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-card); cursor: pointer; }
+  .fm-hora input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+  .fm-hora b { font: 800 44px/1 var(--font-display); letter-spacing: -.03em; font-variant-numeric: tabular-nums; color: var(--text); }
+  .fm-hora span { font-size: 16px; color: var(--muted); white-space: nowrap; }
+  .fm-hora::after { content: 'Mudar'; margin-left: auto; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--border-default); align-self: center; font-size: 13px; font-weight: 600; color: var(--accent-text); }
+  .fm-mais { display: flex; align-items: center; gap: 14px; width: 100%; margin-top: 22px; padding: 14px 16px; border-radius: 18px; border: 1px solid var(--border-subtle); background: var(--card); font: 500 15px var(--font-body); color: var(--muted); cursor: pointer; text-align: left; }
+  .fm-mais span { display: inline-flex; align-items: center; gap: 6px; } .fm-mais span:nth-of-type(2) { flex: 1; }
+  .fm-mais svg { width: 16px; height: 16px; }
+  .fm-mais.aberto .pf-seta { transform: rotate(135deg); }
 </style>
 </head>
 <body>
@@ -3672,7 +3710,7 @@ function htmlProximoDS(o, agora) {
     <div class="px-hora"><b>${fmtHora(o.inicio)}</b><small>${fmtHora(fimDe(o.ev, o.inicio))}</small></div>
     <div class="px-info"><span class="px-rot"><i></i>Próximo · ${quando}</span><b>${esc(o.ev.titulo)}</b>${cat ? `<small>${icoCat(cat)}${cat.nome}</small>` : ''}</div>
     ${reu ? `<button class="px-bt escuro" data-gravar-ev="${chave}" aria-label="Gravar">${ICO_MIC_G}</button><button class="px-bt check" data-check="${chave}" aria-label="Feito">${ICONE_CHECK}</button>`
-      : `<button class="px-bt escuro check" data-check="${chave}" aria-label="Feito">${ICONE_CHECK}</button>`}
+      : `<button class="px-bt check" data-check="${chave}" aria-label="Feito">${ICONE_CHECK}</button>`}
   </div>`;
 }
 const POTE_CHEIO = 10;   // 10 compromissos feitos no dia enchem o pote
@@ -6002,7 +6040,7 @@ async function criarDeFrase(frase) {
   const corr = corrigindo; corrigindo = null;
   // Antes da primeira vez, pede permissão para mandar a frase à IA (exigência da Apple)
   if (!lerPref('agenda.iaOk', '')) await pedirPermissaoIA();
-  abrirFolha(`<div class="pensando"><img class="bee-voz voando" src="${MASCOTES.bee}" alt=""><div class="bee-rot">A Bee está anotando…</div><div class="frase">“${esc(frase)}”</div><div class="pontos"><i></i><i></i><i></i></div></div>`);
+  abrirFolha(`<div class="pensando"><div class="pz-bee"><span class="pz-halo"></span><span class="pz-halo b"></span><img src="${MASCOTES.bee_pensando}" alt=""></div><div class="bee-rot">A Bee está anotando…</div><div class="frase">“${esc(frase)}”</div><div class="reu-onda pz-onda">${'<i></i>'.repeat(14)}</div></div>`);
   let r = null;
   const usaIA = lerPref('agenda.iaOk', '') === 'sim';
   if (IA_URL && usaIA && navigator.onLine !== false) {
@@ -6207,9 +6245,9 @@ function mostrarResultado(r, frase, evs, antes) {
   const primeiro = agiu && tipos.includes('criar') && evs.length && !lerPref('agenda.primeiroOk', '');
   if (primeiro) { gravarPref('agenda.primeiroOk', '1'); setTimeout(() => confete(innerWidth / 2, innerHeight * .4, true), 200); }
   const detalhes = um ? `
-        <div class="conf-grande"><b>${esc(um.titulo)}</b><span>${esc(quando(um))}</span>
-        <small>${um.lembreteMin === null || um.lembreteMin === undefined ? 'Sem aviso' : `Vou te avisar: ${fmtLembrete(um.lembreteMin)}`}${um.repetir ? ` · ${esc(fmtRepetir(um.repetir))}` : ''}</small></div>`
-    : evs.map(ev => `<div class="conf-grande conf-item"><b>${esc(ev.titulo)}</b><span>${esc(quando(ev))}</span></div>`).join('');
+        <div class="conf-grande"><b>${esc(um.titulo)}</b><span>${ICO_DET.cal}${esc(quando(um))}</span>
+        <small>${ICO_DET.sino}${um.lembreteMin === null || um.lembreteMin === undefined ? 'Sem aviso' : `Vou te avisar: ${fmtLembrete(um.lembreteMin)}`}${um.repetir ? ` · ${esc(fmtRepetir(um.repetir))}` : ''}</small></div>`
+    : evs.map(ev => `<div class="conf-grande conf-item"><b>${esc(ev.titulo)}</b><span>${ICO_DET.cal}${esc(quando(ev))}</span></div>`).join('');
   abrirFolha(`
     <div class="entendi">
       ${formatarResposta(r.resposta || '', icone)}
@@ -6268,7 +6306,8 @@ function abrirEdicao(ev, novo = false) {
     freq: ev.repetir?.freq || 'nenhuma', diasSem: ev.repetir?.freq === 'semanal' ? [...diasDaSerie(ev)] : [d0.getDay()] };
   const lembretes = [[null, 'Sem aviso'], [0, 'Na hora'], [5, '5 min'], [10, '10 min'], [15, '15 min'], [30, '30 min'], [60, '1h antes'], [120, '2h antes'], [1440, '1 dia antes']];
   if (!lembretes.some(([v]) => v === st.lembrete)) lembretes.push([st.lembrete, fmtLembrete(st.lembrete)]);
-  const duracoes = [15, 30, 45, 60, 120]; if (!duracoes.includes(st.dur)) duracoes.push(st.dur), duracoes.sort((a, b) => a - b);
+  st.mais = false;
+  const duracoes = [30, 60, 120]; if (!duracoes.includes(st.dur)) duracoes.push(st.dur), duracoes.sort((a, b) => a - b);
   const chip = (attr, v, on, txt) => `<button type="button" class="fm-chip ${on ? 'on' : ''}" ${attr}="${v}">${txt}</button>`;
   const desenhar = () => {
     const hoje = inicioDoDia(new Date()), amanha = maisDias(hoje, 1), depois = maisDias(hoje, 2);
@@ -6280,25 +6319,25 @@ function abrirEdicao(ev, novo = false) {
       <h3 class="fm-sec">Quando</h3>
       <div class="fm-chips">${chip('data-fm-dia', chaveDia(hoje), mesmo(st.dia, hoje), 'Hoje')}${chip('data-fm-dia', chaveDia(amanha), mesmo(st.dia, amanha), 'Amanhã')}${chip('data-fm-dia', chaveDia(depois), mesmo(st.dia, depois), `${maiuscula(DIAS_CURTOS[depois.getDay()])}, ${depois.getDate()}`)}
         <label class="fm-chip ${outro ? 'on' : ''}">${ICO_DET.cal}${outro ? `${maiuscula(DIAS_CURTOS[st.dia.getDay()])}, ${st.dia.getDate()}/${pad(st.dia.getMonth() + 1)}` : 'Escolher…'}<input type="date" id="fmData" value="${chaveDia(st.dia)}"></label></div>
-      <div class="fm-relogio">
-        <div class="fm-col"><button type="button" data-fm-h="1" aria-label="Mais uma hora">${ICO_SETA('cima')}</button><b>${pad(st.h)}</b><button type="button" data-fm-h="-1" aria-label="Menos uma hora">${ICO_SETA('baixo')}</button></div>
-        <span class="fm-dois">:</span>
-        <div class="fm-col"><button type="button" data-fm-m="5" aria-label="Mais 5 minutos">${ICO_SETA('cima')}</button><b>${pad(st.m)}</b><button type="button" data-fm-m="-5" aria-label="Menos 5 minutos">${ICO_SETA('baixo')}</button></div>
-        <div class="fm-ate"><small>até</small><b>${fmtHora(fim)}</b></div>
-      </div>
-      <h3 class="fm-sec">Duração</h3>
+      <h3 class="fm-sec">Que horas</h3>
+      <label class="fm-hora"><input type="time" id="fmHora" value="${pad(st.h)}:${pad(st.m)}"><b>${pad(st.h)}:${pad(st.m)}</b><span>até ${fmtHora(fim)}</span></label>
+      <h3 class="fm-sec">Quanto tempo</h3>
       <div class="fm-chips">${duracoes.map(m => chip('data-fm-dur', m, st.dur === m, m >= 60 && m % 60 === 0 ? `${m / 60} h` : fmtMin(m))).join('')}</div>
-      <h3 class="fm-sec">Aviso</h3>
-      <div class="fm-chips">${lembretes.map(([v, t]) => chip('data-fm-lem', v === null ? 'nao' : v, st.lembrete === v, t)).join('')}</div>
-      <h3 class="fm-sec">Repetir</h3>
-      <div class="fm-chips">${[['nenhuma', 'Não repete'], ['diaria', 'Todo dia'], ['semanal', 'Toda semana'], ['mensal', 'Todo mês'], ['anual', 'Todo ano']].map(([v, t]) => chip('data-fm-rep', v, st.freq === v, t)).join('')}</div>
-      ${st.freq === 'semanal' ? `<div class="fm-chips fm-dias">${['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((l, i) => chip('data-fm-ds', i, st.diasSem.includes(i), l)).join('')}</div>` : ''}
+      <button type="button" class="fm-mais ${st.mais ? 'aberto' : ''}" data-fm-mais><span>${ICO_DET.sino}${st.lembrete === null ? 'Sem aviso' : `Aviso ${fmtLembrete(st.lembrete)}`}</span><span>${ICO_DET.repete}${{ nenhuma: 'Não repete', diaria: 'Todo dia', semanal: 'Toda semana', mensal: 'Todo mês', anual: 'Todo ano' }[st.freq]}</span><i class="pf-seta"></i></button>
+      ${st.mais ? `<div class="fm-extra">
+        <h3 class="fm-sec">Aviso</h3>
+        <div class="fm-chips">${lembretes.map(([v, t]) => chip('data-fm-lem', v === null ? 'nao' : v, st.lembrete === v, t)).join('')}</div>
+        <h3 class="fm-sec">Repetir</h3>
+        <div class="fm-chips">${[['nenhuma', 'Não repete'], ['diaria', 'Todo dia'], ['semanal', 'Toda semana'], ['mensal', 'Todo mês'], ['anual', 'Todo ano']].map(([v, t]) => chip('data-fm-rep', v, st.freq === v, t)).join('')}</div>
+        ${st.freq === 'semanal' ? `<div class="fm-chips fm-dias">${['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((l, i) => chip('data-fm-ds', i, st.diasSem.includes(i), l)).join('')}</div>` : ''}
+      </div>` : ''}
       ${novo ? '' : `<button class="det-excluir" data-fm-excluir>${ICO.lixo}Excluir compromisso</button>`}
       <div class="det-rodape"><button class="bt-mel" data-fm-salvar ${st.titulo.trim() ? '' : 'disabled'}>${ICONE_CHECK}${novo ? 'Salvar compromisso' : 'Salvar alterações'}</button></div>
     </div>`);
     const inp = document.getElementById('fmTitulo');
     inp.oninput = () => { st.titulo = inp.value; telaCheia.querySelector('[data-fm-salvar]').disabled = !inp.value.trim(); };
     inp.onkeydown = (e) => { if (e.key === 'Enter') inp.blur(); };
+    document.getElementById('fmHora').onchange = (e) => { const [h, m] = (e.target.value || '').split(':').map(Number); if (!isNaN(h)) { st.h = h; st.m = m || 0; redesenhar(); } };
     document.getElementById('fmData').onchange = (e) => { if (e.target.value) { const [a, m, d] = e.target.value.split('-').map(Number); st.dia = new Date(a, m - 1, d); redesenhar(); } };
   };
   const redesenhar = () => { const y = telaCheia.scrollTop; desenhar(); telaCheia.scrollTop = y; };
@@ -6310,6 +6349,7 @@ function abrirEdicao(ev, novo = false) {
     else if (ds.fmH) st.h = (st.h + +ds.fmH + 24) % 24;
     else if (ds.fmM) { const tot = (st.h * 60 + Math.round(st.m / 5) * 5 + +ds.fmM + 1440) % 1440; st.h = Math.floor(tot / 60); st.m = tot % 60; }
     else if (ds.fmDur) st.dur = +ds.fmDur;
+    else if ('fmMais' in ds) st.mais = !st.mais;
     else if (ds.fmLem) st.lembrete = ds.fmLem === 'nao' ? null : +ds.fmLem;
     else if (ds.fmRep) st.freq = ds.fmRep;
     else if (ds.fmDs) { const x = +ds.fmDs; st.diasSem = st.diasSem.includes(x) ? st.diasSem.filter(y => y !== x) : [...st.diasSem, x].sort(); if (!st.diasSem.length) st.diasSem = [x]; }
@@ -8620,6 +8660,15 @@ async function processarReuniao(r) {
 const comNegrito = (t) => esc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
 const decisoesDe = (r) => (r.decisoes || []).map(d => typeof d === 'string' ? { texto: d, porque: '' } : d);
 let abaResumo = 'resumo';
+// Parágrafos da transcrição: o servidor já quebra nas pausas; nas gravações antigas, junta de 3 em 3 frases
+function paragrafosDe(t) {
+  const blocos = String(t).split(/\n\s*\n/).map(x => x.trim()).filter(Boolean);
+  if (blocos.length > 1) return blocos;
+  const frases = String(t).replace(/\s+/g, ' ').match(/[^.!?…]+[.!?…]+["”]?\s*|[^.!?…]+$/g) || [t];
+  const out = [];
+  for (let i = 0; i < frases.length; i += 3) out.push(frases.slice(i, i + 3).join('').trim());
+  return out.filter(Boolean);
+}
 function abrirReuniao(r, aba = 'resumo') {
   abaResumo = aba;
   const texto = (r.textos || []).join(' ').replace(/\s+/g, ' ').trim();
@@ -8635,7 +8684,7 @@ function abrirReuniao(r, aba = 'resumo') {
     ${r.pontos?.length ? bloco('', ICO_TB.lampada, 'Pontos para lembrar', `<ul class="sb-lista">${r.pontos.map(p => `<li><i></i><div><b class="leve">${esc(p)}</b></div></li>`).join('')}</ul>`) : ''}
     ${r.proxima ? `<div class="sb-proxima"><span>${ICO_TB.calMais}</span><div><small>Próxima reunião combinada</small><b>${esc(r.proxima)}</b></div><button data-reu-proxima>${r.proximaAgendada ? 'Na agenda' : 'Agendar'}</button></div>` : ''}
     <div class="tela-acoes">${tarefas.some(t => t.agenda) ? `<button class="bt-mel" data-reu-todas ${tarefas.filter(t => t.agenda).every(t => t.naAgenda) ? 'disabled' : ''}>${tarefas.filter(t => t.agenda).every(t => t.naAgenda) ? `${ICO_TB.calOk}Tudo na agenda` : `${ICO_TB.calMais}Pôr todas na agenda`}</button>` : ''}<button class="bt-sec" data-reu-compartilhar>${ICO_TB.share}Compartilhar resumo</button></div>`;
-  const trans = `<div class="sb sb-trans">${(r.textos || []).map((t, i) => t ? `<div class="tr-trecho"><span>${pad(i * 5)}:00</span><p>${esc(t)}</p></div>` : '').join('') || `<p>${esc(texto)}</p>`}</div>`;
+  const trans = `<div class="sb sb-trans">${(r.textos || []).map((t, i) => t ? `<div class="tr-trecho"><span>${pad(i * 5)}:00</span>${paragrafosDe(t).map(p => `<p>${esc(p)}</p>`).join('')}</div>` : '').join('') || `<p>${esc(texto)}</p>`}</div>`;
   abrirTela(`<div class="tela-resumo" data-reu="${r.id}">
     <div class="tela-topo"><button class="tb-redondo" data-tela-voltar aria-label="Voltar">${ICO_TB.voltar}</button><span></span><button class="tb-redondo" data-reu-compartilhar aria-label="Compartilhar">${ICO_TB.share}</button><button class="tb-redondo" data-reu-menu aria-label="Mais">${ICO_TB.mais}</button></div>
     <div class="tr-selos"><span class="selo mel">${ICO_TB.brilho}Resumo pronto</span><span class="selo">${ICO_TB.livro}Leitura de ${leitura} min</span></div>
