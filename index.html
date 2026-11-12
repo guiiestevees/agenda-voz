@@ -2576,6 +2576,81 @@
   html body .sheet .botoes button.primario, html body .sheet .botoes a.primario, html body .sheet button.primario { background: var(--gradient-honey); color: var(--text-on-honey); box-shadow: var(--shadow-button); border: 0; }
   html body header .topo-data, :root[data-modo] html body header.ceu .topo-data { background: none !important; box-shadow: none !important; padding: 0 !important; }
   :root[data-modo] body header h1 b, :root[data-modo] body header.ceu h1 .per-txt b { color: inherit; }
+
+  /* Início do design: pote, próximo e períodos */
+  html body .fd-dia { gap: 2px; }
+  .fd-ponto { width: 5px; height: 5px; border-radius: 50%; background: transparent; }
+  .fd-ponto.tem { background: var(--accent); }
+  html body .fd-dia.sel .fd-ponto.tem { background: var(--text-on-honey); }
+  html body .faixa-dias { margin-bottom: 0; }
+  .pote-linha { display: flex; align-items: center; gap: 18px; padding: 22px 4px 18px; }
+  .pl-txt { flex: 1; min-width: 0; }
+  .pl-txt b { display: block; font: 700 22px/28px var(--font-display); letter-spacing: -.02em; color: var(--text); }
+  .pl-txt b em { font-style: normal; color: var(--accent-text); }
+  .pl-txt span { display: block; margin-top: 6px; font-size: 15px; line-height: 20px; color: var(--muted); }
+  .pote-ds { position: relative; flex: none; width: 112px; height: 129px; --jar-glass: rgba(255,255,255,.6); --jar-stroke: rgba(168,88,8,.30); }
+  :root[data-modo="escuro"] .pote-ds { --jar-glass: rgba(255,255,255,.07); --jar-stroke: rgba(255,220,140,.42); }
+  .pote-ds::before { content: ''; position: absolute; inset: -6% -22% -10%; border-radius: 50%; background: radial-gradient(closest-side, rgba(255,182,38,var(--brilho)), rgba(255,182,38,0)); }
+  .pote-ds svg { position: relative; display: block; width: 100%; height: 100%; overflow: visible; transform-origin: 50% 95%; }
+  .pd-vidro { fill: var(--jar-glass); } .pd-borda { fill: none; stroke: var(--jar-stroke); stroke-width: 3; } rect.pd-vidro.pd-borda { fill: var(--jar-glass); }
+  .pd-mel { transform: translateY(var(--ate)); animation: pdSobe 900ms var(--ease-spring); }
+  @keyframes pdSobe { from { transform: translateY(var(--de)); } }
+  .pd-onda { animation: tb-slosh 3.6s linear infinite; } .pd-onda.b { animation-duration: 2.4s; animation-direction: reverse; opacity: .55; }
+  @keyframes tb-slosh { from { transform: translateX(0); } to { transform: translateX(50px); } }
+  .pd-bolha { animation: tb-bubble 3.2s var(--ease-out) infinite; } .pd-bolha.b { animation-delay: 1.2s; } .pd-bolha.c { animation-delay: 2.1s; }
+  @keyframes tb-bubble { 0% { transform: translateY(0); opacity: 0; } 15% { opacity: .7; } 100% { transform: translateY(-56px); opacity: 0; } }
+  .pd-num { font: 800 26px var(--font-display); letter-spacing: -.03em; fill: #6E3A0A; }
+  .pd-cap { font: 700 10px var(--font-body); letter-spacing: .1em; fill: #A85808; }
+  .pd-escorre path { stroke-dasharray: 160; }
+  .pote-ds.estoura svg { animation: tb-jar-shake .6s cubic-bezier(.65,0,.35,1); }
+  .pote-ds.estoura .pd-tampa { transform-origin: 100px 32px; animation: tb-lid-pop 1.7s .28s cubic-bezier(.2,.8,.3,1) both; }
+  .pote-ds.estoura .pd-escorre path { animation: tb-flow 1.2s .45s var(--ease-out) both; }
+  .pote-ds.estoura .pd-poca { transform-origin: 100px 221px; animation: tb-puddle 1.4s 1s var(--ease-out) both; }
+  @keyframes tb-jar-shake { 0%,100% { transform: rotate(0); } 15% { transform: rotate(-4deg); } 30% { transform: rotate(4deg); } 45% { transform: rotate(-3deg); } 60% { transform: rotate(2deg); } 75% { transform: rotate(-1deg); } }
+  @keyframes tb-lid-pop { 0% { transform: translate(0,0) rotate(0); } 18% { transform: translate(0,3px); } 45% { transform: translate(26px,-118px) rotate(38deg); } 72% { transform: translate(12px,-46px) rotate(14deg); } 88% { transform: translate(0,3px) rotate(-4deg); } 100% { transform: none; } }
+  @keyframes tb-flow { from { stroke-dashoffset: 160; } to { stroke-dashoffset: 0; } }
+  @keyframes tb-puddle { from { transform: scaleX(0) scaleY(.4); opacity: 0; } to { transform: none; opacity: 1; } }
+  html body .prox-ds { display: flex; align-items: center; gap: 12px; margin: 0 0 22px; padding: 10px; min-height: 0; border-radius: 22px; background: var(--accent-soft); border: 1px solid rgba(245,154,11,.3); box-shadow: none; }
+  .px-hora { flex: none; width: 58px; height: 58px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--gradient-honey); color: var(--text-on-honey); box-shadow: var(--shadow-button); }
+  .px-hora b { font-size: 16px; font-weight: 800; font-variant-numeric: tabular-nums; } .px-hora small { font-size: 11px; font-weight: 600; opacity: .7; font-variant-numeric: tabular-nums; }
+  .px-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  html body .px-rot { display: flex; align-items: center; gap: 6px; font: 800 12px var(--font-body); letter-spacing: .06em; text-transform: uppercase; color: var(--accent-text); }
+  .px-rot i { width: 6px; height: 6px; border-radius: 50%; background: #F59A0B; animation: tb-pulse-dot 1.6s ease-in-out infinite; }
+  .px-info > b { margin-top: 2px; font-size: 17px; line-height: 22px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .px-info > small { display: flex; align-items: center; gap: 4px; margin-top: 1px; font-size: 13px; color: var(--muted); } .px-info > small svg { width: 13px; height: 13px; }
+  html body .px-bt { flex: none; width: 44px; height: 44px; padding: 0; border-radius: 50%; display: grid; place-items: center; cursor: pointer; border: 1px solid var(--border-default); background: var(--card); color: var(--text); }
+  html body .px-bt.escuro { border: 0; background: #2A1704; color: #FFC94F; }
+  html body .px-bt svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-dasharray: none; stroke-dashoffset: 0; }
+  html body .px-bt::after { display: none; }
+  html body[data-aba="hoje"] .grupo-topo { margin: 0 4px 10px; }
+  html body[data-aba="hoje"] .deslize + .grupo-topo { margin-top: 20px; }
+  .ds-vazio { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 30px 24px 10px; }
+  .ds-vazio img { width: 150px; height: auto; margin-bottom: 14px; }
+  .ds-vazio b { font: 700 22px var(--font-display); letter-spacing: -.02em; color: var(--text); }
+  .ds-vazio span { margin-top: 6px; max-width: 250px; font-size: 15px; line-height: 20px; color: var(--muted); }
+  .ds-vazio button { margin-top: 18px; display: inline-flex; align-items: center; gap: 8px; height: 46px; padding: 0 20px; border-radius: 999px; border: 1px solid var(--border-default); background: var(--card); color: var(--text); font: 600 16px var(--font-body); cursor: pointer; }
+  .ds-vazio button svg { width: 18px; height: 18px; }
+
+  /* Semana inteira */
+  .sem-dia { margin: 0 0 10px; border-radius: 22px; border: 1px solid var(--border-subtle); background: var(--card); box-shadow: var(--shadow-card); overflow: hidden; }
+  .sem-dia.hj { border: 1.5px solid var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+  .sd-topo { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; border: 0; background: none; font: inherit; color: var(--text); text-align: left; cursor: pointer; }
+  .sd-data { width: 44px; text-align: center; display: flex; flex-direction: column; }
+  .sd-data small { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  .sem-dia.hj .sd-data small { color: var(--accent-text); }
+  .sd-data b { font: 800 22px/26px var(--font-display); }
+  .sd-meio { flex: 1; min-width: 0; }
+  .sd-qtd { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; }
+  .sd-qtd em { padding: 2px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-text); font-style: normal; font-size: 12px; font-weight: 700; }
+  .sd-barra { display: block; height: 6px; margin-top: 8px; border-radius: 3px; background: var(--surface-pressed); overflow: hidden; }
+  .sd-barra i { display: block; height: 100%; border-radius: 3px; background: var(--gradient-honey); }
+  .sd-livre { font-size: 15px; color: var(--muted); }
+  .sd-lista { border-top: 1px solid var(--border-subtle); padding: 6px 0; }
+  .sd-item { display: flex; align-items: center; gap: 12px; width: 100%; padding: 7px 14px 7px 70px; border: 0; background: none; font: inherit; color: var(--text); text-align: left; cursor: pointer; }
+  .sd-item span { width: 44px; font-size: 14px; font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .sd-item b { flex: 1; min-width: 0; font-size: 15px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sd-item.feito { opacity: .5; } .sd-item.feito b { text-decoration: line-through; }
+  .sd-item svg { width: 16px; height: 16px; fill: none; stroke: var(--accent-text); stroke-width: 2.4; }
 </style>
 </head>
 <body>
@@ -3337,11 +3412,21 @@ function telaHoje() {
   let html = '<div class="hoje-topo">' + (JOGO ? htmlLinhaStatus() : '') + (htmlDoisToques() || htmlCartaoWhats()) + (JOGO ? htmlResgate() : '') + '</div><div class="hoje-dir">';   // no fim do dia, o botão da câmera no cartão do bicho vira "Postar"
   if (diaHojeBase !== chaveDia(hoje)) { diaHojeBase = chaveDia(hoje); diaHoje = 0; }
   const dia = maisDias(hoje, diaHoje);
-  const tituloDia = !diaHoje ? 'Hoje' : diaHoje === 1 ? 'Amanhã' : `${maiuscula(dia.toLocaleDateString(LOCALE, { weekday: 'long' }).replace('-feira', ''))}, ${dia.getDate()}`;
-  const corpo = diaHoje ? linhaDoTempo(dia, agora, false)
-    : total && tudo ? `<div class="tudo-feito">${cenaMascote('festa')}<b>Dia fechado, pote cheio!</b><span>Pode descansar. Amanhã tem mais.</span></div>` : linhaDoTempo(hoje, agora, true);
-  html += `<section class="grupo"><div class="seg-visao"><button class="on" aria-pressed="true">${ICO_SOL}Dia</button><button data-ver-semana>${ICO_CAL}Semana</button></div>${htmlFaixaDias(hoje)}<div class="grupo-topo"><h2>${tituloDia}</h2><span class="gt-conta">${!diaHoje && total ? `${feitos} de ${total}` : ''}</span></div><div class="dia-corpo">${corpo}<button class="add-linha" data-novo-comp>${ICO.mais}Adicionar compromisso</button></div></section>`;
-  if (feitos && !diaHoje) html += `<details class="feitos"><summary>Feitos (${feitos})</summary>${feitosL.map(o => cartao(o, agora)).join('')}</details>`;
+  const ocsDia = ocorrencias(dia, maisDias(dia, 1)), feitosDia = ocsDia.filter(o => estaFeito(o.ev, o.inicio)).length, faltam = ocsDia.length - feitosDia;
+  html += `<section class="grupo"><div class="seg-visao"><button class="${semanaHoje ? '' : 'on'}" data-modo-hoje="dia">${ICO_SOL}Dia</button><button class="${semanaHoje ? 'on' : ''}" data-modo-hoje="semana">${ICO_CAL}Semana</button></div>`;
+  if (semanaHoje) return html + htmlSemanaDS(hoje, agora) + '</section></div>' + htmlNotas();
+  html += htmlFaixaDias(hoje);
+  if (!ocsDia.length) html += `<div class="ds-vazio"><img src="${MASCOTES.bee_relax}" alt=""><b>Dia livre</b><span>Nenhum compromisso por aqui. Aproveite pra descansar.</span><button data-falar-vazio>${ICONE_MIC}Anotar algo</button></div>`;
+  else {
+    html += `<div class="pote-linha">${htmlPoteDS(feitosDia, ocsDia.length)}<div class="pl-txt"><b>${faltam ? `Faltam <em>${faltam}</em> pra encher o pote` : 'Pote cheio!'}</b><span>${faltam ? 'Cada check adiciona mel.' : 'Você cumpriu tudo.'}</span></div></div>`;
+    const prox = !diaHoje && ocsDia.find(o => !estaFeito(o.ev, o.inicio) && fimDe(o.ev, o.inicio) > agora);
+    if (prox) html += htmlProximoDS(prox, agora);
+    const resto = ocsDia.filter(o => o !== prox);
+    [['Manhã', resto.filter(o => o.inicio.getHours() < 12)], ['Tarde e noite', resto.filter(o => o.inicio.getHours() >= 12)]].forEach(([t, l]) => {
+      if (l.length) html += `<div class="grupo-topo"><h2>${t}</h2><span class="gt-conta">${l.filter(o => estaFeito(o.ev, o.inicio)).length} de ${l.length}</span></div>${l.map(o => cartao(o, agora)).join('')}`;
+    });
+  }
+  html += '</section>';
   return html + '</div>' + htmlNotas() + (JOGO ? '<div class="hoje-esq">' + htmlProgresso() + '</div>' : '');
 }
 // Compromissos com cara de conversa (reunião, consulta, aula…): só esses ganham a sugestão de gravar
@@ -3360,11 +3445,68 @@ let poteAntes = null;
 // Gravando: atalho para a gravação. Reunião agora: grava ela. Senão: fala com a Bee
 function botaoDoDia() {
   if (gravacao) return `<button class="hd-falar gravando" data-ir-reunioes><i class="hd-rec"></i>Gravando</button>`;
-  return `<button class="hd-redondo hd-mic" data-falar aria-label="Falar com a Bee">${ICONE_MIC}</button><button class="hd-redondo" data-topo-novo aria-label="Novo compromisso">${ICO.mais}</button>`;
+  return `<button class="hd-redondo" data-topo-novo aria-label="Novo compromisso">${ICO.mais}</button>`;
 }
 const ICO_BAIXAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>';
 const ICO_SOL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
 const ICO_CAL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16.5" rx="3"/><path d="M8 2.5v4M16 2.5v4M3 10h18"/></svg>';
+// Pote de mel do design: enche com os checks do dia; cheio, o mel escorre
+const POTE_CORPO = 'M64 58 C64 72 22 80 22 132 C22 190 54 216 100 216 C146 216 178 190 178 132 C178 80 136 72 136 58 Z';
+const POTE_ONDA = 'M-100 6' + ' q12.5 -7 25 0 q12.5 7 25 0'.repeat(8) + ' V40 H-100 Z';
+let poteFracAntes = null;
+function htmlPoteDS(feitos, total) {
+  const p = total ? feitos / total : 0, cheio = p >= 1, de = poteFracAntes ?? p, estourou = cheio && de < 1;
+  poteFracAntes = p;
+  const nivel = (f) => 214 - f * 148;
+  return `<div class="pote-ds ${estourou ? 'estoura' : ''}" style="--de:${nivel(de)}px;--ate:${nivel(p)}px;--brilho:${(.14 + p * .34).toFixed(2)}">
+    <svg viewBox="0 0 200 230" role="img" aria-label="Pote ${Math.round(p * 100)}% cheio"><defs>
+      <clipPath id="pdC"><path d="${POTE_CORPO}"/></clipPath>
+      <linearGradient id="pdH" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="150"><stop offset="0" stop-color="#FFD965"/><stop offset=".4" stop-color="#FFB524"/><stop offset="1" stop-color="#E8860A"/></linearGradient>
+      <linearGradient id="pdS" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFE9A8"/><stop offset="1" stop-color="#FFC94F"/></linearGradient>
+      <linearGradient id="pdL" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D88A24"/><stop offset="1" stop-color="#8A4A0C"/></linearGradient>
+      <radialGradient id="pdG" cx=".3" cy=".3" r=".9"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <pattern id="pdP" width="28" height="48" patternUnits="userSpaceOnUse"><path d="M0 8 L14 0 L28 8 V24 L14 32 L0 24 Z M14 32 V48" fill="none" stroke="#A85808" stroke-opacity=".16" stroke-width="1.5"/></pattern></defs>
+    <ellipse cx="100" cy="220" rx="66" ry="7" fill="#6E3A0A" opacity=".14"/>
+    ${cheio ? '<ellipse class="pd-poca" cx="100" cy="221" rx="92" ry="10" fill="url(#pdS)"/>' : ''}
+    <path d="${POTE_CORPO}" class="pd-vidro"/>
+    <g clip-path="url(#pdC)"><g class="pd-mel">
+      <g class="pd-onda"><path d="${POTE_ONDA}" fill="url(#pdS)"/></g>
+      <g class="pd-onda b"><path d="${POTE_ONDA}" transform="translate(0 4)" fill="url(#pdH)"/></g>
+      <rect x="0" y="12" width="200" height="240" fill="url(#pdH)"/><rect x="0" y="12" width="200" height="240" fill="url(#pdP)"/>
+      ${p > 0 ? '<circle class="pd-bolha" cx="72" cy="78" r="3.5" fill="#FFF3C9"/><circle class="pd-bolha b" cx="128" cy="92" r="2.5" fill="#FFF3C9"/><circle class="pd-bolha c" cx="104" cy="110" r="3.5" fill="#FFF3C9"/>' : ''}
+    </g></g>
+    <path d="${POTE_CORPO}" fill="url(#pdG)"/>
+    <path d="M44 104 C36 130 38 166 56 192" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width="7" stroke-linecap="round"/><circle cx="52" cy="90" r="4" fill="#fff" fill-opacity=".75"/>
+    <path d="${POTE_CORPO}" class="pd-borda"/><rect x="58" y="46" width="84" height="14" rx="7" class="pd-vidro pd-borda"/>
+    ${cheio ? '<g class="pd-escorre" fill="none" stroke="url(#pdS)" stroke-linecap="round"><path d="M66 52 C58 64 40 72 32 96 C26 116 26 150 30 176" stroke-width="12"/><path d="M134 52 C142 64 162 74 168 100 C174 122 172 150 168 168" stroke-width="11"/><path d="M86 52 C80 60 70 66 64 82 C60 94 60 104 62 112" stroke-width="8"/></g><g fill="url(#pdS)"><circle cx="30" cy="178" r="8"/><circle cx="168" cy="170" r="7"/><circle cx="62" cy="114" r="5"/></g>' : ''}
+    <g class="pd-tampa"><rect x="48" y="16" width="104" height="32" rx="13" fill="url(#pdL)"/><rect x="58" y="21" width="58" height="6" rx="3" fill="#fff" fill-opacity=".3"/><path d="M50 40 H150" stroke="#5E2F05" stroke-opacity=".35" stroke-width="2"/></g>
+    <rect x="60" y="114" width="80" height="54" rx="14" fill="#FFF8E8" stroke="#A85808" stroke-opacity=".22" stroke-width="2"/>
+    <text x="100" y="147" text-anchor="middle" class="pd-num">${feitos}/${total}</text><text x="100" y="160" text-anchor="middle" class="pd-cap">FEITOS</text>
+  </svg></div>`;
+}
+const ICO_NAV = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 11 19-9-9 19-2-8-8-2z"/></svg>';
+var semanaHoje = false;
+function htmlSemanaDS(hoje, agora) {
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = maisDias(hoje, i), ocs = ocorrencias(d, maisDias(d, 1)), feitos = ocs.filter(o => estaFeito(o.ev, o.inicio)).length;
+    return `<div class="sem-dia ${i ? '' : 'hj'}"><button class="sd-topo" data-sem-dia="${i}">
+        <span class="sd-data"><small>${DIAS_CURTOS[d.getDay()]}</small><b>${d.getDate()}</b></span>
+        <span class="sd-meio">${ocs.length ? `<span class="sd-qtd">${ocs.length} ${ocs.length === 1 ? 'compromisso' : 'compromissos'}${i ? '' : '<em>Hoje</em>'}</span><span class="sd-barra"><i style="width:${feitos / ocs.length * 100}%"></i></span>` : '<span class="sd-livre">Dia livre</span>'}</span>
+        <span class="ri-seta"></span></button>
+      ${ocs.length ? `<div class="sd-lista">${ocs.map(o => { const f = estaFeito(o.ev, o.inicio); return `<button class="sd-item ${f ? 'feito' : ''}" data-id="${o.ev.id}" data-oc-dia="${chaveDia(o.inicio)}"><span>${fmtHora(o.inicio)}</span><b>${esc(o.ev.titulo)}</b>${f ? ICONE_CHECK : ''}</button>`; }).join('')}</div>` : ''}</div>`;
+  }).join('');
+}
+function htmlProximoDS(o, agora) {
+  const min = Math.round((o.inicio - agora) / 60000), chave = `${o.ev.id}|${chaveDia(o.inicio)}`;
+  const quando = o.inicio <= agora ? 'agora' : min < 60 ? `em ${min} min` : `às ${fmtHora(o.inicio)}`;
+  const cat = categoria(o.ev.titulo), reu = ehReuniao(o.ev) && !reuniaoDe(o.ev.id, chaveDia(o.inicio));
+  return `<div class="prox-ds evento" data-id="${o.ev.id}">
+    <div class="px-hora"><b>${fmtHora(o.inicio)}</b><small>${fmtHora(fimDe(o.ev, o.inicio))}</small></div>
+    <div class="px-info"><span class="px-rot"><i></i>Próximo · ${quando}</span><b>${esc(o.ev.titulo)}</b>${cat ? `<small>${icoCat(cat)}${cat.nome}</small>` : ''}</div>
+    ${reu ? `<button class="px-bt escuro" data-gravar-ev="${chave}" aria-label="Gravar">${ICO_MIC_G}</button><button class="px-bt check" data-check="${chave}" aria-label="Feito">${ICONE_CHECK}</button>`
+      : `<button class="px-bt escuro check" data-check="${chave}" aria-label="Feito">${ICONE_CHECK}</button>`}
+  </div>`;
+}
 const POTE_CHEIO = 10;   // 10 compromissos feitos no dia enchem o pote
 function htmlPoteDoDia() {
   const hoje = inicioDoDia(new Date()), deHoje = ocorrencias(hoje, maisDias(hoje, 1));
@@ -3451,7 +3593,7 @@ function htmlFaixaDias(hoje) {
   return `<div class="faixa-dias" id="faixaDias">${Array.from({ length: DIAS_FAIXA }, (_, i) => {
     const d = maisDias(hoje, i), n = qtd.get(chaveDia(d)) || 0;
     return `<button class="fd-dia ${i === diaHoje ? 'sel' : ''} ${i ? '' : 'hj'}" data-dia-hoje="${i}" aria-label="${i ? fmtDataLonga(d) : 'Hoje'}${n ? `, ${n} compromisso${n > 1 ? 's' : ''}` : ''}">
-      <span>${i ? DIAS_CURTOS[d.getDay()] : 'hoje'}</span><b>${d.getDate()}</b></button>`;
+      <span>${i ? DIAS_CURTOS[d.getDay()] : 'hoje'}</span><b>${d.getDate()}</b><i class="fd-ponto ${n ? 'tem' : ''}"></i></button>`;
   }).join('')}</div>`;
 }
 function irDiaHoje(i) {
@@ -3894,6 +4036,11 @@ document.getElementById('lista').addEventListener('click', (ev) => {
     if (nt.dataset.notaAgendar) return agendarNota(nt.dataset.notaAgendar);
     return abrirNota(nt.dataset.nota);
   }
+  const mh = ev.target.closest('[data-modo-hoje]');
+  if (mh) { semanaHoje = mh.dataset.modoHoje === 'semana'; vibrar('selecao'); return render(); }
+  const sd = ev.target.closest('[data-sem-dia]');
+  if (sd) { semanaHoje = false; diaHoje = +sd.dataset.semDia; vibrar('selecao'); return render(); }
+  if (ev.target.closest('[data-falar-vazio]')) { vibrar('medio'); return abrirVoz(); }
   const fd = ev.target.closest('[data-dia-hoje]');
   if (fd) return irDiaHoje(+fd.dataset.diaHoje);
   if (ev.target.closest('[data-ver-semana]')) { visao = 'semana'; return irPara('semana'); }
@@ -3915,7 +4062,7 @@ document.getElementById('lista').addEventListener('click', (ev) => {
   else if (alvo.dataset.nav) navegar(alvo.dataset.nav);
   else if (alvo.dataset.dia) { const [a, m, d] = alvo.dataset.dia.split('-').map(Number); diaSel = new Date(a, m - 1, d); render(); }
   else if (alvo.dataset.id?.startsWith('ext:')) abrirExterno(externos.find(e => e.id === alvo.dataset.id));
-  else abrirAcoes(eventos.find(e => e.id === alvo.dataset.id), alvo.closest('[data-deslize]')?.dataset.deslize.split('|')[1] || alvo.closest('[data-col]')?.dataset.col);
+  else abrirAcoes(eventos.find(e => e.id === alvo.dataset.id), alvo.closest('[data-deslize]')?.dataset.deslize.split('|')[1] || alvo.dataset.ocDia || alvo.closest('[data-col]')?.dataset.col);
 });
 // No mês, arrastar para o lado troca de mês
 let toqueX = null;
