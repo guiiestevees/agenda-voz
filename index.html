@@ -227,6 +227,32 @@
   body:not([data-aba="hoje"]):not([data-aba="semana"]) .mic-flutua { display: none; }
   body[data-aba="hoje"] #lista, body[data-aba="semana"] #lista { padding-bottom: 76px; }
   .abas { justify-content: space-around; }
+  /* ============ Início ainda mais limpo ============ */
+  body[data-aba="hoje"] header.ceu h1 { grid-column: 1; grid-row: 1; margin-top: 4px; }
+  body[data-aba="hoje"] header.ceu .topo-data { grid-column: 1; grid-row: 2; padding: 0; margin: 2px 0 0 !important; background: none; font-size: 14px; font-weight: 600; color: var(--muted); }
+  body[data-aba="hoje"] header.ceu .topo-dir { grid-column: 2; grid-row: 1 / span 2; align-self: center; }
+  .pote-mini { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+  .pote-mini .ampulheta.pote { width: 58px; height: 76px; display: block; }
+  .pote-mini #poteNivel { transition: transform 1.2s cubic-bezier(.3,.9,.3,1); }
+  .pote-mini b { font-size: 12px; font-weight: 800; color: var(--muted); white-space: nowrap; }
+  .pote-mini.cheio b { color: #b86e00; }
+  body[data-aba="hoje"] .evento .hora small, body[data-aba="hoje"] .evento .lembrete { display: none; }
+  body[data-aba="hoje"] .evento { min-height: 0; padding-top: 12px; padding-bottom: 12px; }
+  .gt-acoes { display: flex; align-items: center; gap: 8px; }
+  .ver-semana { display: inline-flex; align-items: center; gap: 4px; padding: 8px 12px; border: 0; border-radius: 999px; background: var(--field); color: var(--text); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .ver-semana span { font-size: 17px; line-height: 1; color: var(--muted); }
+  .novo-mais { display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; background: linear-gradient(160deg, #ffd25c, #f5b21b 55%, #d98a06) !important; color: #1d1a12 !important; cursor: pointer; }
+  .novo-mais svg { width: 18px; height: 18px; }
+  body[data-aba="hoje"] .faixa-dias { overflow: visible; margin: 0 0 12px; padding: 2px 0 4px; gap: 5px; }
+  body[data-aba="hoje"] .fd-dia { flex: 1; width: auto; min-width: 0; height: 58px; }
+  .notas-dobra { margin-top: 18px; padding: 0; border-radius: 16px; background: var(--card); box-shadow: inset 0 0 0 1px var(--line); overflow: hidden; }
+  .notas-dobra summary { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; font-weight: 750; cursor: pointer; list-style: none; }
+  .notas-dobra summary::-webkit-details-marker { display: none; }
+  .notas-dobra summary em { min-width: 24px; padding: 2px 8px; border-radius: 999px; background: var(--field); font-style: normal; font-size: 13px; text-align: center; color: var(--muted); }
+  .notas-dobra[open] summary { border-bottom: 1px solid var(--line); }
+  .notas-dobra .nota { margin: 0 12px; }
+  .notas-dobra .nota-add { margin: 8px 12px 12px; }
+  #ambiente .amb-favo, #ambiente .polen { display: none; }
   /* ============ Reuniões ============ */
   .reu-gravar { display: flex; align-items: center; gap: 14px; width: 100%; margin: 14px 0 0; padding: 18px; border: 0; border-radius: 22px; text-align: left; color: #fff; font: inherit; cursor: pointer;
     background: linear-gradient(150deg, var(--grad-a), var(--grad-b) 60%, var(--grad-c)); box-shadow: 0 10px 26px rgba(var(--accent-rgb), .3); transition: transform .15s var(--ease); }
@@ -2905,7 +2931,7 @@ if (aba === 'habitos' || aba === 'foco') aba = 'hoje';   // Hábitos e Pomodoro 
 let diaSel = inicioDoDia(new Date());   // dia escolhido em Semana e Mês
 let diaHoje = 0;   // na tela Hoje: 0 = hoje, 1 = amanhã… (faixa de dias acima da agenda)
 let diaHojeBase = '';   // de que dia a faixa partiu (se virar a meia-noite, volta para hoje)
-const DIAS_FAIXA = 14;
+const DIAS_FAIXA = 7;
 let mesVisto = new Date(diaSel.getFullYear(), diaSel.getMonth(), 1);
 let destacarId = null;
 
@@ -3021,19 +3047,22 @@ function telaHoje() {
   const tudo = total > 0 && feitos === total;
   // Um destaque só por vez: o check-in (enquanto não feito) ou o próximo compromisso
   chaveProximo = proximoDeHoje(agora);
-  let html = '<div class="hoje-topo">' + (JOGO ? htmlLinhaStatus() : htmlPoteDoDia(feitos, total)) + htmlDoisToques() + htmlCartaoWhats() + (JOGO ? htmlResgate() : '') + '</div><div class="hoje-dir">';   // no fim do dia, o botão da câmera no cartão do bicho vira "Postar"
+  // um aviso de configuração por vez: primeiro os 2 toques, depois o WhatsApp
+  let html = '<div class="hoje-topo">' + (JOGO ? htmlLinhaStatus() : '') + (htmlDoisToques() || htmlCartaoWhats()) + (JOGO ? htmlResgate() : '') + '</div><div class="hoje-dir">';   // no fim do dia, o botão da câmera no cartão do bicho vira "Postar"
   if (diaHojeBase !== chaveDia(hoje)) { diaHojeBase = chaveDia(hoje); diaHoje = 0; }
   const dia = maisDias(hoje, diaHoje);
-  const tituloDia = !diaHoje ? 'Agenda de hoje' : diaHoje === 1 ? 'Amanhã' : `${maiuscula(dia.toLocaleDateString(LOCALE, { weekday: 'long' }).replace('-feira', ''))}, ${dia.getDate()}`;
+  const tituloDia = !diaHoje ? 'Hoje' : diaHoje === 1 ? 'Amanhã' : `${maiuscula(dia.toLocaleDateString(LOCALE, { weekday: 'long' }).replace('-feira', ''))}, ${dia.getDate()}`;
   const corpo = diaHoje ? linhaDoTempo(dia, agora, false)
     : total && tudo ? `<div class="tudo-feito">${cenaMascote('festa')}<b>Dia fechado, pote cheio!</b><span>Pode descansar. Amanhã tem mais.</span></div>` : linhaDoTempo(hoje, agora, true);
-  html += `<section class="grupo"><div class="grupo-topo"><h2>${tituloDia}</h2><button class="novo-mini" data-novo-comp>${ICO.mais}Novo compromisso</button></div>${htmlFaixaDias(hoje)}<button class="ver-semana" data-ver-semana><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/></svg>Ver a semana inteira<span>›</span></button><div class="dia-corpo">${corpo}</div></section>`;
+  html += `<section class="grupo"><div class="grupo-topo"><h2>${tituloDia}</h2><div class="gt-acoes"><button class="ver-semana" data-ver-semana>Semana<span>›</span></button><button class="novo-mais" data-novo-comp aria-label="Novo compromisso">${ICO.mais}</button></div></div>${htmlFaixaDias(hoje)}<div class="dia-corpo">${corpo}</div></section>`;
   if (feitos && !diaHoje) html += `<details class="feitos"><summary>Feitos (${feitos})</summary>${feitosL.map(o => cartao(o, agora)).join('')}</details>`;
   return html + '</div>' + htmlNotas() + (JOGO ? '<div class="hoje-esq">' + htmlProgresso() + '</div>' : '');
 }
 // Pote de mel do dia: enche conforme a pessoa conclui os compromissos de hoje
 let poteAntes = null;
-function htmlPoteDoDia(feitos, total) {
+function htmlPoteDoDia() {
+  const hoje = inicioDoDia(new Date()), deHoje = ocorrencias(hoje, maisDias(hoje, 1));
+  const total = deHoje.length, feitos = deHoje.filter(o => estaFeito(o.ev, o.inicio)).length;
   const frac = total ? feitos / total : 0, y = (f) => Math.round(186 - f * 110);
   const de = poteAntes ?? frac;
   poteAntes = frac;
@@ -3043,14 +3072,12 @@ function htmlPoteDoDia(feitos, total) {
     const amp = document.getElementById('ampulheta');
     if (amp && frac > de) { amp.classList.add('rodando'); setTimeout(() => amp.classList.remove('rodando'), 1300); }
   }, 80);
-  const msg = !total ? 'Conclua seus compromissos e veja o pote encher.' : feitos === total ? 'Pote cheio! Dia fechado.' : `Falta${total - feitos > 1 ? 'm' : ''} ${total - feitos} para encher`;
-  return `<div class="pote-dia ${total && feitos === total ? 'cheio' : ''}">
-    <div class="pd-pote">${htmlAmpulheta(false).replace('translate(0 186)', `translate(0 ${y(de)})`)}</div>
-    <div class="pd-txt"><small>Seu pote de hoje</small><b>${total ? `${feitos} de ${total} feitos` : 'Nada marcado hoje'}</b><span>${msg}</span>
-      ${total ? `<i class="pd-barra"><em style="width:${Math.round(frac * 100)}%"></em></i>` : ''}</div>
-  </div>`;
+  const rot = !total ? '' : feitos === total ? 'Cheio!' : `${feitos} de ${total}`;
+  return `<span class="pote-mini ${total && feitos === total ? 'cheio' : ''}" aria-label="Pote de mel de hoje: ${feitos} de ${total} feitos">${htmlAmpulheta(false).replace('translate(0 186)', `translate(0 ${y(de)})`)}${rot ? `<b>${rot}</b>` : ''}</span>`;
 }
 // "Pra não esquecer": anotações sem dia nem hora, no fim do Hoje
+let notasAbertas = false;
+document.addEventListener('toggle', (e) => { if (e.target.classList?.contains('notas-dobra')) notasAbertas = e.target.open; }, true);
 function htmlNotas() {
   const itens = notas.map(n => `
     <div class="nota" data-nota="${n.id}">
@@ -3058,8 +3085,9 @@ function htmlNotas() {
       <span class="nota-txt">${esc(n.titulo)}</span>
       <button class="nota-quando" data-nota-agendar="${n.id}">${ICO.relogio || ''}Marcar dia</button>
     </div>`).join('');
-  return `<section class="grupo notas-grupo"><div class="grupo-topo"><h2>Pra não esquecer</h2><button class="nota-add" data-nova-nota>${ICO.mais}Anotar</button></div>
-    ${itens || '<button class="nota-vazia" data-nova-nota>Lembrou de algo e ainda não sabe quando vai fazer? Diga para a Bee <i>“anota: trocar a lâmpada”</i> ou toque aqui.</button>'}</section>`;
+  if (!notas.length) return '';
+  return `<details class="grupo notas-grupo notas-dobra" ${notasAbertas ? 'open' : ''}><summary><span>📝 Pra não esquecer</span><em>${notas.length}</em></summary>
+    ${itens}<button class="nota-add" data-nova-nota>${ICO.mais}Anotar</button></details>`;
 }
 function abrirNota(id) {
   const n = id ? notas.find(x => x.id === id) : null;
@@ -3110,7 +3138,7 @@ function htmlFaixaDias(hoje) {
   return `<div class="faixa-dias" id="faixaDias">${Array.from({ length: DIAS_FAIXA }, (_, i) => {
     const d = maisDias(hoje, i), n = qtd.get(chaveDia(d)) || 0;
     return `<button class="fd-dia ${i === diaHoje ? 'sel' : ''} ${i ? '' : 'hj'}" data-dia-hoje="${i}" aria-label="${i ? fmtDataLonga(d) : 'Hoje'}${n ? `, ${n} compromisso${n > 1 ? 's' : ''}` : ''}">
-      <span>${i ? i === 1 ? 'amanhã' : DIAS_CURTOS[d.getDay()] : 'hoje'}</span><b>${d.getDate()}</b><i>${'<em></em>'.repeat(Math.min(n, 3))}</i></button>`;
+      <span>${i ? DIAS_CURTOS[d.getDay()] : 'hoje'}</span><b>${d.getDate()}</b><i>${'<em></em>'.repeat(Math.min(n, 3))}</i></button>`;
   }).join('')}</div>`;
 }
 function irDiaHoje(i) {
@@ -3352,7 +3380,7 @@ function render() {
   document.body.classList.toggle('cheia', aba === 'semana' && visao === 'semana');
   document.body.dataset.aba = aba;
   const n = sequencia();
-  document.getElementById('topoAcao').innerHTML = aba !== 'hoje' || !JOGO ? ''
+  document.getElementById('topoAcao').innerHTML = aba !== 'hoje' ? '' : !JOGO ? htmlPoteDoDia()
     : fezCheckinHoje() ? `<button class="pg-fogo" data-fogo aria-label="${n} dias seguidos de check-in, ${xp.protetores ?? 1} protetores">${ICO.fogo}<b>${n}</b>${(xp.protetores ?? 1) ? `<span class="pg-escudos">${ICO.escudo}${xp.protetores ?? 1}</span>` : ''}</button>`
     : '';   // antes do check-in, o cartão grande da tela Hoje cuida disso
   document.getElementById('visoes').hidden = aba !== 'semana';
@@ -3363,7 +3391,7 @@ function render() {
   cab.classList.toggle('ceu', aba === 'hoje'); cab.dataset.periodo = per; document.documentElement.dataset.periodo = per;
   atualizarBarraTopo();
   document.getElementById('titulo').innerHTML = aba === 'hoje'
-    ? `<span class="per-ic">${ICONE_PERIODO[per]}</span><span class="per-txt">${saudacao()}${nome ? `, <b>${esc(nome)}</b>` : ''}</span>`
+    ? `${JOGO ? `<span class="per-ic">${ICONE_PERIODO[per]}</span>` : ''}<span class="per-txt">${saudacao()}${nome ? `, <b>${esc(nome)}</b>` : ''}</span>`
     : { semana: 'Agenda', habitos: 'Hábitos', foco: 'Pomodoro', reunioes: 'Reuniões', mais: 'Perfil' }[aba];
   document.getElementById('topoData').textContent = aba === 'hoje' ? maiuscula(new Date().toLocaleDateString(LOCALE, { weekday: 'long', day: 'numeric', month: 'long' })) : '';
   document.getElementById('btnMais').hidden = true;   // Ajustes agora fica no menu de baixo
