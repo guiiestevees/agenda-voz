@@ -1,7 +1,7 @@
 // Guarda o app no aparelho para abrir mesmo sem internet.
 // Sempre tenta a versão nova primeiro; sem conexão, usa a cópia guardada.
-const CACHE = 'agenda-v83';
-const ARQUIVOS = ['./', './index.html', './privacidade.html', './suporte.html', './privacy.html', './support.html', './i18n-en.js'];
+const CACHE = 'agenda-v84';
+const ARQUIVOS = ['./', './index.html', './privacidade.html', './suporte.html', './privacy.html', './support.html', './i18n-en.js', './fontes/figtree.woff2', './fontes/bricolage.woff2'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ARQUIVOS)).then(() => self.skipWaiting()));
