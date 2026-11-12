@@ -6423,6 +6423,8 @@ function abrirLink(url) {
   const texto = (u.searchParams.get('texto') || '').trim(), doAtalho = u.searchParams.get('de') === 'atalho';
   if (aba !== 'hoje') irPara('hoje');
   if (u.hostname === 'abrir') return;
+  // tapbee://demo abre o quiz para mostrar o app a alguém, sem cobrar e sem contar nas métricas
+  if (u.hostname === 'demo') { ultimoLink = ''; if (!qz) abrirQuiz(true); return; }
   if (doAtalho && comemorarDoisToques(texto)) return;
   if (texto) criarDeFrase(texto); else abrirVoz();
 }
@@ -6584,7 +6586,7 @@ const lembretePadrao = () => { const v = lerPref('agenda.lembretePadrao', ''); r
 const quizLiberado = () => lerPref('agenda.assinante', '') === 'sim' && (!!RC_CHAVE || lerPref('agenda.quizVersao', '') === QUIZ_VERSAO);
 let qz = null;   // { i, r: respostas, feito, timers, vistas }
 // Conta quantas pessoas chegam a cada tela: só um total por tela, sem nada que identifique alguém
-const funil = (tela) => { if (NATIVO) fetch(IA_URL + 'funil', { method: 'POST', headers: { 'Content-Type': 'application/json' }, keepalive: true, body: JSON.stringify({ tela, versao: QUIZ_VERSAO }) }).catch(() => {}); };
+const funil = (tela) => { if (NATIVO && !qz?.demo) fetch(IA_URL + 'funil', { method: 'POST', headers: { 'Content-Type': 'application/json' }, keepalive: true, body: JSON.stringify({ tela, versao: QUIZ_VERSAO }) }).catch(() => {}); };
 const qzNome = () => esc((qz.r.nome || '').trim());
 const QZ_CALMO = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const qzTimer = (fn, ms) => { const t = setTimeout(fn, ms); qz.timers.push(t); return t; };
@@ -6948,9 +6950,9 @@ function qzAtualizarBotao() {
 }
 function qzAvancar() { qz.i = Math.min(qz.i + 1, TELAS_QUIZ.length - 1); qzDesenhar(); }
 function qzEntrar() {
-  Metricas?.concluir().catch(() => {});
+  if (!qz.demo) Metricas?.concluir().catch(() => {});
   gravarPref('agenda.assinante', 'sim'); gravarPref('agenda.quizVersao', QUIZ_VERSAO);
-  if (qz.r.nome) gravarPref('agenda.nome', qz.r.nome.trim());
+  if (qz.r.nome && !qz.demo) gravarPref('agenda.nome', qz.r.nome.trim());
   const el = document.getElementById('quiz');
   clearInterval(qz.slides); qz.timers.forEach(clearTimeout); qz = null;
   tocarSom(true); confete(innerWidth / 2, innerHeight / 3, true);
@@ -7214,6 +7216,7 @@ async function rcConferir() {
 }
 async function qzComprar(plano = 'anual') {
   if (qz.comprando) return;
+  if (qz.demo) return qzEntrar();   // demonstração: entra no app sem cobrar
   qz.comprando = true;
   funil('tentou_comprar');
   const comprou = await qzPedirCompra(plano);
@@ -7387,7 +7390,7 @@ function qzDigitarFala() {
 }
 function qzDesenhar() {
   const palco = document.getElementById('qzPalco'), t = TELAS_QUIZ[qz.i];
-  if (!qz.vistas.has(t.id)) { qz.vistas.add(t.id); funil(t.id); Metricas?.etapa({ nome: t.id, ordem: qz.i }).catch(() => {}); }
+  if (!qz.vistas.has(t.id)) { qz.vistas.add(t.id); funil(t.id); if (!qz.demo) Metricas?.etapa({ nome: t.id, ordem: qz.i }).catch(() => {}); }
   clearInterval(qz.slides); qz.timers.forEach(clearTimeout); qz.timers = [];
   const pct = Math.round(qz.i / (TELAS_QUIZ.length - 1) * 100);
   palco.innerHTML = `
@@ -7423,8 +7426,8 @@ function qzDesenhar() {
   qzDigitarFala();
   t.aoAbrir?.();
 }
-function abrirQuiz() {
-  qz = { i: 0, r: { nome: lerPref('agenda.nome', '') }, feito: null, timers: [], vistas: new Set() };
+function abrirQuiz(demo = false) {
+  qz = { i: 0, r: { nome: demo ? '' : lerPref('agenda.nome', '') }, feito: null, timers: [], vistas: new Set(), demo };
   const el = document.createElement('div');
   el.id = 'quiz';
   el.innerHTML = `<div class="qz-fundo" aria-hidden="true"><div class="qz-favo"></div>${Array.from({ length: 10 }, (_, i) => `<i class="qz-polen" style="left:${(i * 37 + 11) % 100}%;top:${(i * 53 + 7) % 100}%;--d:${7 + (i % 5) * 2}s;--a:${(i % 7) * -1.3}s;--s:${5 + (i % 3) * 3}px"></i>`).join('')}</div><div id="qzPalco"></div>`;
@@ -7445,7 +7448,8 @@ checarLembretes();
 avisoNoturno();
 setTimeout(() => { checarRetrospectiva(); checarResumoSemana(); conferirConvites(); }, 1500);
 const params = new URLSearchParams(location.search);
-if ((NATIVO && !quizLiberado()) || params.has('quiz')) abrirQuiz();
+if (params.has('demo')) abrirQuiz(true);
+else if ((NATIVO && !quizLiberado()) || params.has('quiz')) abrirQuiz();
 else if (params.get('texto')) criarDeFrase(params.get('texto'));
 else if (params.has('voz')) abrirVoz();
 else if (!lerPref('agenda.boasVindas', '')) boasVindas();
