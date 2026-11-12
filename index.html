@@ -7216,7 +7216,8 @@ async function rcConferir() {
 }
 async function qzComprar(plano = 'anual') {
   if (qz.comprando) return;
-  if (qz.demo) return qzEntrar();   // demonstração: entra no app sem cobrar
+  // Demonstração: a primeira compra faz de conta que a pessoa desistiu, para mostrar a oferta; depois entra no app sem cobrar
+  if (qz.demo) return plano === 'anual' && !qz.ofertaVista ? qzJogo() : qzEntrar();
   qz.comprando = true;
   funil('tentou_comprar');
   const comprou = await qzPedirCompra(plano);
@@ -7254,7 +7255,7 @@ const COPO_QUIZ = `<svg class="qz-copo-tampa" viewBox="0 0 100 118" aria-hidden=
 // O jogo é de verdade: a Bee fica mesmo em um copo e os copos trocam de lugar na frente da pessoa.
 // Quem erra joga de novo, mais devagar, e o desconto é o mesmo para todos.
 function qzJogo() {
-  qz.ofertaVista = true; gravarPref('agenda.ofertaVista3', '1'); funil('jogo');
+  qz.ofertaVista = true; if (!qz.demo) gravarPref('agenda.ofertaVista3', '1'); funil('jogo');
   const el = document.createElement('div');
   el.className = 'qz-jogo';
   el.innerHTML = `<h2>Espera, ${qzNome()}!</h2>
