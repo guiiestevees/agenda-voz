@@ -216,9 +216,6 @@
   .pd-barra { display: block; height: 7px; margin-top: 10px; border-radius: 9px; background: var(--field); overflow: hidden; }
   .pd-barra em { display: block; height: 100%; border-radius: 9px; background: linear-gradient(90deg, #ffd25c, #f2a313); transition: width .8s var(--ease); }
   .pote-dia.cheio .pd-txt span { color: #b86e00; font-weight: 700; }
-  .ver-semana { display: flex; align-items: center; gap: 6px; width: 100%; margin: -4px 0 12px; padding: 10px 14px; border: 0; border-radius: 14px; background: var(--field); color: var(--text); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
-  .ver-semana svg { width: 18px; height: 18px; }
-  .ver-semana span { margin-left: auto; font-size: 18px; color: var(--muted); }
   .mic-flutua { position: fixed; z-index: 6; right: 16px; bottom: calc(max(10px, env(safe-area-inset-bottom) - 8px) + 86px); display: flex; align-items: center; gap: 8px; padding: 10px 18px 10px 10px; border: 0; border-radius: 999px; cursor: pointer;
     font: inherit; font-size: 16px; font-weight: 800; color: #1d1a12; background: linear-gradient(160deg, #ffd25c, #f5b21b 55%, #d98a06); box-shadow: 0 10px 24px rgba(217,138,6,.38); transition: transform .15s var(--ease); }
   .mic-flutua:active { transform: scale(.96); }
@@ -231,20 +228,48 @@
   body[data-aba="hoje"] header.ceu h1 { grid-column: 1; grid-row: 1; margin-top: 4px; }
   body[data-aba="hoje"] header.ceu .topo-data { grid-column: 1; grid-row: 2; padding: 0; margin: 2px 0 0 !important; background: none; font-size: 14px; font-weight: 600; color: var(--muted); }
   body[data-aba="hoje"] header.ceu .topo-dir { grid-column: 2; grid-row: 1 / span 2; align-self: center; }
-  .pote-centro { display: flex; flex-direction: column; align-items: center; gap: 4px; margin: 4px 0 6px; }
-  .pote-centro .ampulheta.pote { width: 96px; height: 126px; display: block; }
-  .pote-centro #poteNivel { transition: transform 1.2s cubic-bezier(.3,.9,.3,1); }
-  .pote-centro b { font-size: 14px; font-weight: 700; color: var(--muted); }
-  .pote-centro.cheio b { color: #b86e00; font-weight: 800; }
   body[data-aba="hoje"] .evento .hora small, body[data-aba="hoje"] .evento .lembrete { display: none; }
   body[data-aba="hoje"] .evento { min-height: 0; padding-top: 12px; padding-bottom: 12px; }
-  .gt-acoes { display: flex; align-items: center; gap: 8px; }
-  .ver-semana { display: inline-flex; align-items: center; gap: 4px; padding: 8px 12px; border: 0; border-radius: 999px; background: var(--field); color: var(--text); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
-  .ver-semana span { font-size: 17px; line-height: 1; color: var(--muted); }
-  .novo-mais { display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; background: linear-gradient(160deg, #ffd25c, #f5b21b 55%, #d98a06) !important; color: #1d1a12 !important; cursor: pointer; }
-  .novo-mais svg { width: 18px; height: 18px; }
-  body[data-aba="hoje"] .faixa-dias { overflow: visible; margin: 0 0 12px; padding: 2px 0 4px; gap: 5px; }
-  body[data-aba="hoje"] .fd-dia { flex: 1; width: auto; min-width: 0; height: 58px; }
+  /* Cartão do dia */
+  .hero-dia { display: flex; align-items: center; gap: 14px; margin: 14px 0 24px; padding: 14px 18px 16px 8px; border-radius: 28px;
+    background: linear-gradient(150deg, #fffaf0 0%, #fff0cc 100%); box-shadow: 0 1px 2px rgba(120,80,10,.06), 0 12px 32px rgba(217,138,6,.14); }
+  .hd-pote { flex: none; width: 104px; }
+  .hd-pote .ampulheta.pote { width: 104px; height: 136px; display: block; }
+  .hd-pote #poteNivel { transition: transform 1.2s cubic-bezier(.3,.9,.3,1); }
+  .hd-txt { flex: 1; min-width: 0; }
+  .hd-conta { display: flex; align-items: baseline; gap: 7px; color: #6b4300; }
+  .hd-conta b { font-size: 44px; font-weight: 800; line-height: 1; letter-spacing: -.03em; }
+  .hd-conta span { font-size: 16px; font-weight: 700; }
+  .hd-txt small { display: block; margin-top: 4px; font-size: 13.5px; line-height: 1.35; color: #8a6a35; }
+  .hd-falar { display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; padding: 11px 16px 11px 13px; border: 0; border-radius: 999px; cursor: pointer;
+    background: #1d1a12; color: #ffd25c; font: inherit; font-size: 15px; font-weight: 800; transition: transform .15s var(--ease); }
+  .hd-falar:active { transform: scale(.96); }
+  .hd-falar svg { width: 18px; height: 18px; }
+  :root[data-modo="escuro"] .hero-dia { background: linear-gradient(150deg, #2a2213, #3a2b10); box-shadow: none; }
+  :root[data-modo="escuro"] .hd-conta { color: #ffd25c; }
+  :root[data-modo="escuro"] .hd-txt small { color: #d9bf8a; }
+  :root[data-modo="escuro"] .hd-falar { background: #ffd25c; color: #1d1a12; }
+  /* Semana numa faixa só */
+  body[data-aba="hoje"] .faixa-dias { overflow: visible; gap: 2px; margin: 0 0 16px; padding: 6px; border-radius: 22px; background: var(--card); box-shadow: 0 1px 2px rgba(60,40,0,.05), 0 6px 18px rgba(60,40,0,.05); }
+  body[data-aba="hoje"] .fd-dia { flex: 1; width: auto; min-width: 0; height: 58px; border-radius: 16px; background: transparent; box-shadow: none; }
+  body[data-aba="hoje"] .fd-dia.sel { background: linear-gradient(160deg, #ffd25c, #f5b21b 60%, #e39b0b); color: #1d1a12; box-shadow: 0 6px 14px rgba(217,138,6,.3); }
+  body[data-aba="hoje"] .fd-dia.sel span { color: #5a3a00; opacity: 1; }
+  body[data-aba="hoje"] .fd-dia.sel em { background: #1d1a12; }
+  /* Lista do dia num cartão só, com linhas */
+  body[data-aba="hoje"] .dia-corpo { overflow: hidden; border-radius: 22px; background: var(--card); box-shadow: 0 1px 2px rgba(60,40,0,.05), 0 6px 18px rgba(60,40,0,.05); }
+  body[data-aba="hoje"] .dia-corpo .deslize { margin: 0; border-radius: 0; }
+  body[data-aba="hoje"] .dia-corpo .evento { margin: 0; border: 0; border-radius: 0; box-shadow: none; border-bottom: 1px solid var(--line); padding: 15px 16px 15px 18px; }
+  body[data-aba="hoje"] .dia-corpo .evento.com-cat::before { display: none; }
+  body[data-aba="hoje"] .dia-corpo .cena { transform: scale(.72); margin: -18px 0 -22px; }
+  body[data-aba="hoje"] .dia-corpo .agora { margin: 0; padding: 8px 18px; border-bottom: 1px solid var(--line); }
+  body[data-aba="hoje"] .dia-corpo .dia-livre, body[data-aba="hoje"] .dia-corpo .tudo-feito { background: none; box-shadow: none; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; margin: 0; }
+  body[data-aba="hoje"] .dia-livre ~ .agora { display: none; }
+  .add-linha { display: flex; align-items: center; gap: 10px; width: 100%; padding: 15px 18px; border: 0; background: none; color: var(--muted); font: inherit; font-size: 15px; font-weight: 650; cursor: pointer; text-align: left; }
+  .add-linha svg { width: 18px; height: 18px; }
+  body[data-aba="hoje"] .grupo-topo { margin: 0 2px 10px; }
+  body[data-aba="hoje"] .grupo-topo h2 { font-size: 22px; }
+  .ver-semana { display: inline-flex; align-items: center; gap: 3px; padding: 6px 2px; border: 0; background: none; color: var(--accent-text); font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+  .ver-semana span { font-size: 19px; line-height: 1; }
   .notas-dobra { margin-top: 18px; padding: 0; border-radius: 16px; background: var(--card); box-shadow: inset 0 0 0 1px var(--line); overflow: hidden; }
   .notas-dobra summary { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; font-weight: 750; cursor: pointer; list-style: none; }
   .notas-dobra summary::-webkit-details-marker { display: none; }
@@ -3007,7 +3032,7 @@ function quandoFalta(inicio, agora) {
 function linhaDoTempo(dia, agora, esconderFeitos) {
   const ocs = ocorrencias(dia, maisDias(dia, 1));
   const ehHoje = chaveDia(dia) === chaveDia(agora);
-  if (!ocs.length) return `<div class="dia-livre">${cenaMascote('relax')}<b>${ehHoje ? 'Nada marcado para hoje' : 'Dia livre'}</b><span>Toque no <b>microfone</b> e diga: “dentista quinta às 3”.</span></div>${ehHoje ? linhaAgora(agora) : ''}`;
+  if (!ocs.length) return `<div class="dia-livre">${cenaMascote('relax')}<b>${ehHoje ? 'Nada marcado para hoje' : 'Dia livre'}</b><span>Diga para a Bee: “dentista quinta às 3”.</span></div>${ehHoje ? linhaAgora(agora) : ''}`;
   let html = '', agoraPosto = !ehHoje;
   for (const o of ocs) {
     if (!agoraPosto && o.inicio > agora) { html += linhaAgora(agora); agoraPosto = true; }
@@ -3066,7 +3091,7 @@ function telaHoje() {
   const tituloDia = !diaHoje ? 'Hoje' : diaHoje === 1 ? 'Amanhã' : `${maiuscula(dia.toLocaleDateString(LOCALE, { weekday: 'long' }).replace('-feira', ''))}, ${dia.getDate()}`;
   const corpo = diaHoje ? linhaDoTempo(dia, agora, false)
     : total && tudo ? `<div class="tudo-feito">${cenaMascote('festa')}<b>Dia fechado, pote cheio!</b><span>Pode descansar. Amanhã tem mais.</span></div>` : linhaDoTempo(hoje, agora, true);
-  html += `<section class="grupo"><div class="grupo-topo"><h2>${tituloDia}</h2><div class="gt-acoes"><button class="ver-semana" data-ver-semana>Semana<span>›</span></button><button class="novo-mais mic-mini" data-falar aria-label="Falar com a Bee">${ICONE_MIC}</button><button class="novo-mais" data-novo-comp aria-label="Novo compromisso">${ICO.mais}</button></div></div>${htmlFaixaDias(hoje)}<div class="dia-corpo">${corpo}</div></section>`;
+  html += `<section class="grupo"><div class="grupo-topo"><h2>${tituloDia}</h2><button class="ver-semana" data-ver-semana>Ver semana<span>›</span></button></div>${htmlFaixaDias(hoje)}<div class="dia-corpo">${corpo}<button class="add-linha" data-novo-comp>${ICO.mais}Adicionar compromisso</button></div></section>`;
   if (feitos && !diaHoje) html += `<details class="feitos"><summary>Feitos (${feitos})</summary>${feitosL.map(o => cartao(o, agora)).join('')}</details>`;
   return html + '</div>' + htmlNotas() + (JOGO ? '<div class="hoje-esq">' + htmlProgresso() + '</div>' : '');
 }
@@ -3085,8 +3110,16 @@ function htmlPoteDoDia() {
     const amp = document.getElementById('ampulheta');
     if (amp && frac > de) { amp.classList.add('rodando'); setTimeout(() => amp.classList.remove('rodando'), 1300); }
   }, 80);
-  const rot = !feitos ? 'Conclua um compromisso e veja o mel cair' : feitos >= POTE_CHEIO ? `Pote cheio! ${feitos} feitos hoje` : feitos === 1 ? '1 feito hoje' : `${feitos} feitos hoje`;
-  return `<div class="pote-centro ${feitos >= POTE_CHEIO ? 'cheio' : ''}">${htmlAmpulheta(false).replace('translate(0 186)', `translate(0 ${y(de)})`)}<b>${rot}</b></div>`;
+  const rot = feitos >= POTE_CHEIO ? 'Pote cheio!' : feitos === 1 ? 'feito hoje' : 'feitos hoje';
+  const dica = !feitos ? 'Cada compromisso feito enche o pote de mel.' : feitos >= POTE_CHEIO ? 'Que dia! Você encheu o pote.' : `Faltam ${POTE_CHEIO - feitos} para encher o pote.`;
+  return `<div class="hero-dia ${feitos >= POTE_CHEIO ? 'cheio' : ''}">
+    <div class="hd-pote">${htmlAmpulheta(false).replace('translate(0 186)', `translate(0 ${y(de)})`)}</div>
+    <div class="hd-txt">
+      <div class="hd-conta"><b>${feitos}</b><span>${rot}</span></div>
+      <small>${dica}</small>
+      <button class="hd-falar" data-falar>${ICONE_MIC}Falar com a Bee</button>
+    </div>
+  </div>`;
 }
 // "Pra não esquecer": anotações sem dia nem hora, no fim do Hoje
 let notasAbertas = false;
@@ -3378,7 +3411,7 @@ function telaLista() {
   ocorrencias(hoje, maisDias(hoje, 60)).forEach(o => { const k = chaveDia(o.inicio); if (!dias.has(k)) dias.set(k, []); dias.get(k).push(o); });
   const secoes = [...dias.values()].map(ocs => `<section class="grupo"><h2>${esc(maiuscula(rotuloDia(ocs[0].inicio)))}</h2>${ocs.map(o => cartao(o, agora)).join('')}</section>`).join('');
   return `<div class="lista-topo"><button class="novo-mini" data-novo-comp>${ICO.mais}Novo compromisso</button></div>
-    ${secoes || `<div class="dia-livre">${cenaMascote('relax')}<b>Nada marcado</b><span>Toque no <b>microfone</b> e diga: “dentista quinta às 3”.</span></div>`}`;
+    ${secoes || `<div class="dia-livre">${cenaMascote('relax')}<b>Nada marcado</b><span>Diga para a Bee: “dentista quinta às 3”.</span></div>`}`;
 }
 
 let visao = lerPref('agenda.visao2', 'lista');   // dentro da aba Agenda: 'lista', 'semana' ou 'mes'
@@ -4848,7 +4881,7 @@ document.getElementById('lista').addEventListener('click', (ev) => {
 // ---------- Primeira vez no app: 3 passos ----------
 // Guia "Como usar": mostra na tela onde tocar
 const GUIA = [
-  ['Marcar um compromisso', 'hoje', '.mic-mini', 'Toque aqui e fale o compromisso'],
+  ['Marcar um compromisso', 'hoje', '.hd-falar', 'Toque aqui e fale o compromisso'],
   ['Mudar ou apagar', 'hoje', '.evento .info', 'Toque no compromisso para mudar ou apagar'],
   ['Marcar como feito', 'hoje', '.evento .check', 'Toque neste círculo quando terminar'],
   ['Ver a semana', 'hoje', '[data-ver-semana]', 'Toque aqui para ver sua agenda da semana'],
