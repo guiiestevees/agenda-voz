@@ -794,24 +794,30 @@ const ESQUEMA_REUNIAO = {
   properties: {
     titulo: { type: "string" },
     resumo: { type: "string" },
-    pontos: { type: "array", items: { type: "string" } },
-    decisoes: { type: "array", items: { type: "string" } },
+    discutido: { type: "array", items: { type: "object", properties: { quando: { type: "string" }, texto: { type: "string" }, detalhe: { type: "string" } }, required: ["quando", "texto", "detalhe"], additionalProperties: false } },
+    decisoes: { type: "array", items: { type: "object", properties: { texto: { type: "string" }, porque: { type: "string" } }, required: ["texto", "porque"], additionalProperties: false } },
     tarefas: { type: "array", items: { type: "object", properties: { texto: { type: "string" }, agenda: { type: "string" } }, required: ["texto", "agenda"], additionalProperties: false } },
+    frase: { type: "string" },
+    pontos: { type: "array", items: { type: "string" } },
+    proxima: { type: "string" },
   },
-  required: ["titulo", "resumo", "pontos", "decisoes", "tarefas"],
+  required: ["titulo", "resumo", "discutido", "decisoes", "tarefas", "frase", "pontos", "proxima"],
   additionalProperties: false,
 };
 const SISTEMA_REUNIAO = `Você é a Bee, secretária pessoal. Você recebe a transcrição automática de uma reunião, consulta, aula ou mentoria que a pessoa gravou com o celular.
-A transcrição pode ter erros, não separa quem está falando e pode ter trechos sem sentido: entenda pelo contexto.
-Organize o que importa para a pessoa lembrar depois:
+A transcrição pode ter erros, não separa quem está falando e pode ter trechos sem sentido: entenda pelo contexto. Marcas como [05:00] dizem em que minuto da gravação aquele trecho começa.
+Escreva um resumo gostoso de ler, em português do Brasil, falando com a pessoa de um jeito simples:
 - titulo: curto, até 6 palavras, dizendo o que foi (ex.: "Consulta com o cardiologista", "Mentoria sobre o aplicativo").
-- resumo: 2 a 4 frases, direto ao ponto.
-- pontos: os assuntos e informações principais, até 10 frases curtas, na ordem em que apareceram.
-- decisoes: o que ficou decidido ou combinado. Vazio se nada foi decidido.
+- resumo: 2 ou 3 parágrafos curtos separados por uma linha em branco, contando a conversa como uma história. Marque os fatos-chave com **negrito** (datas, valores, nomes de remédios, o que foi escolhido).
+- discutido: os momentos da conversa em ordem, até 6. "quando" é o minuto aproximado no formato mm:ss tirado das marcas (ex.: "06:45"); "texto" é um título de até 6 palavras; "detalhe" é uma frase explicando.
+- decisoes: o que ficou decidido ou combinado. "texto" é a decisão; "porque" é o motivo, se foi dito, ou "". Vazio se nada foi decidido.
 - tarefas: o que a pessoa precisa fazer depois. "texto" é uma frase curta começando com verbo (ex.: "Tomar o remédio de manhã por 30 dias").
   "agenda": se a tarefa tem dia, prazo ou horário dito na conversa, escreva como a pessoa falaria para a secretária marcar (ex.: "Retorno no cardiologista daqui a 30 dias", "Enviar a proposta sexta às 10"); se não tem quando, deixe "".
+- frase: a frase mais marcante dita na conversa, quase palavra por palavra, ou "" se nenhuma se destaca.
+- pontos: informações soltas que valem guardar (valores, nomes, telefones, recomendações), até 6 frases curtas. Não repita o que já está nas outras partes.
+- proxima: se combinaram um próximo encontro, escreva como a pessoa falaria para marcar (ex.: "Próxima mentoria terça às 10"); senão "".
 Use só o que está na transcrição: não invente nomes, números, remédios nem prazos.
-Se não houver fala com conteúdo, use o título "Gravação sem conversa" e deixe as listas vazias.`;
+Se não houver fala com conteúdo, use o título "Gravação sem conversa", um resumo de uma frase dizendo isso e deixe o resto vazio.`;
 async function reuniao(req, env, origem) {
   if (!ORIGENS.includes(origem)) return responder({ erro: "origem não permitida" }, 403, origem);
   if (req.method !== "POST") return responder({ erro: "use POST" }, 405, origem);

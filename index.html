@@ -2651,6 +2651,79 @@
   .sd-item b { flex: 1; min-width: 0; font-size: 15px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .sd-item.feito { opacity: .5; } .sd-item.feito b { text-decoration: line-through; }
   .sd-item svg { width: 16px; height: 16px; fill: none; stroke: var(--accent-text); stroke-width: 2.4; }
+
+  /* Telas cheias */
+  #telaCheia { position: fixed; inset: 0; z-index: 8; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+    background: var(--bg) var(--bg-glow) no-repeat; background-size: 100% 520px; padding: calc(env(safe-area-inset-top) + 8px) 16px calc(40px + env(safe-area-inset-bottom));
+    transform: translateX(100%); visibility: hidden; transition: transform 320ms var(--ease-out), visibility 0s 320ms; }
+  #telaCheia.aberta { transform: none; visibility: visible; transition: transform 320ms var(--ease-out); }
+  #telaCheia > div { max-width: 560px; margin: 0 auto; }
+  body.com-tela .abas { visibility: hidden; }
+  .tela-topo { display: flex; align-items: center; gap: 8px; padding: 4px 0 16px; }
+  .tela-topo > span { flex: 1; }
+  .tela-topo h2 { flex: 1; margin: 0; text-align: center; font: 700 17px var(--font-body); }
+  .tb-redondo { width: 44px; height: 44px; padding: 0; border-radius: 50%; display: grid; place-items: center; cursor: pointer; border: 1px solid var(--border-default); background: var(--card); color: var(--text); box-shadow: var(--shadow-card); }
+  .tb-redondo svg { width: 20px; height: 20px; }
+  .tb-redondo.mel { border: 0; background: var(--gradient-honey); color: var(--text-on-honey); box-shadow: var(--shadow-button); }
+  .tb-display { margin: 12px 0 0; font: 700 30px/34px var(--font-display); letter-spacing: -.03em; background: var(--gradient-headline); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .tr-selos { display: flex; flex-wrap: wrap; gap: 8px; }
+  .selo { display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 10px; border-radius: 999px; background: var(--card); border: 1px solid var(--border-subtle); font-size: 13px; font-weight: 600; color: var(--muted); }
+  .selo.mel { background: var(--accent-soft); border-color: transparent; color: var(--accent-text); }
+  .selo svg { width: 14px; height: 14px; }
+  .tr-meta { margin: 10px 0 18px; font-size: 14px; color: var(--muted); }
+  .tr-abas { display: flex; gap: 8px; margin-bottom: 16px; }
+  .tr-abas button { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 999px; cursor: pointer; font: 600 14px var(--font-body); border: 1px solid var(--border-default); background: var(--card); color: var(--text); }
+  .tr-abas button.on { border-color: transparent; background: var(--text); color: var(--bg); }
+  .tr-abas svg { width: 16px; height: 16px; }
+  .sb { margin: 0 0 12px; padding: 20px; border-radius: 28px; background: var(--card); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-card); --sb-a: var(--accent-soft); --sb-b: var(--accent-text); }
+  .sb.sb-violeta { --sb-a: rgba(107,66,219,.10); --sb-b: #6B42DB; } :root[data-modo="escuro"] .sb.sb-violeta { --sb-a: rgba(143,108,245,.16); --sb-b: #B7A2FF; }
+  .sb.sb-verde { --sb-a: rgba(34,194,122,.12); --sb-b: #1F9D62; } :root[data-modo="escuro"] .sb.sb-verde { --sb-b: #4ADE9A; }
+  .sb.sb-destaque { background: var(--accent-soft); box-shadow: none; }
+  .sb .sb-cab { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .sb .sb-cab span { width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; background: var(--sb-a); color: var(--sb-b); }
+  .sb.sb-destaque .sb-cab span { background: rgba(255,255,255,.5); }
+  .sb .sb-cab svg { width: 18px; height: 18px; }
+  .sb h4 { margin: 0; font: 700 13px var(--font-body); letter-spacing: .08em; text-transform: uppercase; color: var(--sb-b); }
+  .sb-texto p { margin: 0 0 12px; font-size: 18px; line-height: 28px; color: var(--text); } .sb-texto p:last-child { margin: 0; }
+  .sb-linha { list-style: none; margin: 0; padding: 0; }
+  .sb-linha li { display: grid; grid-template-columns: 52px 1fr; gap: 12px; position: relative; padding-bottom: 18px; }
+  .sb-linha li:last-child { padding-bottom: 0; }
+  .sb-linha li > span { align-self: start; justify-self: start; padding: 2px 8px; border-radius: 999px; background: var(--sb-a); color: var(--sb-b); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .sb-linha li:not(:last-child)::before { content: ''; position: absolute; left: 22px; top: 28px; bottom: 4px; width: 2px; border-radius: 1px; background: var(--border-default); }
+  .sb-linha b, .sb-lista b { display: block; font-size: 17px; line-height: 24px; font-weight: 700; color: var(--text); }
+  .sb-lista b.leve { font-size: 18px; line-height: 26px; font-weight: 400; }
+  .sb-linha p, .sb-lista p { margin: 3px 0 0; font-size: 16px; line-height: 24px; color: var(--muted); }
+  .sb-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 16px; }
+  .sb-lista li { display: flex; gap: 12px; align-items: flex-start; }
+  .sb-lista li > i { flex: none; width: 8px; height: 8px; margin-top: 10px; border-radius: 50%; background: var(--sb-b); }
+  .sb-lista li > div { flex: 1; min-width: 0; }
+  .sb-anel { flex: none; width: 26px; height: 26px; margin-top: 1px; padding: 0; border-radius: 50%; display: grid; place-items: center; cursor: pointer; border: 2px solid var(--sb-b); background: transparent; color: var(--text-on-honey); }
+  .sb-anel.on { border: 0; background: var(--gradient-honey); }
+  .sb-anel svg { width: 14px; height: 14px; }
+  .sb-lista small { display: flex; align-items: center; gap: 4px; margin-top: 4px; font-size: 14px; color: var(--muted); }
+  .sb-lista small.ok { font-weight: 700; color: var(--accent-text); }
+  .sb-lista small svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.4; }
+  .sb-frase { position: relative; margin: 0; padding-left: 28px; font: 600 21px/29px var(--font-display); letter-spacing: -.01em; color: var(--text); }
+  .sb-frase span { position: absolute; left: 0; top: -6px; font-size: 44px; line-height: 1; color: var(--accent-text); }
+  .sb-proxima { display: flex; align-items: center; gap: 14px; margin: 0 0 12px; padding: 14px 14px 14px 16px; border-radius: 22px; background: var(--card); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-card); }
+  .sb-proxima > span { flex: none; width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-text); }
+  .sb-proxima > span svg { width: 22px; height: 22px; }
+  .sb-proxima > div { flex: 1; min-width: 0; } .sb-proxima small { display: block; font-size: 13px; font-weight: 700; color: var(--muted); } .sb-proxima b { display: block; margin-top: 1px; font-size: 17px; font-weight: 600; }
+  .sb-proxima button, .bt-sec { height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--border-default); background: var(--card); color: var(--text); font: 600 14px var(--font-body); cursor: pointer; }
+  .tela-acoes { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+  .bt-mel, .tela-acoes .bt-sec { width: 100%; height: 56px; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 999px; font: 600 17px var(--font-body); cursor: pointer; }
+  .bt-mel { border: 0; background: var(--gradient-honey); color: var(--text-on-honey); box-shadow: var(--shadow-button); }
+  .bt-mel:disabled { opacity: .45; }
+  .bt-mel svg, .bt-sec svg { width: 20px; height: 20px; }
+  .bt-mel:active, .bt-sec:active, .tb-redondo:active { transform: scale(.97); }
+  .sb-trans { display: flex; flex-direction: column; gap: 18px; }
+  .tr-trecho span { display: inline-block; padding: 2px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-text); font-size: 12px; font-weight: 700; }
+  .tr-trecho p { margin: 6px 0 0; font-size: 17px; line-height: 26px; }
+  .menu-reu h3 { margin-bottom: 12px !important; }
+  .linha-menu { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 56px; padding: 0 4px; border: 0; border-bottom: 1px solid var(--line); background: none; font: 500 17px var(--font-body); color: var(--text); cursor: pointer; text-align: left; }
+  .linha-menu:last-child { border-bottom: 0; }
+  .linha-menu svg { width: 20px; height: 20px; }
+  .linha-menu.perigo { color: var(--danger); }
 </style>
 </head>
 <body>
@@ -8304,8 +8377,10 @@ async function processarReuniao(r) {
     for (let k = 0; k < faltam.length; k += 3) { await Promise.all(faltam.slice(k, k + 3).map(i => transcreverPedaco(r, i))); atualizarReunioes(); }
     r.estado = 'resumindo'; atualizarReunioes();
     const texto = r.textos.join(' ').replace(/\s+/g, ' ').trim();
+    // cada pedaço tem 5 minutos: a marca ajuda a Bee a dizer em que minuto cada assunto apareceu
+    const comMarcas = r.textos.map((t, i) => `[${pad(i * 5)}:00] ${String(t || '').replace(/\s+/g, ' ').trim()}`).join('\n');
     const resumo = texto.length < 20 ? { titulo: tr('Gravação sem conversa'), resumo: tr('Não deu para ouvir conversa nesta gravação.'), pontos: [], decisoes: [], tarefas: [] }
-      : await pedirReuniao({ acao: 'resumir', texto, agora: new Date().toLocaleString(LOCALE, { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) });
+      : await pedirReuniao({ acao: 'resumir', texto: comMarcas, agora: new Date().toLocaleString(LOCALE, { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) });
     Object.assign(r, resumo, { estado: 'pronta' }, r.tituloEv ? { titulo: r.tituloEv } : {});
     Gravador?.apagar({ id: r.id }).catch(() => {}); delete audiosWeb[r.id];
     vibrar('sucesso');
@@ -8318,26 +8393,94 @@ async function processarReuniao(r) {
   }
 }
 
-function abrirReuniao(r) {
-  const lst = (tit, itens) => itens?.length ? `<h4>${tit}</h4><ul>${itens.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : '';
+// Telas cheias (resumo, detalhe, novo compromisso): entram por cima, com voltar
+const telaCheia = document.createElement('div');
+telaCheia.id = 'telaCheia'; telaCheia.setAttribute('role', 'dialog');
+document.body.appendChild(telaCheia);
+function abrirTela(html) { telaCheia.innerHTML = html; telaCheia.scrollTop = 0; telaCheia.classList.add('aberta'); document.body.classList.add('com-tela'); }
+function fecharTela() { telaCheia.classList.remove('aberta'); document.body.classList.remove('com-tela'); }
+telaCheia.addEventListener('click', (e) => { if (e.target.closest('[data-tela-voltar]')) { vibrar('leve'); fecharTela(); } });
+const ICO_TB = {
+  voltar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>',
+  share: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>',
+  mais: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>',
+  brilho: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 3v4M21 5h-4"/></svg>',
+  livro: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>',
+  texto: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>',
+  conversa: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/></svg>',
+  bandeira: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 8 2a6 6 0 0 0 3.6-1.2.5.5 0 0 1 .4.8v10a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a8 8 0 0 0-4 1"/></svg>',
+  lista: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 17 2 2 4-4M3 7l2 2 4-4M13 6h8M13 12h8M13 18h8"/></svg>',
+  aspas: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2zM5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/></svg>',
+  lampada: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5M9 18h6M10 22h4"/></svg>',
+  calMais: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 13V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8M16 2v4M8 2v4M3 10h18M19 16v6M16 19h6"/></svg>',
+  calOk: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="m9 16 2 2 4-4"/></svg>',
+};
+// Texto do resumo: **negrito** vira <b>, linhas em branco viram parágrafos
+const comNegrito = (t) => esc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+const decisoesDe = (r) => (r.decisoes || []).map(d => typeof d === 'string' ? { texto: d, porque: '' } : d);
+let abaResumo = 'resumo';
+function abrirReuniao(r, aba = 'resumo') {
+  abaResumo = aba;
   const texto = (r.textos || []).join(' ').replace(/\s+/g, ' ').trim();
-  abrirFolha(`<div class="reu-folha" data-reu="${r.id}">
-      <h3>${esc(r.titulo || tr('Reunião'))}</h3><small>${quandoReuniao(r)}</small>
-      ${r.resumo ? `<p class="reu-resumo">${esc(r.resumo)}</p>` : ''}
-      ${(() => {
-        const comData = (r.tarefas || []).filter(t => t.agenda), semData = (r.tarefas || []).filter(t => !t.agenda);
-        return (comData.length && !r.agendado ? `<div class="reu-sugere"><b>📅 A Bee achou ${comData.length === 1 ? '1 compromisso' : `${comData.length} compromissos`} nesta conversa</b><ul>${comData.map(t => `<li>${esc(t.agenda)}</li>`).join('')}</ul><button class="primario" data-reu-agendar>Colocar na agenda</button></div>` : '')
-          + (semData.length && !r.notasGuardadas ? `<div class="reu-sugere"><b>📝 ${semData.length === 1 ? '1 tarefa' : `${semData.length} tarefas`} sem data</b><button data-reu-notas>Guardar em Pra não esquecer</button></div>` : '');
-      })()}
-      ${lst('Pontos principais', r.pontos)}${lst('Decisões', r.decisoes)}
-      ${r.tarefas?.length ? `<h4>Tarefas</h4>${r.tarefas.map((t, i) => `<div class="reu-tarefa"><span>${esc(t.texto)}</span>${t.agenda ? `<button data-reu-agenda="${i}">Pôr na agenda</button>` : ''}</div>`).join('')}` : ''}
-      ${texto ? `<details><summary>Transcrição completa</summary><p class="reu-trans">${esc(texto)}</p></details>` : ''}
-      <div class="reu-acoes"><button data-reu-compartilhar>Compartilhar</button><button class="perigo" data-reu-apagar>Apagar</button></div>
-    </div>`);
+  const leitura = Math.max(1, Math.round(String(r.resumo || '').split(/\s+/).length / 120 + (r.discutido?.length || 0) * .2));
+  const tarefas = r.tarefas || [], dec = decisoesDe(r);
+  const bloco = (cls, ico, tit, corpo) => `<section class="sb ${cls}"><div class="sb-cab"><span>${ico}</span><h4>${tit}</h4></div>${corpo}</section>`;
+  const resumo = `
+    ${bloco('sb-destaque', ICO_TB.brilho, 'Em resumo', `<div class="sb-texto">${String(r.resumo || '').split(/\n\s*\n/).filter(Boolean).map(p => `<p>${comNegrito(p)}</p>`).join('')}</div>`)}
+    ${r.discutido?.length ? bloco('', ICO_TB.conversa, 'O que foi discutido', `<ol class="sb-linha">${r.discutido.map(d => `<li><span>${esc(d.quando || '')}</span><div><b>${esc(d.texto)}</b>${d.detalhe ? `<p>${esc(d.detalhe)}</p>` : ''}</div></li>`).join('')}</ol>`) : ''}
+    ${dec.length ? bloco('sb-violeta', ICO_TB.bandeira, 'Decisões', `<ul class="sb-lista">${dec.map(d => `<li><i></i><div><b class="${d.porque ? '' : 'leve'}">${esc(d.texto)}</b>${d.porque ? `<p>${esc(d.porque)}</p>` : ''}</div></li>`).join('')}</ul>`) : ''}
+    ${tarefas.length ? bloco('sb-verde', ICO_TB.lista, 'Para fazer · toque para pôr na agenda', `<ul class="sb-lista sb-check">${tarefas.map((t, i) => { const ok = t.naAgenda || t.naNotas; return `<li><button class="sb-anel ${ok ? 'on' : ''}" data-reu-tarefa="${i}" aria-label="${ok ? 'Já guardado' : 'Pôr na agenda'}">${ok ? ICO_TB.calOk : ''}</button><div><b class="leve">${esc(t.texto)}</b>${t.agenda && !ok ? `<small>${ICO_CAL}${esc(t.agenda)}</small>` : ''}${t.naAgenda ? `<small class="ok">${ICONE_CHECK}Na agenda</small>` : t.naNotas ? `<small class="ok">${ICONE_CHECK}Em Pra não esquecer</small>` : ''}</div></li>`; }).join('')}</ul>`) : ''}
+    ${r.frase ? bloco('', ICO_TB.aspas, 'Frase pra lembrar', `<blockquote class="sb-frase"><span>“</span>${esc(r.frase)}</blockquote>`) : ''}
+    ${r.pontos?.length ? bloco('', ICO_TB.lampada, 'Pontos para lembrar', `<ul class="sb-lista">${r.pontos.map(p => `<li><i></i><div><b class="leve">${esc(p)}</b></div></li>`).join('')}</ul>`) : ''}
+    ${r.proxima ? `<div class="sb-proxima"><span>${ICO_TB.calMais}</span><div><small>Próxima reunião combinada</small><b>${esc(r.proxima)}</b></div><button data-reu-proxima>${r.proximaAgendada ? 'Na agenda' : 'Agendar'}</button></div>` : ''}
+    <div class="tela-acoes">${tarefas.some(t => t.agenda) ? `<button class="bt-mel" data-reu-todas ${tarefas.filter(t => t.agenda).every(t => t.naAgenda) ? 'disabled' : ''}>${tarefas.filter(t => t.agenda).every(t => t.naAgenda) ? `${ICO_TB.calOk}Tudo na agenda` : `${ICO_TB.calMais}Pôr todas na agenda`}</button>` : ''}<button class="bt-sec" data-reu-compartilhar>${ICO_TB.share}Compartilhar resumo</button></div>`;
+  const trans = `<div class="sb sb-trans">${(r.textos || []).map((t, i) => t ? `<div class="tr-trecho"><span>${pad(i * 5)}:00</span><p>${esc(t)}</p></div>` : '').join('') || `<p>${esc(texto)}</p>`}</div>`;
+  abrirTela(`<div class="tela-resumo" data-reu="${r.id}">
+    <div class="tela-topo"><button class="tb-redondo" data-tela-voltar aria-label="Voltar">${ICO_TB.voltar}</button><span></span><button class="tb-redondo" data-reu-compartilhar aria-label="Compartilhar">${ICO_TB.share}</button><button class="tb-redondo" data-reu-menu aria-label="Mais">${ICO_TB.mais}</button></div>
+    <div class="tr-selos"><span class="selo mel">${ICO_TB.brilho}Resumo pronto</span><span class="selo">${ICO_TB.livro}Leitura de ${leitura} min</span></div>
+    <h1 class="tb-display">${esc(r.titulo || tr('Reunião'))}</h1>
+    <p class="tr-meta">${quandoReuniao(r)}</p>
+    <div class="tr-abas"><button class="${aba === 'resumo' ? 'on' : ''}" data-reu-aba="resumo">${ICO_TB.brilho}Resumo</button><button class="${aba === 'transcricao' ? 'on' : ''}" data-reu-aba="transcricao">${ICO_TB.texto}Transcrição</button></div>
+    ${aba === 'resumo' ? resumo : trans}
+  </div>`);
 }
+telaCheia.addEventListener('click', async (e) => {
+  const r = reunioes.find(x => x.id === e.target.closest('[data-reu]')?.dataset.reu);
+  if (!r) return;
+  const ab = e.target.closest('[data-reu-aba]');
+  if (ab) return abrirReuniao(r, ab.dataset.reuAba);
+  const t = e.target.closest('[data-reu-tarefa]');
+  if (t) {
+    const tf = r.tarefas[+t.dataset.reuTarefa];
+    if (!tf || tf.naAgenda || tf.naNotas) return;
+    vibrar('sucesso');
+    if (tf.agenda) { tf.naAgenda = true; salvarReunioes(); abrirReuniao(r, 'resumo'); return setTimeout(() => criarDeFrase(tf.agenda), 250); }
+    tf.naNotas = true; notas.push({ id: novoId(), titulo: maiuscula(tf.texto), criado: new Date().toISOString() }); salvarNotas(); salvarReunioes();
+    abrirReuniao(r, 'resumo'); return toast('Guardado em Pra não esquecer, no Início.', 3000);
+  }
+  if (e.target.closest('[data-reu-todas]')) {
+    const fr = r.tarefas.filter(x => x.agenda && !x.naAgenda);
+    if (!fr.length) return;
+    fr.forEach(x => { x.naAgenda = true; }); r.agendado = true; salvarReunioes(); abrirReuniao(r, 'resumo'); vibrar('sucesso');
+    return setTimeout(() => criarDeFrase(fr.map(x => x.agenda).join('. Também: ')), 250);
+  }
+  if (e.target.closest('[data-reu-proxima]')) {
+    if (r.proximaAgendada) return;
+    r.proximaAgendada = true; salvarReunioes(); abrirReuniao(r, 'resumo');
+    return setTimeout(() => criarDeFrase(r.proxima), 250);
+  }
+  if (e.target.closest('[data-reu-compartilhar]')) {
+    const txt = textoDaReuniao(r);
+    try { if (navigator.share) await navigator.share({ text: txt }); else { await navigator.clipboard.writeText(txt); toast('Resumo copiado'); } } catch {}
+    return;
+  }
+  if (e.target.closest('[data-reu-menu]')) abrirFolha(`<div class="menu-reu" data-reu="${r.id}"><h3>${esc(r.titulo || tr('Reunião'))}</h3>
+      <button class="linha-menu" data-reu-compartilhar>${ICO_TB.share}<span>Compartilhar resumo</span></button>
+      <button class="linha-menu perigo" data-reu-apagar>${ICO.lixo}<span>Excluir reunião</span></button></div>`);
+});
 function textoDaReuniao(r) {
   const bloco = (tit, itens) => itens?.length ? `\n\n${tr(tit)}:\n${itens.map(x => `• ${x}`).join('\n')}` : '';
-  return `${r.titulo}\n${quandoReuniao(r)}\n\n${r.resumo || ''}${bloco('Pontos principais', r.pontos)}${bloco('Decisões', r.decisoes)}${bloco('Tarefas', (r.tarefas || []).map(t => t.texto))}`;
+  return `${r.titulo}\n${quandoReuniao(r)}\n\n${String(r.resumo || '').replace(/\*\*/g, '')}${bloco('O que foi discutido', (r.discutido || []).map(d => `${d.texto}: ${d.detalhe}`))}${bloco('Decisões', decisoesDe(r).map(d => d.porque ? `${d.texto} (${d.porque})` : d.texto))}${bloco('Para fazer', (r.tarefas || []).map(t => t.texto))}${bloco('Pontos para lembrar', r.pontos)}${r.proxima ? `\n\n${tr('Próxima reunião')}: ${r.proxima}` : ''}`;
 }
 document.getElementById('lista').addEventListener('click', (e) => {
   if (aba !== 'reunioes') return;
@@ -8374,7 +8517,7 @@ sheet.addEventListener('click', async (e) => {
   if (apagar) {
     if (!apagar.dataset.certeza) { apagar.dataset.certeza = '1'; apagar.textContent = tr('Toque de novo para apagar'); return; }
     reunioes = reunioes.filter(x => x !== r); salvarReunioes(); Gravador?.apagar({ id: r.id }).catch(() => {});
-    fecharFolha(); atualizarReunioes(); toast('Reunião apagada');
+    fecharFolha(); fecharTela(); atualizarReunioes(); toast('Reunião apagada');
   }
 });
 setInterval(() => { const el = document.getElementById('reuTempo'); if (el && gravacao) el.textContent = fmtRelogio(tempoGravado()); }, 1000);
