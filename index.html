@@ -2747,6 +2747,49 @@
   .det-rodape { position: fixed; left: 16px; right: 16px; bottom: calc(env(safe-area-inset-bottom) + 16px); max-width: 528px; margin: 0 auto; }
   .tela-det { padding-bottom: 90px; }
   .det-rodape .bt-mel svg, .selo svg { fill: none; stroke: currentColor; stroke-width: 2.2; }
+
+  /* Novo / editar compromisso */
+  .tb-vazio { width: 44px; }
+  .fm-campo { display: flex; align-items: center; gap: 10px; height: 56px; padding: 0 16px; border-radius: 16px; background: var(--card); border: 1px solid var(--border-default); color: var(--muted); }
+  .fm-campo svg { width: 18px; height: 18px; flex: none; }
+  .fm-campo input { flex: 1; min-width: 0; border: 0; background: none; outline: none; font: 500 17px var(--font-body); color: var(--text); }
+  .fm-sec { margin: 22px 4px 10px; font: 700 12px var(--font-body); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .fm-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .fm-chip { position: relative; display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 14px; border-radius: 999px; cursor: pointer; overflow: hidden;
+    border: 1px solid var(--border-default); background: var(--card); color: var(--text); font: 600 14px var(--font-body); }
+  .fm-chip.on { border-color: transparent; background: var(--text); color: var(--bg); }
+  .fm-chip svg { width: 15px; height: 15px; }
+  .fm-chip input[type=date] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .fm-dias .fm-chip { width: 40px; padding: 0; justify-content: center; }
+  .fm-relogio { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 14px; padding: 14px 18px; border-radius: 22px; background: var(--card); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-card); }
+  .fm-col { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .fm-col b { font: 800 52px/1 var(--font-display); letter-spacing: -.03em; font-variant-numeric: tabular-nums; color: var(--text); }
+  .fm-col button { width: 38px; height: 38px; padding: 0; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--border-default); background: var(--card); color: var(--text); cursor: pointer; }
+  .fm-col button svg { width: 18px; height: 18px; }
+  .fm-dois { font: 800 44px var(--font-display); color: var(--accent); }
+  .fm-ate { margin-left: 14px; display: flex; flex-direction: column; } .fm-ate small { font-size: 13px; color: var(--muted); } .fm-ate b { font: 700 18px var(--font-body); font-variant-numeric: tabular-nums; }
+  .tela-form { padding-bottom: 96px; }
+  .bt-mel svg { fill: none; stroke: currentColor; stroke-width: 2.4; }
+
+  /* Pote cheio */
+  .pote-festa { text-align: center; padding: 4px 0 6px; }
+  .pote-festa img { width: 170px; height: auto; margin: 0 auto 6px; display: block; animation: tb-bob 2.4s ease-in-out infinite; }
+  @keyframes tb-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+  .pote-festa h3 { font: 800 30px var(--font-display) !important; letter-spacing: -.03em; }
+  .pote-festa p { margin: 6px auto 18px !important; max-width: 300px; font-size: 16px; line-height: 1.45; }
+  .pf-semana { display: flex; justify-content: center; gap: 6px; margin-bottom: 22px; }
+  .pf-semana span { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .pf-semana i { width: 36px; height: 40px; display: grid; place-items: center; clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); background: var(--accent-soft); }
+  .pf-semana span.ok i { background: var(--gradient-honey); }
+  .pf-semana i svg { width: 16px; height: 16px; fill: none; stroke: var(--text-on-honey); stroke-width: 3; }
+  .pf-semana small { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--muted); }
+  .pf-semana span.hj small { color: var(--accent-text); }
+
+  .pt-semana { width: 100%; text-align: left; }
+  .pt-sem-cartao { padding: 16px 12px 14px; border-radius: 22px; background: var(--card); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-card); text-align: center; }
+  .pt-sem-cartao .pf-semana { margin-bottom: 10px; }
+  .pt-sem-cartao > small { font-size: 14px; color: var(--muted); }
+  .pt-semana h2.sec { margin-top: 22px !important; }
 </style>
 </head>
 <body>
@@ -3947,7 +3990,7 @@ function render() {
   document.getElementById('topoData').textContent = aba === 'hoje' ? maiuscula(new Date().toLocaleDateString(LOCALE, { weekday: 'long', day: 'numeric', month: 'long' })) : '';
   document.getElementById('btnMais').hidden = true;   // Ajustes agora fica no menu de baixo
   document.getElementById('mais').hidden = aba !== 'mais';
-  if (aba === 'mais') document.getElementById('perfilTopo').innerHTML = `<span class="pt-avatar">${esc((nome || 'Bee').trim().charAt(0).toUpperCase())}</span><b class="pt-nome">${esc(nome || 'Seu perfil')}</b><button class="pt-editar" data-pt-nome>${nome ? 'Mudar nome' : 'Como prefere ser chamado?'}</button>`;
+  if (aba === 'mais') document.getElementById('perfilTopo').innerHTML = `<span class="pt-avatar">${esc((nome || 'Bee').trim().charAt(0).toUpperCase())}</span><b class="pt-nome">${esc(nome || 'Seu perfil')}</b><button class="pt-editar" data-pt-nome>${nome ? 'Mudar nome' : 'Como prefere ser chamado?'}</button>${htmlSemanaMel()}`;
   lista.hidden = aba === 'mais';
   const linhaHoje = document.getElementById('hoje');
   linhaHoje.hidden = aba === 'hoje';   // na tela Hoje a data já aparece no topo; o resumo do dia era repetido
@@ -4334,6 +4377,31 @@ telaCheia.addEventListener('click', (e) => {
   }
   if (e.target.closest('[data-gravar-ev], [data-reu-ver]')) fecharTela();
 });
+// Hexágonos da semana: dias em que o pote encheu
+function diasDaSemanaMel() {
+  const hoje = inicioDoDia(new Date()), seg = maisDias(hoje, -((hoje.getDay() + 6) % 7));
+  const cheio = (d) => { const o = ocorrencias(d, maisDias(d, 1)); return o.length > 0 && o.every(x => estaFeito(x.ev, x.inicio)); };
+  return Array.from({ length: 7 }, (_, i) => { const d = maisDias(seg, i); return { d, ok: d <= hoje && cheio(d), hj: chaveDia(d) === chaveDia(hoje) }; });
+}
+const hexSemana = (dias) => `<div class="pf-semana">${dias.map(x => `<span class="${x.ok ? 'ok' : ''} ${x.hj ? 'hj' : ''}"><i>${x.ok ? ICONE_CHECK : ''}</i><small>${DIAS_CURTOS[x.d.getDay()]}</small></span>`).join('')}</div>`;
+function htmlSemanaMel() {
+  const dias = diasDaSemanaMel(), n = dias.filter(x => x.ok).length;
+  return `<div class="pt-semana"><h2 class="sec">Sua semana</h2><div class="pt-sem-cartao">${hexSemana(dias)}<small>${n ? `${n} ${n === 1 ? 'dia' : 'dias'} de pote cheio` : 'Complete o dia pra encher o primeiro pote'}</small></div></div>`;
+}
+// Pote cheio: a Bee comemora e mostra os dias de pote cheio da semana
+function abrirPoteCheio() {
+  const hoje = inicioDoDia(new Date()), seg = maisDias(hoje, -((hoje.getDay() + 6) % 7)), nome = lerPref('agenda.nome', '');
+  const cheio = (d) => { const o = ocorrencias(d, maisDias(d, 1)); return o.length > 0 && o.every(x => estaFeito(x.ev, x.inicio)); };
+  const dias = Array.from({ length: 7 }, (_, i) => maisDias(seg, i)), n = dias.filter(d => d <= hoje && cheio(d)).length;
+  abrirFolha(`<div class="pote-festa">
+    <img src="${MASCOTES.bee_festa}" alt="">
+    <h3>Pote cheio!</h3>
+    <p>Você cumpriu tudo de hoje${nome ? `, ${esc(nome)}` : ''}. ${n > 1 ? `${n} dias de pote cheio essa semana.` : 'Primeiro pote cheio da semana.'}</p>
+    <div class="pf-semana">${dias.map(d => { const ok = d <= hoje && cheio(d), hj = chaveDia(d) === chaveDia(hoje); return `<span class="${ok ? 'ok' : ''} ${hj ? 'hj' : ''}"><i>${ok ? ICONE_CHECK : ''}</i><small>${DIAS_CURTOS[d.getDay()]}</small></span>`; }).join('')}</div>
+    <button class="bt-mel" data-fechar-folha>Show!</button>
+  </div>`);
+  vibrar('sucesso');
+}
 function marcarFeito(botao) {
   const [id, dia] = botao.dataset.check.split('|');
   const ev = eventos.find(e => e.id === id) || externos.find(e => e.id === id);
@@ -4364,7 +4432,8 @@ function marcarFeito(botao) {
       xp.bonus = [...xp.bonus.slice(-60), hoje];
       setTimeout(() => ganhar(PONTOS.diaCompleto, { x: innerWidth / 2, y: innerHeight / 3 }), 400);
     }
-    if (diaCompleto) setTimeout(() => { confete(innerWidth / 2, innerHeight / 3, true); toast(`Dia concluído! +${PONTOS.diaCompleto} de bônus.`, 6000, { rotulo: 'Compartilhar', fn: abrirCompartilhar }); }, 250);
+    if (diaCompleto) setTimeout(() => { confete(innerWidth / 2, innerHeight / 3, true); if (JOGO) toast(`Dia concluído! +${PONTOS.diaCompleto} de bônus.`, 6000, { rotulo: 'Compartilhar', fn: abrirCompartilhar }); }, 250);
+    if (diaCompleto) setTimeout(abrirPoteCheio, 2300);   // o pote estoura primeiro, depois a festa
   }
   if (feito && dia <= chaveDia(new Date())) toast('Feito!', 4000, { rotulo: 'Desfazer', fn: () => { const b = document.querySelector(`.check[data-check="${botao.dataset.check}"]`); if (b) marcarFeito(b); } });
   setTimeout(render, 700);
@@ -6115,79 +6184,83 @@ function escolherComoCriar() {
 // Grupo de opções em botões (rádio estilizado): um toque escolhe
 const chipsSel = (name, opcoes, atual) => `<div class="chips-sel" role="radiogroup">${opcoes.map(([v, t]) =>
   `<label class="chip-op"><input type="radio" name="${name}" value="${v}" ${String(v) === String(atual) ? 'checked' : ''}><span>${t}</span></label>`).join('')}</div>`;
+const ICO_SETA = (d) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="${d === 'cima' ? 'm6 15 6-6 6 6' : 'm6 9 6 6 6-6'}"/></svg>`;
 function abrirEdicao(ev, novo = false) {
-  const d = new Date(ev.inicio);
-  const lembretes = [[null, 'Sem lembrete'], [0, 'Na hora'], [5, '5 min'], [10, '10 min'], [15, '15 min'], [30, '30 min'], [60, '1h antes'], [120, '2h antes'], [1440, '1 dia antes']];
-  if (!lembretes.some(([v]) => v === ev.lembreteMin)) lembretes.push([ev.lembreteMin, fmtLembrete(ev.lembreteMin)]);
-  const duracoes = [15, 30, 45, 60, 90, 120, 180, 240];
-  if (!duracoes.includes(durDe(ev))) duracoes.push(durDe(ev)), duracoes.sort((a, b) => a - b);
-  const freqAtual = ev.repetir?.freq || 'nenhuma';
-  let diasSem = ev.repetir?.freq === 'semanal' ? [...diasDaSerie(ev)] : [d.getDay()];
-  abrirFolha(`
-    <form class="editar" id="fEditar">
-      <div class="form-topo"><h3>${novo ? 'Novo compromisso' : 'Editar compromisso'}</h3>${novo ? `<button type="button" class="form-falar" id="bFalarForm">${ICO.mic}Falar</button>` : ''}</div>
-      <label for="eTitulo">O quê</label>
-      <input id="eTitulo" name="titulo" value="${esc(ev.titulo)}" placeholder="Ex.: Dentista" required>
-      <div class="dupla">
-        <div><label for="eDia">Dia</label><input id="eDia" type="date" name="dia" value="${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}" required></div>
-        <div><label for="eHora">Hora</label><input id="eHora" type="time" name="hora" value="${pad(d.getHours())}:${pad(d.getMinutes())}" required></div>
+  fecharFolha();
+  const d0 = new Date(ev.inicio);
+  const st = { titulo: ev.titulo || '', dia: inicioDoDia(d0), h: d0.getHours(), m: d0.getMinutes(), dur: durDe(ev), lembrete: ev.lembreteMin ?? null,
+    freq: ev.repetir?.freq || 'nenhuma', diasSem: ev.repetir?.freq === 'semanal' ? [...diasDaSerie(ev)] : [d0.getDay()] };
+  const lembretes = [[null, 'Sem aviso'], [0, 'Na hora'], [5, '5 min'], [10, '10 min'], [15, '15 min'], [30, '30 min'], [60, '1h antes'], [120, '2h antes'], [1440, '1 dia antes']];
+  if (!lembretes.some(([v]) => v === st.lembrete)) lembretes.push([st.lembrete, fmtLembrete(st.lembrete)]);
+  const duracoes = [15, 30, 45, 60, 120]; if (!duracoes.includes(st.dur)) duracoes.push(st.dur), duracoes.sort((a, b) => a - b);
+  const chip = (attr, v, on, txt) => `<button type="button" class="fm-chip ${on ? 'on' : ''}" ${attr}="${v}">${txt}</button>`;
+  const desenhar = () => {
+    const hoje = inicioDoDia(new Date()), amanha = maisDias(hoje, 1), depois = maisDias(hoje, 2);
+    const mesmo = (a, b) => chaveDia(a) === chaveDia(b), outro = ![hoje, amanha, depois].some(x => mesmo(x, st.dia));
+    const fim = new Date(+st.dia + (st.h * 60 + st.m + st.dur) * 60000);
+    abrirTela(`<div class="tela-form">
+      <div class="tela-topo"><button class="tb-redondo" data-tela-voltar aria-label="Voltar">${ICO_TB.voltar}</button><h2>${novo ? 'Novo compromisso' : 'Editar compromisso'}</h2>${novo ? `<button class="tb-redondo mel" data-fm-falar aria-label="Falar">${ICO_MIC_G}</button>` : '<span class="tb-vazio"></span>'}</div>
+      <label class="fm-campo">${ICO_DET.lapis}<input id="fmTitulo" value="${esc(st.titulo)}" placeholder="O que vai rolar?" autocomplete="off" enterkeyhint="done"></label>
+      <h3 class="fm-sec">Quando</h3>
+      <div class="fm-chips">${chip('data-fm-dia', chaveDia(hoje), mesmo(st.dia, hoje), 'Hoje')}${chip('data-fm-dia', chaveDia(amanha), mesmo(st.dia, amanha), 'Amanhã')}${chip('data-fm-dia', chaveDia(depois), mesmo(st.dia, depois), `${maiuscula(DIAS_CURTOS[depois.getDay()])}, ${depois.getDate()}`)}
+        <label class="fm-chip ${outro ? 'on' : ''}">${ICO_DET.cal}${outro ? `${maiuscula(DIAS_CURTOS[st.dia.getDay()])}, ${st.dia.getDate()}/${pad(st.dia.getMonth() + 1)}` : 'Escolher…'}<input type="date" id="fmData" value="${chaveDia(st.dia)}"></label></div>
+      <div class="fm-relogio">
+        <div class="fm-col"><button type="button" data-fm-h="1" aria-label="Mais uma hora">${ICO_SETA('cima')}</button><b>${pad(st.h)}</b><button type="button" data-fm-h="-1" aria-label="Menos uma hora">${ICO_SETA('baixo')}</button></div>
+        <span class="fm-dois">:</span>
+        <div class="fm-col"><button type="button" data-fm-m="5" aria-label="Mais 5 minutos">${ICO_SETA('cima')}</button><b>${pad(st.m)}</b><button type="button" data-fm-m="-5" aria-label="Menos 5 minutos">${ICO_SETA('baixo')}</button></div>
+        <div class="fm-ate"><small>até</small><b>${fmtHora(fim)}</b></div>
       </div>
-      <details class="mais-opcoes" id="eMais">
-      <summary>Mais opções<small>duração, aviso e repetir</small></summary>
-      <label>Duração</label>
-      ${chipsSel('duracao', duracoes.map(m => [m, fmtMin(m)]), durDe(ev))}
-      <label>Lembrete</label>
-      ${chipsSel('lembrete', lembretes.map(([v, t]) => [v === null ? '' : v, t]), ev.lembreteMin === null || ev.lembreteMin === undefined ? '' : ev.lembreteMin)}
-      <label>Repetir</label>
-      ${chipsSel('repetir', [['nenhuma', 'Não repete'], ['diaria', 'Todo dia'], ['semanal', 'Toda semana'], ['mensal', 'Todo mês'], ['anual', 'Todo ano']], freqAtual)}
-      <div class="dias-sel dias-rep" id="eDias" ${freqAtual === 'semanal' ? '' : 'hidden'}>${['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((l, i) => `<button type="button" data-d="${i}" aria-label="${NOMES_DIAS[i]}">${l}</button>`).join('')}</div>
-      </details>
-      <div class="botoes">
-        ${novo ? '<button type="button" id="bCancelar">Cancelar</button>' : '<button type="button" class="perigo" id="bExcluir">Excluir</button>'}
-        <button type="submit" class="primario">${novo ? 'Criar' : 'Salvar'}</button>
-      </div>
-    </form>`);
-  const f = document.getElementById('fEditar'), boxDias = document.getElementById('eDias');
-  const pintarDias = () => boxDias.querySelectorAll('[data-d]').forEach(b => b.classList.toggle('ativa', diasSem.includes(+b.dataset.d)));
-  pintarDias();
-  boxDias.querySelectorAll('[data-d]').forEach(b => b.onclick = () => {
-    const x = +b.dataset.d;
-    diasSem = diasSem.includes(x) ? diasSem.filter(y => y !== x) : [...diasSem, x].sort();
-    if (!diasSem.length) diasSem = [x];
-    vibrar('selecao'); pintarDias();
-  });
-  f.querySelectorAll('input[type=radio]').forEach(r => r.onchange = () => {
-    vibrar('selecao');
-    if (r.name === 'repetir') boxDias.hidden = f.repetir.value !== 'semanal';
-  });
-  // a opção escolhida aparece na tela (as listas rolam de lado)
-  document.getElementById('eMais').ontoggle = () => f.querySelectorAll('.chips-sel').forEach(c => { const o = c.querySelector('input:checked')?.parentElement; if (o) c.scrollLeft = o.offsetLeft - (c.clientWidth - o.offsetWidth) / 2; });
-  if (novo) focarNaFolha(f.titulo);
-  f.onsubmit = (e) => {
-    e.preventDefault();
-    const [a, mes, dia] = f.dia.value.split('-').map(Number);
-    const [h, mi] = f.hora.value.split(':').map(Number);
-    ev.titulo = f.titulo.value.trim() || 'Compromisso';
-    ev.inicio = new Date(a, mes - 1, dia, h, mi).toISOString();
-    ev.lembreteMin = f.lembrete.value === '' ? null : +f.lembrete.value;
-    ev.duracaoMin = +f.duracao.value || 60;
-    const freq = f.repetir.value || 'nenhuma';
-    ev.repetir = freq === 'nenhuma' ? null : montarRepetir(freq, freq === 'semanal' ? diasSem : []);
+      <h3 class="fm-sec">Duração</h3>
+      <div class="fm-chips">${duracoes.map(m => chip('data-fm-dur', m, st.dur === m, m >= 60 && m % 60 === 0 ? `${m / 60} h` : fmtMin(m))).join('')}</div>
+      <h3 class="fm-sec">Aviso</h3>
+      <div class="fm-chips">${lembretes.map(([v, t]) => chip('data-fm-lem', v === null ? 'nao' : v, st.lembrete === v, t)).join('')}</div>
+      <h3 class="fm-sec">Repetir</h3>
+      <div class="fm-chips">${[['nenhuma', 'Não repete'], ['diaria', 'Todo dia'], ['semanal', 'Toda semana'], ['mensal', 'Todo mês'], ['anual', 'Todo ano']].map(([v, t]) => chip('data-fm-rep', v, st.freq === v, t)).join('')}</div>
+      ${st.freq === 'semanal' ? `<div class="fm-chips fm-dias">${['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((l, i) => chip('data-fm-ds', i, st.diasSem.includes(i), l)).join('')}</div>` : ''}
+      ${novo ? '' : `<button class="det-excluir" data-fm-excluir>${ICO.lixo}Excluir compromisso</button>`}
+      <div class="det-rodape"><button class="bt-mel" data-fm-salvar ${st.titulo.trim() ? '' : 'disabled'}>${ICONE_CHECK}${novo ? 'Salvar compromisso' : 'Salvar alterações'}</button></div>
+    </div>`);
+    const inp = document.getElementById('fmTitulo');
+    inp.oninput = () => { st.titulo = inp.value; telaCheia.querySelector('[data-fm-salvar]').disabled = !inp.value.trim(); };
+    inp.onkeydown = (e) => { if (e.key === 'Enter') inp.blur(); };
+    document.getElementById('fmData').onchange = (e) => { if (e.target.value) { const [a, m, d] = e.target.value.split('-').map(Number); st.dia = new Date(a, m - 1, d); redesenhar(); } };
+  };
+  const redesenhar = () => { const y = telaCheia.scrollTop; desenhar(); telaCheia.scrollTop = y; };
+  telaCheia.onclick = (e) => {
+    const t = e.target.closest('button'); if (!t || !telaCheia.querySelector('.tela-form')) return;
+    const ds = t.dataset;
+    if ('fmFalar' in ds) { fecharTela(); return setTimeout(abrirVoz, 250); }
+    if (ds.fmDia) { const [a, m, d] = ds.fmDia.split('-').map(Number); st.dia = new Date(a, m - 1, d); }
+    else if (ds.fmH) st.h = (st.h + +ds.fmH + 24) % 24;
+    else if (ds.fmM) { const tot = (st.h * 60 + Math.round(st.m / 5) * 5 + +ds.fmM + 1440) % 1440; st.h = Math.floor(tot / 60); st.m = tot % 60; }
+    else if (ds.fmDur) st.dur = +ds.fmDur;
+    else if (ds.fmLem) st.lembrete = ds.fmLem === 'nao' ? null : +ds.fmLem;
+    else if (ds.fmRep) st.freq = ds.fmRep;
+    else if (ds.fmDs) { const x = +ds.fmDs; st.diasSem = st.diasSem.includes(x) ? st.diasSem.filter(y => y !== x) : [...st.diasSem, x].sort(); if (!st.diasSem.length) st.diasSem = [x]; }
+    else if ('fmExcluir' in ds) {
+      const antes = JSON.stringify(eventos);
+      eventos = eventos.filter(x => x.id !== ev.id); salvar(); render(); fecharTela(); telaCheia.onclick = null;
+      return toast(`“${ev.titulo}” excluído`, 5000, { rotulo: 'Desfazer', fn: () => { eventos = JSON.parse(antes); salvar(); render(); } });
+    }
+    else if ('fmSalvar' in ds) return salvarForm();
+    else return;
+    vibrar('selecao'); redesenhar();
+  };
+  const salvarForm = () => {
+    ev.titulo = st.titulo.trim() || 'Compromisso';
+    ev.inicio = new Date(st.dia.getFullYear(), st.dia.getMonth(), st.dia.getDate(), st.h, st.m).toISOString();
+    ev.lembreteMin = st.lembrete; ev.duracaoMin = st.dur;
+    ev.repetir = st.freq === 'nenhuma' ? null : montarRepetir(st.freq, st.freq === 'semanal' ? st.diasSem : []);
     ev.avisado = false; ev.avisados = [];
-    if (novo) { eventos.push(ev); diaSel = inicioDoDia(new Date(ev.inicio)); rolarParaDia = true; }
-    if (novo) mostrarDiaNoHoje(ev);
+    if (novo) { eventos.push(ev); diaSel = inicioDoDia(new Date(ev.inicio)); rolarParaDia = true; mostrarDiaNoHoje(ev); }
     if (novo && notaParaAgendar) { notas = notas.filter(n => n.id !== notaParaAgendar); salvarNotas(); }
-    salvar(); destacarId = ev.id; render(); fecharFolha(); vibrar('sucesso');
+    salvar(); destacarId = ev.id; render(); fecharTela(); telaCheia.onclick = null; vibrar('sucesso');
     if (novo) gravarPref('agenda.primeiroOk', '1');
     const choque = conflitoDe(ev);
     if (choque) { toast(`Atenção: você já tem “${choque.ev.titulo}” às ${fmtHora(choque.inicio)}.`, 6000); return; } if (!(novo && dicaPosCriar())) toast(novo ? 'Compromisso criado' : 'Alterações salvas');
   };
-  if (novo) { document.getElementById('bCancelar').onclick = fecharFolha; document.getElementById('bFalarForm').onclick = abrirVoz; }
-  else document.getElementById('bExcluir').onclick = () => {
-    const antes = JSON.stringify(eventos);
-    eventos = eventos.filter(e => e.id !== ev.id); salvar(); render(); fecharFolha();
-    toast(`“${ev.titulo}” excluído`, 5000, { rotulo: 'Desfazer', fn: () => { eventos = JSON.parse(antes); salvar(); render(); } });
-  };
+  desenhar();
+  if (novo) setTimeout(() => document.getElementById('fmTitulo')?.focus(), 350);
 }
 
 
