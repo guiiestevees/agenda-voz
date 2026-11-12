@@ -787,11 +787,79 @@ async function whatsappDoApp(req, env) {
   return responder({ erro: "ação desconhecida" }, 400, origem);
 }
 
+// ---------- Reuniões: o app manda o áudio em pedaços de até 5 minutos, a Bee transcreve e depois resume ----------
+const LIMITE_PEDACOS_MES = 130;   // cerca de 10 horas de reunião por mês para cada pessoa
+const ESQUEMA_REUNIAO = {
+  type: "object",
+  properties: {
+    titulo: { type: "string" },
+    resumo: { type: "string" },
+    pontos: { type: "array", items: { type: "string" } },
+    decisoes: { type: "array", items: { type: "string" } },
+    tarefas: { type: "array", items: { type: "object", properties: { texto: { type: "string" }, agenda: { type: "string" } }, required: ["texto", "agenda"], additionalProperties: false } },
+  },
+  required: ["titulo", "resumo", "pontos", "decisoes", "tarefas"],
+  additionalProperties: false,
+};
+const SISTEMA_REUNIAO = `Você é a Bee, secretária pessoal. Você recebe a transcrição automática de uma reunião, consulta, aula ou mentoria que a pessoa gravou com o celular.
+A transcrição pode ter erros, não separa quem está falando e pode ter trechos sem sentido: entenda pelo contexto.
+Organize o que importa para a pessoa lembrar depois:
+- titulo: curto, até 6 palavras, dizendo o que foi (ex.: "Consulta com o cardiologista", "Mentoria sobre o aplicativo").
+- resumo: 2 a 4 frases, direto ao ponto.
+- pontos: os assuntos e informações principais, até 10 frases curtas, na ordem em que apareceram.
+- decisoes: o que ficou decidido ou combinado. Vazio se nada foi decidido.
+- tarefas: o que a pessoa precisa fazer depois. "texto" é uma frase curta começando com verbo (ex.: "Tomar o remédio de manhã por 30 dias").
+  "agenda": se a tarefa tem dia, prazo ou horário dito na conversa, escreva como a pessoa falaria para a secretária marcar (ex.: "Retorno no cardiologista daqui a 30 dias", "Enviar a proposta sexta às 10"); se não tem quando, deixe "".
+Use só o que está na transcrição: não invente nomes, números, remédios nem prazos.
+Se não houver fala com conteúdo, use o título "Gravação sem conversa" e deixe as listas vazias.`;
+async function reuniao(req, env, origem) {
+  if (!ORIGENS.includes(origem)) return responder({ erro: "origem não permitida" }, 403, origem);
+  if (req.method !== "POST") return responder({ erro: "use POST" }, 405, origem);
+  let e;
+  try { e = await req.json(); } catch { return responder({ erro: "JSON inválido" }, 400, origem); }
+  if (!ID_APARELHO.test(e.uid || "")) return responder({ erro: "id inválido" }, 400, origem);
+  const teste = env.FUNIL_CHAVE && req.headers.get("x-chave") === env.FUNIL_CHAVE;
+  if (!teste && !(await env.AVISOS.get(env.AVISOS.idFromName("avisos")).assinou(e.uid))) return responder({ erro: "sem_assinatura" }, 402, origem);
+  const ingles = e.idioma === "en";
+  try {
+    if (e.acao === "transcrever") {
+      const audio = String(e.audio || "");
+      if (!audio || audio.length > 12 * 1024 * 1024) return responder({ erro: "áudio inválido" }, 400, origem);
+      const mes = new Date().toISOString().slice(0, 7);
+      let usados = 0;
+      try { usados = await env.USO.get(env.USO.idFromName(`reu:${e.uid}`)).contar(mes); } catch (x) { console.error("Contador de reuniões:", x.message); }
+      if (usados > LIMITE_PEDACOS_MES) return responder({ erro: "limite_mes" }, 429, origem);
+      const r = await env.AI.run("@cf/openai/whisper-large-v3-turbo", { audio, language: ingles ? "en" : "pt" });
+      return responder({ texto: (r.text || "").trim() }, 200, origem);
+    }
+    if (e.acao === "resumir") {
+      const texto = String(e.texto || "").slice(0, 300000).trim();
+      if (!texto) return responder({ erro: "texto vazio" }, 400, origem);
+      const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
+      const resp = await client.beta.messages.create({
+        model: "claude-sonnet-5-5",
+        max_tokens: 8000,
+        betas: ["server-side-fallback-2026-07-01"], fallbacks: "default",
+        output_config: { effort: "low", format: { type: "json_schema", schema: ESQUEMA_REUNIAO } },
+        system: ingles ? `${SISTEMA_REUNIAO}\n\nEsta pessoa fala INGLÊS: escreva tudo em inglês natural.` : SISTEMA_REUNIAO,
+        messages: [{ role: "user", content: `Hoje: ${String(e.agora || "").slice(0, 80)}\n\nTranscrição:\n${texto}` }],
+      });
+      if (resp.stop_reason === "refusal") return responder({ erro: "recusa" }, 422, origem);
+      return responder(JSON.parse(resp.content.find((b) => b.type === "text").text), 200, origem);
+    }
+  } catch (x) {
+    console.error("Reunião:", e.acao, x.message);
+    return responder({ erro: "falha" }, 502, origem);
+  }
+  return responder({ erro: "ação desconhecida" }, 400, origem);
+}
+
 export default {
   async fetch(req, env) {
     const origem = req.headers.get("Origin") || "";
     if (req.method === "OPTIONS") return new Response(null, { headers: cabecalhos(origem) });
     if (new URL(req.url).pathname.startsWith("/whatsapp")) return whatsapp(req, env);
+    if (new URL(req.url).pathname === "/reuniao") return reuniao(req, env, origem);
     if (new URL(req.url).pathname === "/funil") return funil(req, env, origem);
     if (new URL(req.url).pathname === "/convite") {
       if (!ORIGENS.includes(origem)) return responder({ erro: "origem não permitida" }, 403, origem);

@@ -43,7 +43,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>O Tap Bee usa o microfone para você falar seus compromissos para a Bee.</string>
+	<string>O Tap Bee usa o microfone para você falar seus compromissos para a Bee e para gravar suas reuniões.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>O Tap Bee transforma sua fala em texto para a Bee anotar seus compromissos.</string>
 	<key>UIApplicationSceneManifest</key>

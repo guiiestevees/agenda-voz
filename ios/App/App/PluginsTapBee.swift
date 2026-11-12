@@ -13,6 +13,7 @@ class TapBeeViewController: CAPBridgeViewController {
         bridge?.registerPluginInstance(BeeWidgetPlugin())
         bridge?.registerPluginInstance(MetricasPlugin())
         bridge?.registerPluginInstance(TelaPlugin())
+        bridge?.registerPluginInstance(GravadorPlugin())
         // App nativo não dá zoom: um toque duplo sem querer mudava o tamanho da tela
         webView?.scrollView.minimumZoomScale = 1
         webView?.scrollView.maximumZoomScale = 1
@@ -284,5 +285,113 @@ public class TelaPlugin: CAPPlugin, CAPBridgedPlugin {
             self?.bridge?.viewController?.view.backgroundColor = cor
             call.resolve()
         }
+    }
+}
+
+// ---------- Reuniões: grava com a tela bloqueada, em pedaços de 5 minutos que o app manda para transcrever ----------
+public class GravadorPlugin: CAPPlugin, CAPBridgedPlugin {
+    public let identifier = "GravadorPlugin"
+    public let jsName = "Gravador"
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "iniciar", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "pausar", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "continuar", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "parar", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "ler", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "apagar", returnType: CAPPluginReturnPromise),
+    ]
+    private let duracaoPedaco: TimeInterval = 300
+    private var gravador: AVAudioRecorder?
+    private var pasta: URL?
+    private var pedacos = 0
+    private var pausado = false
+    private var relogio: Timer?
+
+    private func pastaDe(_ id: String) -> URL {
+        FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0].appendingPathComponent("reuniao-\(id)", isDirectory: true)
+    }
+
+    // Fala baixinha de longe vira um arquivo pequeno: AAC mono de 16 kHz, uns 15 MB por hora
+    private func novoPedaco() throws {
+        guard let pasta = pasta else { return }
+        let ajustes: [String: Any] = [AVFormatIDKey: kAudioFormatMPEG4AAC, AVSampleRateKey: 16000, AVNumberOfChannelsKey: 1, AVEncoderBitRateKey: 32000, AVEncoderAudioQualityKey: AVAudioQuality.medium.rawValue]
+        let g = try AVAudioRecorder(url: pasta.appendingPathComponent("p\(pedacos).m4a"), settings: ajustes)
+        guard g.record() else { throw NSError(domain: "Gravador", code: 1) }
+        gravador = g
+        pedacos += 1
+    }
+
+    private func trocarPedaco() {
+        guard !pausado, let g = gravador else { return }
+        g.stop()
+        let pronto = pedacos - 1
+        try? novoPedaco()
+        notifyListeners("pedaco", data: ["indice": pronto])
+    }
+
+    @objc func iniciar(_ call: CAPPluginCall) {
+        let id = call.getString("id") ?? UUID().uuidString
+        AVAudioSession.sharedInstance().requestRecordPermission { ok in
+            DispatchQueue.main.async {
+                guard ok else { return call.reject("not-allowed") }
+                do {
+                    let sessao = AVAudioSession.sharedInstance()
+                    try sessao.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .mixWithOthers])
+                    try sessao.setActive(true)
+                    self.pasta = self.pastaDe(id)
+                    try FileManager.default.createDirectory(at: self.pasta!, withIntermediateDirectories: true)
+                    self.pedacos = 0
+                    self.pausado = false
+                    try self.novoPedaco()
+                    self.relogio?.invalidate()
+                    self.relogio = Timer.scheduledTimer(withTimeInterval: self.duracaoPedaco, repeats: true) { [weak self] _ in self?.trocarPedaco() }
+                    NotificationCenter.default.removeObserver(self, name: AVAudioSession.interruptionNotification, object: nil)
+                    NotificationCenter.default.addObserver(self, selector: #selector(self.interrompido(_:)), name: AVAudioSession.interruptionNotification, object: nil)
+                    call.resolve()
+                } catch {
+                    print("[Gravador] não começou: \(error)")
+                    call.reject("indisponivel")
+                }
+            }
+        }
+    }
+
+    // Uma ligação pausa a gravação; quando ela acaba, continua sozinha
+    @objc private func interrompido(_ aviso: Notification) {
+        guard let bruto = aviso.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt,
+              AVAudioSession.InterruptionType(rawValue: bruto) == .ended, !pausado, gravador != nil else { return }
+        try? AVAudioSession.sharedInstance().setActive(true)
+        gravador?.record()
+    }
+
+    @objc func pausar(_ call: CAPPluginCall) {
+        DispatchQueue.main.async { self.pausado = true; self.gravador?.pause(); call.resolve() }
+    }
+
+    @objc func continuar(_ call: CAPPluginCall) {
+        DispatchQueue.main.async { self.pausado = false; self.gravador?.record(); call.resolve() }
+    }
+
+    @objc func parar(_ call: CAPPluginCall) {
+        DispatchQueue.main.async {
+            self.relogio?.invalidate(); self.relogio = nil
+            self.gravador?.stop(); self.gravador = nil
+            NotificationCenter.default.removeObserver(self, name: AVAudioSession.interruptionNotification, object: nil)
+            try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+            call.resolve(["pedacos": self.pedacos])
+        }
+    }
+
+    // Um pedaço em base64 para o app mandar ao servidor; pedaço quase vazio volta em branco
+    @objc func ler(_ call: CAPPluginCall) {
+        let id = call.getString("id") ?? "", indice = call.getInt("indice") ?? 0
+        let arquivo = pastaDe(id).appendingPathComponent("p\(indice).m4a")
+        guard let dados = try? Data(contentsOf: arquivo) else { return call.reject("sem-arquivo") }
+        call.resolve(["audio": dados.count < 4000 ? "" : dados.base64EncodedString()])
+    }
+
+    @objc func apagar(_ call: CAPPluginCall) {
+        try? FileManager.default.removeItem(at: pastaDe(call.getString("id") ?? ""))
+        call.resolve()
     }
 }
