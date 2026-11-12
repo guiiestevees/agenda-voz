@@ -2724,6 +2724,29 @@
   .linha-menu:last-child { border-bottom: 0; }
   .linha-menu svg { width: 20px; height: 20px; }
   .linha-menu.perigo { color: var(--danger); }
+
+  /* Detalhe do compromisso */
+  .det-titulo { margin: 12px 0 10px; font: 700 30px/34px var(--font-display); letter-spacing: -.03em; color: var(--text); overflow-wrap: anywhere; }
+  .det-pilula { display: inline-flex; align-items: center; gap: 6px; height: 40px; margin: 0 0 18px; padding: 0 16px; border-radius: 999px; background: var(--gradient-honey); color: var(--text-on-honey); box-shadow: var(--shadow-button); font: 600 15px var(--font-body); }
+  .det-pilula b { font: 800 19px var(--font-display); }
+  .det-cartao { margin: 0 0 12px; padding: 4px 16px; border-radius: 22px; background: var(--card); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-card); }
+  .det-linha { display: flex; align-items: center; gap: 14px; min-height: 68px; padding: 10px 0; }
+  .det-linha + .det-linha { border-top: 1px solid var(--line); }
+  .det-linha > div { flex: 1; min-width: 0; }
+  .det-linha b { display: block; font-size: 17px; font-weight: 600; } .det-linha small { display: block; margin-top: 2px; font-size: 14px; color: var(--muted); }
+  .det-ic { flex: none; width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-text); }
+  .det-ic.verde { background: rgba(34,194,122,.12); color: #1F9D62; }
+  .det-ic svg { width: 20px; height: 20px; }
+  .det-mudar { flex: none; height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--border-default); background: var(--card); color: var(--text); font: 600 14px var(--font-body); cursor: pointer; }
+  .det-reu { padding: 12px; }
+  html body .det-reu .acao-ev { width: 100%; height: 50px; margin: 0; border-radius: 999px; border: 0; display: flex; align-items: center; justify-content: center; gap: 8px; font: 600 16px var(--font-body); background: var(--gradient-honey) !important; color: var(--text-on-honey) !important; box-shadow: var(--shadow-button); }
+  html body .det-reu .acao-ev .hd-rec { background: var(--recording); }
+  .det-sec { margin: 22px 4px 8px; font: 700 12px var(--font-body); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .det-excluir { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 50px; margin: 18px 0 0; border: 0; border-radius: 999px; background: var(--danger-soft); color: var(--danger); font: 600 16px var(--font-body); cursor: pointer; }
+  .det-excluir svg { width: 18px; height: 18px; }
+  .det-rodape { position: fixed; left: 16px; right: 16px; bottom: calc(env(safe-area-inset-bottom) + 16px); max-width: 528px; margin: 0 auto; }
+  .tela-det { padding-bottom: 90px; }
+  .det-rodape .bt-mel svg, .selo svg { fill: none; stroke: currentColor; stroke-width: 2.2; }
 </style>
 </head>
 <body>
@@ -4237,31 +4260,80 @@ function botaoReuniaoDoEvento(ev, dia) {
   if (r) return `<button class="acao-ev acao-reu" data-reu-ver="${r.id}">📝 ${r.estado === 'pronta' ? 'Ver resumo da reunião' : 'Resumo sendo preparado…'}</button>`;
   return `<button class="acao-ev acao-reu ${ehReuniao(ev) ? 'destaque' : ''}" data-gravar-ev="${ev.id}|${dia}"><i class="hd-rec"></i>Gravar esta reunião</button>`;
 }
+// Telas cheias (resumo, detalhe, novo compromisso): entram por cima, com voltar
+const telaCheia = document.createElement('div');
+telaCheia.id = 'telaCheia'; telaCheia.setAttribute('role', 'dialog');
+document.body.appendChild(telaCheia);
+function abrirTela(html) { telaCheia.innerHTML = html; telaCheia.scrollTop = 0; telaCheia.classList.add('aberta'); document.body.classList.add('com-tela'); }
+function fecharTela() { telaCheia.classList.remove('aberta'); document.body.classList.remove('com-tela'); }
+telaCheia.addEventListener('click', (e) => { if (e.target.closest('[data-tela-voltar]')) { vibrar('leve'); fecharTela(); } });
+const ICO_TB = {
+  voltar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>',
+  share: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>',
+  mais: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>',
+  brilho: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 3v4M21 5h-4"/></svg>',
+  livro: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>',
+  texto: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>',
+  conversa: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/></svg>',
+  bandeira: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 8 2a6 6 0 0 0 3.6-1.2.5.5 0 0 1 .4.8v10a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a8 8 0 0 0-4 1"/></svg>',
+  lista: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 17 2 2 4-4M3 7l2 2 4-4M13 6h8M13 12h8M13 18h8"/></svg>',
+  aspas: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2zM5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/></svg>',
+  lampada: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5M9 18h6M10 22h4"/></svg>',
+  calMais: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 13V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8M16 2v4M8 2v4M3 10h18M19 16v6M16 19h6"/></svg>',
+  calOk: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="m9 16 2 2 4-4"/></svg>',
+};
+const ICO_DET = {
+  cal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16.5" rx="3"/><path d="M8 2.5v4M16 2.5v4M3 10h18"/></svg>',
+  relogio: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  sino: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>',
+  repete: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14M7 22l-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>',
+  lapis: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.2 6.8a2.8 2.8 0 0 0-4-4L3.8 16.2a2 2 0 0 0-.5.8l-1.3 4.4a.5.5 0 0 0 .6.6l4.4-1.3a2 2 0 0 0 .8-.5z"/></svg>',
+};
+let acoesAbertas = null;
 function abrirAcoes(ev, dia) {
   if (!ev) return;
+  if (ev.externo) return abrirExterno(ev);
   const base = new Date(ev.inicio);
   const [a, m, d] = (dia || chaveDia(base)).split('-').map(Number);
   const quando = new Date(a, m - 1, d, base.getHours(), base.getMinutes()), chave = `${ev.id}|${chaveDia(quando)}`, feito = estaFeito(ev, quando);
-  abrirFolha(`
-    <div class="acoes-ev">
-      <div class="conf-grande"><b>${esc(ev.titulo)}</b><span>${esc(fmtQuando(quando))}</span></div>
-      ${botaoReuniaoDoEvento(ev, chaveDia(quando))}
-      <button class="acao-ev primario" id="aFeito">${ICO.ok}${feito ? 'Desmarcar' : 'Feito'}</button>
-      <button class="acao-ev" id="aMudar">${ICO.lapis}Mudar</button>
-      <button class="acao-ev perigo" id="aApagar">${ICO.lixo}${ev.repetir ? 'Apagar só este dia' : 'Apagar'}</button>
-    </div>`);
-  document.getElementById('aMudar').onclick = () => abrirEdicao(ev);
-  document.getElementById('aApagar').onclick = () => { fecharFolha(); excluirPorGesto(chave); };
-  document.getElementById('aFeito').onclick = () => {
-    fecharFolha();
-    const b = document.querySelector(`.check[data-check="${chave}"]`);
-    if (b) return marcarFeito(b);
-    ev.feitos = feito ? (ev.feitos || []).filter(x => x !== chaveDia(quando)) : [...(ev.feitos || []).slice(-200), chaveDia(quando)];
-    salvar(); vibrar(feito ? 'leve' : 'sucesso');
-    if (chaveDia(quando) <= chaveDia(new Date())) ganhar(feito ? -PONTOS.feito : PONTOS.feito, { x: innerWidth / 2, y: innerHeight / 2 });
-    render();
-  };
+  const fim = fimDe(ev, quando), agora = new Date(), min = Math.round((quando - agora) / 60000), dur = Math.round((fim - quando) / 60000);
+  const diasAte = Math.round((inicioDoDia(quando) - inicioDoDia(agora)) / 86400000);
+  const rel = diasAte === 0 ? 'Hoje' : diasAte === 1 ? 'Amanhã' : diasAte === -1 ? 'Ontem' : '';
+  const falta = feito ? '' : quando <= agora && fim > agora ? '<span class="det-pilula">Acontecendo agora</span>'
+    : min > 0 && min < 24 * 60 ? `<span class="det-pilula">Começa em <b>${min < 60 ? `${min} min` : `${Math.floor(min / 60)}h${min % 60 ? ` ${pad(min % 60)}` : ''}`}</b></span>` : '';
+  const cat = categoria(ev.titulo), reu = ehReuniao(ev) || reuniaoDe(ev.id, chaveDia(quando));
+  acoesAbertas = { ev, quando };
+  abrirTela(`<div class="tela-det">
+    <div class="tela-topo"><button class="tb-redondo" data-tela-voltar aria-label="Voltar">${ICO_TB.voltar}</button><span></span><button class="tb-redondo" data-det-editar aria-label="Editar">${ICO_DET.lapis}</button></div>
+    <div class="tr-selos">${!feito && chaveProximoDe(agora) === chave ? `<span class="selo mel">${ICO_TB.brilho}Próximo</span>` : ''}${feito ? `<span class="selo mel">${ICONE_CHECK}Feito</span>` : ''}${cat ? `<span class="selo">${icoCat(cat)}${cat.nome}</span>` : ''}${ev.repetir ? `<span class="selo">${ICO_DET.repete}${fmtRepetir(ev.repetir)}</span>` : ''}</div>
+    <h1 class="det-titulo">${esc(ev.titulo)}</h1>
+    ${falta}
+    <div class="det-cartao">
+      <div class="det-linha"><span class="det-ic">${ICO_DET.cal}</span><div><b>${maiuscula(quando.toLocaleDateString(LOCALE, { weekday: 'long', day: 'numeric', month: 'long' }))}</b>${rel ? `<small>${rel}</small>` : ''}</div><button class="det-mudar" data-det-editar>Mudar</button></div>
+      <div class="det-linha"><span class="det-ic">${ICO_DET.relogio}</span><div><b>${fmtHora(quando)} – ${fmtHora(fim)}</b><small>${fmtMin(dur)} de duração</small></div></div>
+    </div>
+    ${reu ? `<div class="det-cartao det-reu">${botaoReuniaoDoEvento(ev, chaveDia(quando))}</div>` : ''}
+    <h2 class="det-sec">Lembretes</h2>
+    <div class="det-cartao"><div class="det-linha"><span class="det-ic verde">${ICO_DET.sino}</span><div><b>Aviso no iPhone</b><small>${esc(fmtLembrete(ev.lembreteMin))}</small></div><button class="det-mudar" data-det-editar>Mudar</button></div></div>
+    <button class="det-excluir" data-det-apagar>${ICO.lixo}${ev.repetir ? 'Apagar só este dia' : 'Excluir compromisso'}</button>
+    <div class="det-rodape"><button class="bt-mel" data-det-feito>${ICONE_CHECK}${feito ? 'Desmarcar como feito' : 'Marcar como feito'}</button></div>
+  </div>`);
 }
+const chaveProximoDe = (agora) => proximoDeHoje(agora);
+telaCheia.addEventListener('click', (e) => {
+  if (!e.target.closest('.tela-det') || !acoesAbertas) return;
+  const { ev, quando } = acoesAbertas, chave = `${ev.id}|${chaveDia(quando)}`, feito = estaFeito(ev, quando);
+  if (e.target.closest('[data-det-editar]')) { fecharTela(); return setTimeout(() => abrirEdicao(ev), 200); }
+  if (e.target.closest('[data-det-apagar]')) { fecharTela(); return excluirPorGesto(chave); }
+  if (e.target.closest('[data-det-feito]')) {
+    fecharTela();
+    const b = document.querySelector(`.check[data-check="${chave}"]`);
+    if (b) return setTimeout(() => marcarFeito(b), 250);
+    ev.feitos = feito ? (ev.feitos || []).filter(x => x !== chaveDia(quando)) : [...(ev.feitos || []).slice(-200), chaveDia(quando)];
+    salvar(); vibrar(feito ? 'leve' : 'sucesso'); render();
+  }
+  if (e.target.closest('[data-gravar-ev], [data-reu-ver]')) fecharTela();
+});
 function marcarFeito(botao) {
   const [id, dia] = botao.dataset.check.split('|');
   const ev = eventos.find(e => e.id === id) || externos.find(e => e.id === id);
@@ -8393,28 +8465,6 @@ async function processarReuniao(r) {
   }
 }
 
-// Telas cheias (resumo, detalhe, novo compromisso): entram por cima, com voltar
-const telaCheia = document.createElement('div');
-telaCheia.id = 'telaCheia'; telaCheia.setAttribute('role', 'dialog');
-document.body.appendChild(telaCheia);
-function abrirTela(html) { telaCheia.innerHTML = html; telaCheia.scrollTop = 0; telaCheia.classList.add('aberta'); document.body.classList.add('com-tela'); }
-function fecharTela() { telaCheia.classList.remove('aberta'); document.body.classList.remove('com-tela'); }
-telaCheia.addEventListener('click', (e) => { if (e.target.closest('[data-tela-voltar]')) { vibrar('leve'); fecharTela(); } });
-const ICO_TB = {
-  voltar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>',
-  share: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>',
-  mais: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>',
-  brilho: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 3v4M21 5h-4"/></svg>',
-  livro: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>',
-  texto: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>',
-  conversa: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/></svg>',
-  bandeira: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 8 2a6 6 0 0 0 3.6-1.2.5.5 0 0 1 .4.8v10a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a8 8 0 0 0-4 1"/></svg>',
-  lista: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 17 2 2 4-4M3 7l2 2 4-4M13 6h8M13 12h8M13 18h8"/></svg>',
-  aspas: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2zM5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/></svg>',
-  lampada: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5M9 18h6M10 22h4"/></svg>',
-  calMais: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 13V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8M16 2v4M8 2v4M3 10h18M19 16v6M16 19h6"/></svg>',
-  calOk: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="m9 16 2 2 4-4"/></svg>',
-};
 // Texto do resumo: **negrito** vira <b>, linhas em branco viram parágrafos
 const comNegrito = (t) => esc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
 const decisoesDe = (r) => (r.decisoes || []).map(d => typeof d === 'string' ? { texto: d, porque: '' } : d);
