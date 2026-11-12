@@ -261,7 +261,10 @@
   body[data-aba="hoje"] .dia-corpo .cena { transform: scale(.72); margin: -18px 0 -22px; }
   body[data-aba="hoje"] .dia-corpo .agora { margin: 0; padding: 8px 18px; border-bottom: 1px solid var(--line); }
   body[data-aba="hoje"] .dia-corpo .dia-livre, body[data-aba="hoje"] .dia-corpo .tudo-feito { background: none; box-shadow: none; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; margin: 0; }
-  body[data-aba="hoje"] .dia-livre ~ .agora { display: none; }
+  body[data-aba="hoje"] .agora { display: none; }
+  body[data-aba="hoje"] .faixa-dias { margin: 6px 0 22px; }
+  body[data-aba="hoje"] .fd-dia { height: 56px; }
+  #topoAcao .hd-falar { padding: 9px 15px 9px 12px; }
   .add-linha { display: flex; align-items: center; gap: 10px; width: 100%; padding: 15px 18px; border: 0; background: none; color: var(--muted); font: inherit; font-size: 15px; font-weight: 650; cursor: pointer; text-align: left; }
   .add-linha svg { width: 18px; height: 18px; }
   body[data-aba="hoje"] .grupo-topo { margin: 0 2px 10px; }
@@ -3018,7 +3021,7 @@ function cartao({ ev: e, inicio }, agora) {
       <button class="check ${feito ? 'on' : ''}" data-check="${e.id}|${chaveDia(inicio)}" aria-label="${feito ? 'Desmarcar como feito' : 'Marcar como feito'}">${ICONE_CHECK}</button>
       <div class="hora">${fmtHora(inicio)}<small>${fmtHora(fimDe(e, inicio))}</small></div>
       <div class="info">
-        <div class="titulo">${ehProx ? seloProximo(inicio, e, agora) : ''}${e.externo ? '<span class="ext-ico" aria-label="Do Calendário do iPhone">📅</span>' : ''}${esc(e.titulo)}${reuniaoDe(e.id, chaveDia(inicio)) ? '<span class="reu-marca" aria-label="Tem resumo da reunião">📝</span>' : ''}</div>
+        <div class="titulo">${e.externo ? '<span class="ext-ico" aria-label="Do Calendário do iPhone">📅</span>' : ''}${esc(e.titulo)}${reuniaoDe(e.id, chaveDia(inicio)) ? '<span class="reu-marca" aria-label="Tem resumo da reunião">📝</span>' : ''}</div>
         <div class="lembrete">${categoria(e.titulo) ? `<span class="meta cat">${icoCat(categoria(e.titulo))}${categoria(e.titulo).nome}</span>` : ''}${seqHabitoHtml(e)}<span class="meta">${e.lembreteMin !== null ? ICO.sino : ''}${fmtLembrete(e.lembreteMin)}</span>${e.repetir ? `<span class="meta">${ICO.repete}${fmtRepetir(e.repetir)}</span>` : ''}</div>
       </div>
     </div></div>`;
@@ -3107,13 +3110,13 @@ function telaHoje() {
   // Um destaque só por vez: o check-in (enquanto não feito) ou o próximo compromisso
   chaveProximo = proximoDeHoje(agora);
   // um aviso de configuração por vez: primeiro os 2 toques, depois o WhatsApp
-  let html = '<div class="hoje-topo">' + (JOGO ? htmlLinhaStatus() : htmlPoteDoDia()) + (htmlDoisToques() || htmlCartaoWhats()) + (JOGO ? htmlResgate() : '') + '</div><div class="hoje-dir">';   // no fim do dia, o botão da câmera no cartão do bicho vira "Postar"
+  let html = '<div class="hoje-topo">' + (JOGO ? htmlLinhaStatus() : '') + (htmlDoisToques() || htmlCartaoWhats()) + (JOGO ? htmlResgate() : '') + '</div><div class="hoje-dir">';   // no fim do dia, o botão da câmera no cartão do bicho vira "Postar"
   if (diaHojeBase !== chaveDia(hoje)) { diaHojeBase = chaveDia(hoje); diaHoje = 0; }
   const dia = maisDias(hoje, diaHoje);
   const tituloDia = !diaHoje ? 'Hoje' : diaHoje === 1 ? 'Amanhã' : `${maiuscula(dia.toLocaleDateString(LOCALE, { weekday: 'long' }).replace('-feira', ''))}, ${dia.getDate()}`;
   const corpo = diaHoje ? linhaDoTempo(dia, agora, false)
     : total && tudo ? `<div class="tudo-feito">${cenaMascote('festa')}<b>Dia fechado, pote cheio!</b><span>Pode descansar. Amanhã tem mais.</span></div>` : linhaDoTempo(hoje, agora, true);
-  html += `<section class="grupo"><div class="grupo-topo"><h2>${tituloDia}</h2><button class="ver-semana" data-ver-semana>Ver semana<span>›</span></button></div>${htmlFaixaDias(hoje)}<div class="dia-corpo">${corpo}<button class="add-linha" data-novo-comp>${ICO.mais}Adicionar compromisso</button></div></section>`;
+  html += `<section class="grupo">${htmlFaixaDias(hoje)}<div class="grupo-topo"><h2>${tituloDia}</h2><button class="ver-semana" data-ver-semana>Ver semana<span>›</span></button></div><div class="dia-corpo">${corpo}<button class="add-linha" data-novo-comp>${ICO.mais}Adicionar compromisso</button></div></section>`;
   if (feitos && !diaHoje) html += `<details class="feitos"><summary>Feitos (${feitos})</summary>${feitosL.map(o => cartao(o, agora)).join('')}</details>`;
   return html + '</div>' + htmlNotas() + (JOGO ? '<div class="hoje-esq">' + htmlProgresso() + '</div>' : '');
 }
@@ -3131,9 +3134,8 @@ function reuniaoDeAgora() {
 // Pote de mel do dia: enche conforme a pessoa conclui os compromissos de hoje
 let poteAntes = null;
 // Gravando: atalho para a gravação. Reunião agora: grava ela. Senão: fala com a Bee
-function botaoDoDia(o) {
+function botaoDoDia() {
   if (gravacao) return `<button class="hd-falar gravando" data-ir-reunioes><i class="hd-rec"></i>Gravando</button>`;
-  if (o) return `<button class="hd-falar" data-gravar-ev="${o.ev.id}|${chaveDia(o.inicio)}"><i class="hd-rec"></i>Gravar</button>`;
   return `<button class="hd-falar" data-falar aria-label="Falar com a Bee">${ICONE_MIC}Falar</button>`;
 }
 const POTE_CHEIO = 10;   // 10 compromissos feitos no dia enchem o pote
@@ -3222,7 +3224,7 @@ function htmlFaixaDias(hoje) {
   return `<div class="faixa-dias" id="faixaDias">${Array.from({ length: DIAS_FAIXA }, (_, i) => {
     const d = maisDias(hoje, i), n = qtd.get(chaveDia(d)) || 0;
     return `<button class="fd-dia ${i === diaHoje ? 'sel' : ''} ${i ? '' : 'hj'}" data-dia-hoje="${i}" aria-label="${i ? fmtDataLonga(d) : 'Hoje'}${n ? `, ${n} compromisso${n > 1 ? 's' : ''}` : ''}">
-      <span>${i ? DIAS_CURTOS[d.getDay()] : 'hoje'}</span><b>${d.getDate()}</b><i>${'<em></em>'.repeat(Math.min(n, 3))}</i></button>`;
+      <span>${i ? DIAS_CURTOS[d.getDay()] : 'hoje'}</span><b>${d.getDate()}</b></button>`;
   }).join('')}</div>`;
 }
 function irDiaHoje(i) {
@@ -3464,7 +3466,7 @@ function render() {
   document.body.classList.toggle('cheia', aba === 'semana' && visao === 'semana');
   document.body.dataset.aba = aba;
   const n = sequencia();
-  document.getElementById('topoAcao').innerHTML = aba !== 'hoje' || !JOGO ? ''
+  document.getElementById('topoAcao').innerHTML = aba !== 'hoje' ? '' : !JOGO ? botaoDoDia()
     : fezCheckinHoje() ? `<button class="pg-fogo" data-fogo aria-label="${n} dias seguidos de check-in, ${xp.protetores ?? 1} protetores">${ICO.fogo}<b>${n}</b>${(xp.protetores ?? 1) ? `<span class="pg-escudos">${ICO.escudo}${xp.protetores ?? 1}</span>` : ''}</button>`
     : '';   // antes do check-in, o cartão grande da tela Hoje cuida disso
   document.getElementById('visoes').hidden = aba !== 'semana';
@@ -3554,7 +3556,9 @@ document.getElementById('btnNome').onclick = () => pedirNome();
 // Modo fácil: só a agenda e o Falar, sem pontos nem jogos
 const modoFacil = () => lerPref('agenda.modoFacil', '') === '1';
 function aplicarFacil() {
-  document.documentElement.classList.toggle('facil', modoFacil());
+  document.documentElement.classList.remove('facil');   // o modo fácil saiu: o app inteiro ficou simples
+  document.getElementById('btnFacil').hidden = true;
+  return;
   document.getElementById('facilRot').textContent = `Modo fácil: ${modoFacil() ? 'ligado' : 'desligado'}`;
 }
 aplicarFacil();
@@ -7860,6 +7864,7 @@ document.addEventListener('click', (e) => {
   const g = e.target.closest('[data-gravar-ev]'), ver = e.target.closest('[data-reu-ver]'), ir = e.target.closest('[data-ir-reunioes]');
   if (g) { const [id, dia] = g.dataset.gravarEv.split('|'); return gravarCompromisso(id, dia); }
   if (ir) return irPara('reunioes');
+  if (e.target.closest('#topoAcao [data-falar]')) { vibrar('medio'); return abrirVoz(); }
   if (ver) { const r = reunioes.find(x => x.id === ver.dataset.reuVer); if (r?.estado === 'pronta') { fecharFolha(); setTimeout(() => abrirReuniao(r), 300); } else toast('A Bee ainda está preparando o resumo.'); }
 });
 async function pausarReuniao() {
