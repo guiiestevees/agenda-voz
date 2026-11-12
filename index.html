@@ -278,6 +278,28 @@
   .notas-dobra .nota { margin: 0 12px; }
   .notas-dobra .nota-add { margin: 8px 12px 12px; }
   #ambiente .amb-favo, #ambiente .polen { display: none; }
+  /* Agenda e reuniões juntas */
+  .hd-agora { margin: 8px 0 -6px; font-size: 13.5px; color: #8a6a35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hd-agora b { color: #6b4300; }
+  .hd-txt:has(.hd-agora) small { display: none; }
+  .hd-rec { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #ff5b4a; box-shadow: 0 0 0 3px rgba(255,91,74,.25); }
+  .hd-falar.gravando .hd-rec { animation: reuPisca 1.2s ease-in-out infinite; }
+  .reu-marca { margin-left: 6px; font-size: .85em; }
+  .acao-reu { justify-content: center; gap: 8px; }
+  .acao-reu.destaque { background: #1d1a12 !important; color: #ffd25c !important; }
+  .reu-nome { display: block; margin-top: 6px; font-size: 17px; }
+  .reu-proximas { overflow: hidden; border-radius: 18px; background: var(--card); box-shadow: inset 0 0 0 1px var(--line); }
+  .reu-prox { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+  .reu-prox:last-child { border-bottom: 0; }
+  .reu-prox span { flex: 1; min-width: 0; }
+  .reu-prox b { display: block; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .reu-prox small { font-size: 13px; color: var(--muted); }
+  .reu-prox button { display: inline-flex; align-items: center; gap: 7px; flex: none; padding: 9px 14px; border: 0; border-radius: 999px; background: #1d1a12; color: #ffd25c; font: inherit; font-size: 14px; font-weight: 800; cursor: pointer; }
+  .reu-sugere { margin-top: 16px; padding: 14px; border-radius: 16px; background: var(--accent-soft); }
+  .reu-sugere b { display: block; font-size: 15px; }
+  .reu-sugere ul { margin: 8px 0 0; }
+  .reu-sugere button { width: 100%; margin-top: 12px; min-height: 46px; border: 0; border-radius: 14px; font: inherit; font-weight: 750; cursor: pointer; background: var(--card); color: var(--text); }
+  .reu-sugere button.primario { background: #1d1a12; color: #ffd25c; }
   /* ============ Calendário do iPhone ============ */
   .ext-ico { margin-right: 5px; font-size: .85em; }
   .cal-folha h4 { margin: 18px 0 8px; font-size: 13px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
@@ -2611,7 +2633,7 @@ function fmtFalta(m) {
 const EMOJI_CAT = { treino: '💪', saude: '🩺', trabalho: '💼', estudo: '📚', social: '🎉', casa: '🏠' };
 const tituloAviso = (titulo) => `${EMOJI_CAT[categoria(titulo)?.id] || '🐝'} ${titulo}`;
 const corpoAviso = (m, hora) => { const f = tr(fmtFalta(m)).toLowerCase(); return EM_INGLES ? `Starts ${f}, at ${hora}.` : `Começa ${f}, às ${hora}.`; };
-const TIPO_AVISO = 'AVISO_BEE';
+const TIPO_AVISO = 'AVISO_BEE', TIPO_GRAVAR = 'GRAVAR_BEE';
 function agendarLembretes() {
   clearTimeout(timerLembretes);
   timerLembretes = setTimeout(async () => {
@@ -2631,13 +2653,17 @@ function agendarLembretes() {
         .filter(o => o.ev.lembreteMin !== null && o.ev.lembreteMin !== undefined && !estaFeito(o.ev, o.inicio) && !o.ev.avisado && !(o.ev.avisados || []).includes(chaveDia(o.inicio)))
         .map(o => ({ ...o, quando: o.inicio.getTime() - o.ev.lembreteMin * 60000 }))
         .filter(o => o.quando > agora)
-        .sort((a, b) => a.quando - b.quando).slice(0, 60);
+        .sort((a, b) => a.quando - b.quando).slice(0, 54);   // o iOS guarda 64 avisos: sobram 10 para "quer gravar?"
       let perm = await LN.checkPermissions();
       if (perm.display !== 'granted' && proximos.length) perm = await LN.requestPermissions();
       const antigos = JSON.parse(localStorage.getItem('agenda.lembretesIds') || '[]');
       if (antigos.length) await LN.cancel({ notifications: antigos.map(id => ({ id })) });
       if (perm.display !== 'granted') return;
       const avisos = proximos.map(o => ({ id: idLembrete(`${o.ev.id}|${chaveDia(o.inicio)}`), title: tituloAviso(o.ev.titulo), body: corpoAviso(o.ev.lembreteMin, fmtHora(o.inicio)), actionTypeId: TIPO_AVISO, extra: { ev: o.ev.id, dia: chaveDia(o.inicio) }, schedule: { at: new Date(o.quando), allowWhileIdle: true } }));
+      // Na hora de uma reunião, consulta ou aula: um aviso para gravar
+      ocorrencias(new Date(agora), new Date(agora + 7 * 86400000)).filter(o => !o.ev.externo && ehReuniao(o.ev) && !estaFeito(o.ev, o.inicio)).slice(0, 10).forEach(o => avisos.push({
+        id: idLembrete(`${o.ev.id}|${chaveDia(o.inicio)}|gravar`), title: `🎙️ ${o.ev.titulo}`, body: tr('Começou agora. Quer que eu grave e resuma pra você?'),
+        actionTypeId: TIPO_GRAVAR, extra: { ev: o.ev.id, dia: chaveDia(o.inicio), gravar: 1 }, schedule: { at: o.inicio, allowWhileIdle: true } }));
       if (avisos.length) await LN.schedule({ notifications: avisos });
       localStorage.setItem('agenda.lembretesIds', JSON.stringify(avisos.map(a => a.id)));
     } catch (e) { console.warn('Lembretes', e); }
@@ -2645,7 +2671,8 @@ function agendarLembretes() {
 }
 
 // Toque no aviso: abre o compromisso no dia certo, em destaque. Os botões fazem o resto
-function abrirDoAviso(acao, { ev: id, dia } = {}) {
+function abrirDoAviso(acao, { ev: id, dia, gravar } = {}) {
+  if (gravar && quizLiberado()) return setTimeout(() => gravarCompromisso(id, dia), 400);   // aviso "começou, quer gravar?"
   const ev = eventos.find(e => e.id === id);
   if (!ev || !dia || !quizLiberado()) return;
   const [a, m, d] = dia.split('-').map(Number), base = new Date(ev.inicio), inicio = new Date(a, m - 1, d, base.getHours(), base.getMinutes());
@@ -2674,7 +2701,7 @@ function abrirDoAviso(acao, { ev: id, dia } = {}) {
 function ligarAcoesDoAviso() {
   const LN = pluginNativo('LocalNotifications');
   if (!LN) return;
-  LN.registerActionTypes({ types: [{ id: TIPO_AVISO, actions: [{ id: 'feito', title: tr('Feito'), foreground: true }, { id: 'adiar', title: tr('Me lembra depois'), foreground: true }, { id: 'mudar', title: tr('Mudar horário'), foreground: true }] }] }).catch(e => console.warn('Botões do aviso', e));
+  LN.registerActionTypes({ types: [{ id: TIPO_GRAVAR, actions: [{ id: 'gravar', title: tr('Gravar'), foreground: true }] }, { id: TIPO_AVISO, actions: [{ id: 'feito', title: tr('Feito'), foreground: true }, { id: 'adiar', title: tr('Me lembra depois'), foreground: true }, { id: 'mudar', title: tr('Mudar horário'), foreground: true }] }] }).catch(e => console.warn('Botões do aviso', e));
   LN.addListener('localNotificationActionPerformed', (a) => abrirDoAviso(a.actionId, a.notification?.extra));
 }
 
@@ -2996,7 +3023,7 @@ function cartao({ ev: e, inicio }, agora) {
       <button class="check ${feito ? 'on' : ''}" data-check="${e.id}|${chaveDia(inicio)}" aria-label="${feito ? 'Desmarcar como feito' : 'Marcar como feito'}">${ICONE_CHECK}</button>
       <div class="hora">${fmtHora(inicio)}<small>${fmtHora(fimDe(e, inicio))}</small></div>
       <div class="info">
-        <div class="titulo">${ehProx ? seloProximo(inicio, e, agora) : ''}${e.externo ? '<span class="ext-ico" aria-label="Do Calendário do iPhone">📅</span>' : ''}${esc(e.titulo)}</div>
+        <div class="titulo">${ehProx ? seloProximo(inicio, e, agora) : ''}${e.externo ? '<span class="ext-ico" aria-label="Do Calendário do iPhone">📅</span>' : ''}${esc(e.titulo)}${reuniaoDe(e.id, chaveDia(inicio)) ? '<span class="reu-marca" aria-label="Tem resumo da reunião">📝</span>' : ''}</div>
         <div class="lembrete">${categoria(e.titulo) ? `<span class="meta cat">${icoCat(categoria(e.titulo))}${categoria(e.titulo).nome}</span>` : ''}${seqHabitoHtml(e)}<span class="meta">${e.lembreteMin !== null ? ICO.sino : ''}${fmtLembrete(e.lembreteMin)}</span>${e.repetir ? `<span class="meta">${ICO.repete}${fmtRepetir(e.repetir)}</span>` : ''}</div>
       </div>
     </div></div>`;
@@ -3095,8 +3122,26 @@ function telaHoje() {
   if (feitos && !diaHoje) html += `<details class="feitos"><summary>Feitos (${feitos})</summary>${feitosL.map(o => cartao(o, agora)).join('')}</details>`;
   return html + '</div>' + htmlNotas() + (JOGO ? '<div class="hoje-esq">' + htmlProgresso() + '</div>' : '');
 }
+// Compromissos com cara de conversa (reunião, consulta, aula…): só esses ganham a sugestão de gravar
+const semAcento = (t) => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const PALAVRAS_REUNIAO = /reuni|\bcall\b|consulta|medic|dentist|doutor|\bdr\.?\s|\bdra\.?\s|mentor|aula|entrevist|sessao|terapi|psicolog|psiquiatr|alinhament|apresenta|cliente|meeting|\bmeet\b|zoom|teams|palestra|curso|advogad|contador|nutri|fisio|coach|workshop|treinamento|feedback|\b1:1\b|daily|kickoff|retorno|exame|banca|orientador|pastor|padre|conversa com/;
+const ehReuniao = (ev) => !!ev && PALAVRAS_REUNIAO.test(semAcento(ev.titulo));
+const reuniaoDe = (id, dia) => (reunioes || []).find(r => r.evId === id && r.evDia === dia);
+// O compromisso que está acontecendo agora (ou começa em até 10 min) e ainda não foi gravado
+function reuniaoDeAgora() {
+  const agora = new Date();
+  return ocorrencias(new Date(agora - 3 * 3600000), new Date(+agora + 10 * 60000))
+    .find(o => ehReuniao(o.ev) && fimDe(o.ev, o.inicio) > agora && !reuniaoDe(o.ev.id, chaveDia(o.inicio)) && !estaFeito(o.ev, o.inicio));
+}
 // Pote de mel do dia: enche conforme a pessoa conclui os compromissos de hoje
 let poteAntes = null;
+// Gravando: atalho para a gravação. Reunião agora: grava ela. Senão: fala com a Bee
+function botaoDoDia() {
+  if (gravacao) return `<button class="hd-falar gravando" data-ir-reunioes><i class="hd-rec"></i>Gravando · ver</button>`;
+  const o = reuniaoDeAgora();
+  if (o) return `<p class="hd-agora">Agora: <b>${esc(o.ev.titulo)}</b></p><button class="hd-falar" data-gravar-ev="${o.ev.id}|${chaveDia(o.inicio)}"><i class="hd-rec"></i>Gravar reunião</button>`;
+  return `<button class="hd-falar" data-falar>${ICONE_MIC}Falar com a Bee</button>`;
+}
 const POTE_CHEIO = 10;   // 10 compromissos feitos no dia enchem o pote
 function htmlPoteDoDia() {
   const hoje = inicioDoDia(new Date()), deHoje = ocorrencias(hoje, maisDias(hoje, 1));
@@ -3117,7 +3162,7 @@ function htmlPoteDoDia() {
     <div class="hd-txt">
       <div class="hd-conta"><b>${feitos}</b><span>${rot}</span></div>
       <small>${dica}</small>
-      <button class="hd-falar" data-falar>${ICONE_MIC}Falar com a Bee</button>
+      ${botaoDoDia()}
     </div>
   </div>`;
 }
@@ -3742,6 +3787,11 @@ function abelhaVoa(x, y) {
   requestAnimationFrame(passo);
 }
 // Tocar num compromisso mostra o que dá para fazer, sem depender de arrastar ou segurar
+function botaoReuniaoDoEvento(ev, dia) {
+  const r = reuniaoDe(ev.id, dia);
+  if (r) return `<button class="acao-ev acao-reu" data-reu-ver="${r.id}">📝 ${r.estado === 'pronta' ? 'Ver resumo da reunião' : 'Resumo sendo preparado…'}</button>`;
+  return `<button class="acao-ev acao-reu ${ehReuniao(ev) ? 'destaque' : ''}" data-gravar-ev="${ev.id}|${dia}"><i class="hd-rec"></i>Gravar esta reunião</button>`;
+}
 function abrirAcoes(ev, dia) {
   if (!ev) return;
   const base = new Date(ev.inicio);
@@ -3750,6 +3800,7 @@ function abrirAcoes(ev, dia) {
   abrirFolha(`
     <div class="acoes-ev">
       <div class="conf-grande"><b>${esc(ev.titulo)}</b><span>${esc(fmtQuando(quando))}</span></div>
+      ${botaoReuniaoDoEvento(ev, chaveDia(quando))}
       <button class="acao-ev primario" id="aFeito">${ICO.ok}${feito ? 'Desmarcar' : 'Feito'}</button>
       <button class="acao-ev" id="aMudar">${ICO.lapis}Mudar</button>
       <button class="acao-ev perigo" id="aApagar">${ICO.lixo}${ev.repetir ? 'Apagar só este dia' : 'Apagar'}</button>
@@ -3779,7 +3830,7 @@ function marcarFeito(botao) {
   const cartaoEl = botao.closest('.evento');
   const rb = botao.getBoundingClientRect(), perto = { x: rb.left + rb.width / 2, y: rb.top };
   if (dia <= chaveDia(new Date())) ganhar(feito ? PONTOS.feito : -PONTOS.feito, perto);   // dia futuro: marca, mas não vale ponto antes da hora
-  else if (feito) toast('Marcado! Pontos só valem no dia do compromisso.', 3500);
+  else if (feito && JOGO) toast('Marcado! Pontos só valem no dia do compromisso.', 3500);
   vibrar(feito ? 'sucesso' : 'leve');
   botao.classList.toggle('on', feito);
   cartaoEl.classList.toggle('feito', feito);
@@ -7670,6 +7721,7 @@ function abrirExterno(ev) {
       <h3>${esc(ev.titulo)}</h3>
       <p>${maiuscula(fmtDataLonga(ini))} · ${fmtHora(ini)} às ${fmtHora(fimDe(ev, ini))}</p>
       <p class="cal-origem">📅 Da agenda <b>${esc(ev.externo)}</b>, no Calendário do iPhone. Para mudar ou apagar, use o app Calendário ou o Google Agenda.</p>
+      <div class="acoes-ev">${botaoReuniaoDoEvento(ev, chaveDia(ini))}</div>
     </div>`);
 }
 
@@ -7729,26 +7781,32 @@ const audiosWeb = {}, emProcesso = new Set();
 const salvarReunioes = () => gravarJSON('agenda.reunioes', reunioes);
 const tempoGravado = () => gravacao ? gravacao.acumulado + (gravacao.pausado ? 0 : Date.now() - gravacao.desde) : 0;
 const fmtRelogio = (ms) => { const t = Math.floor(ms / 1000), h = Math.floor(t / 3600), m = Math.floor(t / 60) % 60, s = t % 60; return h ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`; };
-const atualizarReunioes = () => { document.querySelector('.aba[data-aba="reunioes"]')?.classList.toggle('gravando', !!gravacao); if (aba === 'reunioes') render(); };
+const atualizarReunioes = () => { document.querySelector('.aba[data-aba="reunioes"]')?.classList.toggle('gravando', !!gravacao); if (aba === 'reunioes' || aba === 'hoje') render(); };
 const ERROS_REUNIAO = { sem_assinatura: 'Gravar reuniões faz parte da assinatura do Tap Bee.', limite_mes: 'Você chegou ao limite de 10 horas de reunião neste mês.' };
 
 function telaReunioes() {
   const g = gravacao, feitas = reunioes.filter(r => r.estado !== 'gravando');
-  const topo = g ? `<div class="reu-gravando ${g.pausado ? 'pausado' : ''}">
-      <span class="reu-status"><i></i>${g.pausado ? 'Pausado' : 'Gravando'}</span>
+  let topo = g ? `<div class="reu-gravando ${g.pausado ? 'pausado' : ''}">
+      <span class="reu-status"><i></i>${g.pausado ? 'Pausado' : 'Gravando'}</span>${(() => { const r = reunioes.find(x => x.id === g.id); return r?.tituloEv ? `<b class="reu-nome">${esc(r.tituloEv)}</b>` : ''; })()}
       <div class="reu-tempo" id="reuTempo">${fmtRelogio(tempoGravado())}</div>
       <div class="reu-onda">${'<i></i>'.repeat(11)}</div>
       <p class="reu-dica">${g.pausado ? 'Toque em Continuar quando a conversa voltar.' : 'Pode bloquear a tela: a Bee continua ouvindo.'}</p>
       <div class="reu-bts"><button data-reu-pausar>${g.pausado ? 'Continuar' : 'Pausar'}</button><button class="parar" data-reu-parar>Encerrar</button></div>
     </div>` : `<button class="reu-gravar" data-reu-gravar><span class="reu-gravar-ic"><i></i></span><span><b>Gravar reunião</b><small>Consulta, mentoria, aula… a Bee transcreve e resume para você.</small></span></button>
     <p class="reu-aviso">Avise quem participa que a conversa está sendo gravada.</p>`;
+  const agora = new Date();
+  const proximas = g ? [] : ocorrencias(new Date(agora - 3 * 3600000), maisDias(agora, 7))
+    .filter(o => ehReuniao(o.ev) && fimDe(o.ev, o.inicio) > agora && !reuniaoDe(o.ev.id, chaveDia(o.inicio))).slice(0, 4);
+  if (proximas.length) topo += `<div class="reu-tit">Próximas na sua agenda</div><div class="reu-proximas">${proximas.map(o => `<div class="reu-prox">
+      <span><b>${esc(o.ev.titulo)}</b><small>${o.inicio <= agora ? tr('Agora') : esc(fmtQuando(o.inicio))}</small></span>
+      <button data-gravar-ev="${o.ev.id}|${chaveDia(o.inicio)}"><i class="hd-rec"></i>Gravar</button></div>`).join('')}</div>`;
   if (!feitas.length) return topo + (g ? '' : `<div class="vazio reu-vazio"><img src="${MASCOTES.bee}" alt=""><br><b>Nenhuma reunião ainda</b><br>Grave sua próxima consulta ou call e a Bee guarda aqui o resumo e as tarefas.</div>`);
   return topo + `<div class="reu-tit">Suas reuniões</div>` + feitas.map(r => {
     const linha = r.estado === 'transcrevendo' ? `<p class="reu-proc">${r.pedacos > 1 ? `Transcrevendo… ${Math.min(r.textos.filter(t => t != null).length + 1, r.pedacos)} de ${r.pedacos}` : 'Transcrevendo…'}</p>`
       : r.estado === 'resumindo' ? '<p class="reu-proc">A Bee está resumindo…</p>'
       : r.estado === 'erro' ? `<p class="reu-erro">${ERROS_REUNIAO[r.erro] || 'Não deu certo. Toque para tentar de novo.'}</p>`
       : `<p>${esc(r.resumo || '')}</p>`;
-    return `<button class="reu-item" data-reu-abrir="${r.id}"><b>${esc(r.titulo || tr('Reunião'))}</b><small>${quandoReuniao(r)}</small>${linha}</button>`;
+    return `<button class="reu-item" data-reu-abrir="${r.id}"><b>${esc(r.tituloEv || r.titulo || tr('Reunião'))}</b><small>${r.evId ? '📅 ' : ''}${quandoReuniao(r)}</small>${linha}</button>`;
   }).join('');
 }
 function quandoReuniao(r) {
@@ -7778,7 +7836,7 @@ function permissaoReuniao() {
   });
 }
 
-async function comecarReuniao() {
+async function comecarReuniao(vinculo = {}) {
   if (gravacao || !(await permissaoReuniao())) return;
   const id = Date.now().toString(36), g = { id, desde: Date.now(), acumulado: 0, pausado: false };
   try {
@@ -7794,9 +7852,23 @@ async function comecarReuniao() {
     return toast('Não consegui usar o microfone. Confira a permissão nos Ajustes do iPhone.', 4000);
   }
   g.desde = Date.now(); gravacao = g;
-  reunioes.unshift({ id, inicio: Date.now(), estado: 'gravando', textos: [] }); salvarReunioes();
+  reunioes.unshift({ id, inicio: Date.now(), estado: 'gravando', textos: [], ...vinculo }); salvarReunioes();
   vibrar('sucesso'); atualizarReunioes();
 }
+// Gravar a partir de um compromisso da agenda: a reunião já nasce com o nome e o dia dele
+function gravarCompromisso(id, dia) {
+  const ev = eventos.find(e => e.id === id) || externos.find(e => e.id === id);
+  if (gravacao) { irPara('reunioes'); return toast('Já tem uma gravação em andamento.'); }
+  if (overlay.classList.contains('show')) fecharFolha();
+  irPara('reunioes');
+  comecarReuniao(ev ? { evId: id, evDia: dia, tituloEv: ev.titulo } : {});
+}
+document.addEventListener('click', (e) => {
+  const g = e.target.closest('[data-gravar-ev]'), ver = e.target.closest('[data-reu-ver]'), ir = e.target.closest('[data-ir-reunioes]');
+  if (g) { const [id, dia] = g.dataset.gravarEv.split('|'); return gravarCompromisso(id, dia); }
+  if (ir) return irPara('reunioes');
+  if (ver) { const r = reunioes.find(x => x.id === ver.dataset.reuVer); if (r?.estado === 'pronta') { fecharFolha(); setTimeout(() => abrirReuniao(r), 300); } else toast('A Bee ainda está preparando o resumo.'); }
+});
 async function pausarReuniao() {
   const g = gravacao;
   if (!g) return;
@@ -7861,7 +7933,7 @@ async function processarReuniao(r) {
     const texto = r.textos.join(' ').replace(/\s+/g, ' ').trim();
     const resumo = texto.length < 20 ? { titulo: tr('Gravação sem conversa'), resumo: tr('Não deu para ouvir conversa nesta gravação.'), pontos: [], decisoes: [], tarefas: [] }
       : await pedirReuniao({ acao: 'resumir', texto, agora: new Date().toLocaleString(LOCALE, { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) });
-    Object.assign(r, resumo, { estado: 'pronta' });
+    Object.assign(r, resumo, { estado: 'pronta' }, r.tituloEv ? { titulo: r.tituloEv } : {});
     Gravador?.apagar({ id: r.id }).catch(() => {}); delete audiosWeb[r.id];
     vibrar('sucesso');
     if (aba !== 'reunioes') toast(tr('Resumo da reunião pronto! 🐝'), 3500, { rotulo: 'Ver', fn: () => irPara('reunioes') });
@@ -7879,6 +7951,11 @@ function abrirReuniao(r) {
   abrirFolha(`<div class="reu-folha" data-reu="${r.id}">
       <h3>${esc(r.titulo || tr('Reunião'))}</h3><small>${quandoReuniao(r)}</small>
       ${r.resumo ? `<p class="reu-resumo">${esc(r.resumo)}</p>` : ''}
+      ${(() => {
+        const comData = (r.tarefas || []).filter(t => t.agenda), semData = (r.tarefas || []).filter(t => !t.agenda);
+        return (comData.length && !r.agendado ? `<div class="reu-sugere"><b>📅 A Bee achou ${comData.length === 1 ? '1 compromisso' : `${comData.length} compromissos`} nesta conversa</b><ul>${comData.map(t => `<li>${esc(t.agenda)}</li>`).join('')}</ul><button class="primario" data-reu-agendar>Colocar na agenda</button></div>` : '')
+          + (semData.length && !r.notasGuardadas ? `<div class="reu-sugere"><b>📝 ${semData.length === 1 ? '1 tarefa' : `${semData.length} tarefas`} sem data</b><button data-reu-notas>Guardar em Pra não esquecer</button></div>` : '');
+      })()}
       ${lst('Pontos principais', r.pontos)}${lst('Decisões', r.decisoes)}
       ${r.tarefas?.length ? `<h4>Tarefas</h4>${r.tarefas.map((t, i) => `<div class="reu-tarefa"><span>${esc(t.texto)}</span>${t.agenda ? `<button data-reu-agenda="${i}">Pôr na agenda</button>` : ''}</div>`).join('')}` : ''}
       ${texto ? `<details><summary>Transcrição completa</summary><p class="reu-trans">${esc(texto)}</p></details>` : ''}
@@ -7903,6 +7980,16 @@ document.getElementById('lista').addEventListener('click', (e) => {
 sheet.addEventListener('click', async (e) => {
   const r = reunioes.find(x => x.id === e.target.closest('[data-reu]')?.dataset.reu);
   if (!r) return;
+  if (e.target.closest('[data-reu-agendar]')) {
+    const frases = r.tarefas.filter(t => t.agenda).map(t => t.agenda);
+    r.agendado = true; salvarReunioes(); fecharFolha();
+    return setTimeout(() => criarDeFrase(frases.join('. Também: ')), 350);
+  }
+  if (e.target.closest('[data-reu-notas]')) {
+    r.tarefas.filter(t => !t.agenda).forEach(t => notas.push({ id: novoId(), titulo: maiuscula(t.texto), criado: new Date().toISOString() }));
+    r.notasGuardadas = true; salvarReunioes(); salvarNotas(); fecharFolha(); render(); vibrar('sucesso');
+    return toast('Guardado em Pra não esquecer, no Início.', 3500);
+  }
   const tarefa = e.target.closest('[data-reu-agenda]');
   if (tarefa) { const frase = r.tarefas[+tarefa.dataset.reuAgenda]?.agenda; fecharFolha(); if (frase) setTimeout(() => criarDeFrase(frase), 350); return; }
   if (e.target.closest('[data-reu-compartilhar]')) {
