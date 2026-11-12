@@ -253,6 +253,16 @@
   .notas-dobra .nota { margin: 0 12px; }
   .notas-dobra .nota-add { margin: 8px 12px 12px; }
   #ambiente .amb-favo, #ambiente .polen { display: none; }
+  /* ============ Calendário do iPhone ============ */
+  .ext-ico { margin-right: 5px; font-size: .85em; }
+  .cal-folha h4 { margin: 18px 0 8px; font-size: 13px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+  .cal-opcoes { display: flex; flex-direction: column; gap: 8px; max-height: 40vh; overflow-y: auto; }
+  .cal-opcoes button { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border: 0; border-radius: 14px; background: var(--field); color: var(--text); font: inherit; font-weight: 650; text-align: left; cursor: pointer; box-shadow: inset 0 0 0 2px transparent; }
+  .cal-opcoes button.on { box-shadow: inset 0 0 0 2px var(--accent); background: var(--accent-soft); }
+  .cal-opcoes i { flex: none; width: 12px; height: 12px; border-radius: 50%; }
+  .cal-opcoes small { display: block; font-size: 12px; font-weight: 500; color: var(--muted); }
+  .cal-dica, .cal-origem { margin: 14px 0; font-size: 14px; line-height: 1.4; color: var(--muted); }
+  .cal-desligar { display: block; width: 100%; margin-top: 10px; padding: 12px; border: 0; background: none; color: var(--danger); font: inherit; font-weight: 700; cursor: pointer; }
   /* ============ Reuniões ============ */
   .reu-gravar { display: flex; align-items: center; gap: 14px; width: 100%; margin: 14px 0 0; padding: 18px; border: 0; border-radius: 22px; text-align: left; color: #fff; font: inherit; cursor: pointer;
     background: linear-gradient(150deg, var(--grad-a), var(--grad-b) 60%, var(--grad-c)); box-shadow: 0 10px 26px rgba(var(--accent-rgb), .3); transition: transform .15s var(--ease); }
@@ -2323,6 +2333,8 @@
   <h2 class="sec">Avisos</h2>
   <button class="icon-btn" id="btnNotif"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span>Ativar avisos</span></button>
   <button class="icon-btn linha-ajuste" id="btnWhats" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21l1.7-5A8.5 8.5 0 1 1 8 19.3z"/><path d="M9 10h.01M12 10h.01M15 10h.01"/></svg><span id="whatsRot">Avisos pelo WhatsApp: desligados</span></button>
+  <h2 class="sec so-iphone">Calendário e Google Agenda</h2>
+  <button class="icon-btn linha-ajuste so-iphone" id="btnCalendario"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/><path d="m9 15 2 2 4-4"/></svg><span id="calRot">Conectar ao Calendário do iPhone</span></button>
   <h2 class="sec so-iphone">Atalho do iPhone</h2>
   <button class="dt-ajuste" id="btnDoisToques" hidden></button>
   <details class="ajuda" id="ajudaAtalhoWeb">
@@ -2559,6 +2571,7 @@ function salvar() {
   try { localStorage.setItem(CHAVE, JSON.stringify(eventos)); } catch {}
   agendarLembretes();
   enviarWhats();
+  copiarParaCalendario();
 }
 // Lembretes de verdade no app nativo: o próprio iPhone avisa, mesmo com o app fechado.
 // O iOS guarda até 64 avisos por app, então vão os próximos 60 (o resto entra quando o app abrir de novo).
@@ -2664,7 +2677,7 @@ function caiNoDia(ev, dia) {
 // Todas as ocorrências entre `de` e `ate`; séries só aparecem até `ate`
 function ocorrencias(de, ate) {
   const lista = [];
-  for (const ev of eventos) {
+  for (const ev of externos?.length ? [...eventos, ...externos] : eventos) {
     const base = new Date(ev.inicio);
     if (!ev.repetir) {
       if (base >= de && base < ate) lista.push({ ev, inicio: base });
@@ -2959,7 +2972,7 @@ function cartao({ ev: e, inicio }, agora) {
       <button class="check ${feito ? 'on' : ''}" data-check="${e.id}|${chaveDia(inicio)}" aria-label="${feito ? 'Desmarcar como feito' : 'Marcar como feito'}">${ICONE_CHECK}</button>
       <div class="hora">${fmtHora(inicio)}<small>${fmtHora(fimDe(e, inicio))}</small></div>
       <div class="info">
-        <div class="titulo">${ehProx ? seloProximo(inicio, e, agora) : ''}${esc(e.titulo)}</div>
+        <div class="titulo">${ehProx ? seloProximo(inicio, e, agora) : ''}${e.externo ? '<span class="ext-ico" aria-label="Do Calendário do iPhone">📅</span>' : ''}${esc(e.titulo)}</div>
         <div class="lembrete">${categoria(e.titulo) ? `<span class="meta cat">${icoCat(categoria(e.titulo))}${categoria(e.titulo).nome}</span>` : ''}${seqHabitoHtml(e)}<span class="meta">${e.lembreteMin !== null ? ICO.sino : ''}${fmtLembrete(e.lembreteMin)}</span>${e.repetir ? `<span class="meta">${ICO.repete}${fmtRepetir(e.repetir)}</span>` : ''}</div>
       </div>
     </div></div>`;
@@ -3598,6 +3611,7 @@ document.getElementById('lista').addEventListener('click', (ev) => {
   else if (alvo.dataset.ir) { ev.preventDefault(); irPara(alvo.dataset.ir); }
   else if (alvo.dataset.nav) navegar(alvo.dataset.nav);
   else if (alvo.dataset.dia) { const [a, m, d] = alvo.dataset.dia.split('-').map(Number); diaSel = new Date(a, m - 1, d); render(); }
+  else if (alvo.dataset.id?.startsWith('ext:')) abrirExterno(externos.find(e => e.id === alvo.dataset.id));
   else abrirAcoes(eventos.find(e => e.id === alvo.dataset.id), alvo.closest('[data-deslize]')?.dataset.deslize.split('|')[1] || alvo.closest('[data-col]')?.dataset.col);
 });
 // No mês, arrastar para o lado troca de mês
@@ -3721,11 +3735,12 @@ function abrirAcoes(ev, dia) {
 }
 function marcarFeito(botao) {
   const [id, dia] = botao.dataset.check.split('|');
-  const ev = eventos.find(e => e.id === id);
+  const ev = eventos.find(e => e.id === id) || externos.find(e => e.id === id);
   if (!ev) return;
   ev.feitos = ev.feitos || [];
   const feito = !ev.feitos.includes(dia);
   ev.feitos = feito ? [...ev.feitos.slice(-200), dia] : ev.feitos.filter(d => d !== dia);
+  if (ev.externo) { extFeitos[ev.id] = ev.feitos; gravarJSON('agenda.extFeitos', extFeitos); }
   salvar();
   // anima no lugar e só depois redesenha a tela
   const cartaoEl = botao.closest('.evento');
@@ -5162,7 +5177,7 @@ const IA_URL = 'https://agenda-voz.guiiestevees.workers.dev/';
 // A agenda resumida que vai junto com a fala, para a IA saber o que existe
 function agendaParaIA() {
   const de = inicioDoDia(new Date());
-  const linhas = ocorrencias(de, new Date(de.getTime() + 45 * 86400000)).slice(0, 150).map(({ ev, inicio }) =>
+  const linhas = ocorrencias(de, new Date(de.getTime() + 45 * 86400000)).filter(o => !o.ev.externo).slice(0, 150).map(({ ev, inicio }) =>
     `${ev.id} | ${inicio.toLocaleDateString(LOCALE, { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' })} | ${fmtHora(inicio)} | ${ev.titulo} | ${ev.repetir ? fmtRepetir(ev.repetir) : 'não repete'}`);
   const longe = eventos.filter(e => !e.repetir && new Date(e.inicio) >= new Date(de.getTime() + 45 * 86400000)).slice(0, 50)
     .map(ev => `${ev.id} | ${new Date(ev.inicio).toLocaleDateString(LOCALE)} | ${fmtHora(new Date(ev.inicio))} | ${ev.titulo} | não repete`);
@@ -7568,6 +7583,111 @@ document.getElementById('txtIA').textContent = TEXTO_IA;   // aqui embaixo porqu
 registrarInicioMes();
 usarProtetores();
 aplicarPenalidades();
+// ---------- Calendário do iPhone (Apple, Google e outras contas ligadas no iPhone) ----------
+// Os compromissos de lá aparecem no Tap Bee só para ver e marcar como feito; os do Tap Bee são copiados para a agenda escolhida
+const Calendario = pluginNativo('Calendario');
+var externos = [];
+var extFeitos = lerJSON('agenda.extFeitos', {});
+const calPrefs = () => lerJSON('agenda.calendario', { ligado: false, copiar: '' });
+async function lerCalendario() {
+  if (!Calendario || !calPrefs().ligado) { if (externos.length) { externos = []; render(); } return; }
+  const hoje = inicioDoDia(new Date());
+  try {
+    const { eventos: lst } = await Calendario.eventos({ de: maisDias(hoje, -30).getTime(), ate: maisDias(hoje, 180).getTime() });
+    // o id não pode ter "|": o app usa "|" para separar o id do dia
+    externos = lst.filter(e => !e.diaTodo).map(e => ({ id: 'ext:' + String(e.id).replace(/\|/g, '@'), titulo: e.titulo || tr('Compromisso'), inicio: new Date(e.inicio).toISOString(), duracaoMin: Math.max(5, Math.round((e.fim - e.inicio) / 60000)),
+      lembreteMin: null, repetir: null, excecoes: [], avisados: [], feitos: extFeitos['ext:' + String(e.id).replace(/\|/g, '@')] || [], externo: e.agenda || 'Calendário' }));
+  } catch (e) { console.warn('Calendário: ler', e); externos = []; }
+  render();
+}
+Calendario?.addListener('mudou', () => { clearTimeout(lerCalendario.t); lerCalendario.t = setTimeout(lerCalendario, 800); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) lerCalendario(); });
+
+let timerCopia;
+function copiarParaCalendario() {
+  clearTimeout(timerCopia);
+  timerCopia = setTimeout(async () => {
+    const { ligado, copiar } = calPrefs();
+    if (!Calendario || !ligado || !copiar) return;
+    const mapa = lerJSON('agenda.calMapa', {}), vivos = new Set(), limite = maisDias(inicioDoDia(new Date()), -30);
+    for (const ev of eventos) {
+      vivos.add(ev.id);
+      if (!ev.repetir && new Date(ev.inicio) < limite && !mapa[ev.id]) continue;   // o passado distante não precisa ir
+      const dias = ev.repetir?.freq === 'semanal' ? diasDaSerie(ev) : [];
+      const assinatura = JSON.stringify([ev.titulo, ev.inicio, ev.duracaoMin, ev.repetir, dias, ev.excecoes, copiar]);
+      const m = mapa[ev.id];
+      if (m?.assinatura === assinatura) continue;
+      try {
+        // série mudou: troca a série inteira, para os dias tirados ficarem certos
+        if (m && (ev.repetir || m.serie)) await Calendario.apagar({ idExterno: m.id }).catch(() => {});
+        const ini = new Date(ev.inicio);
+        const r = await Calendario.salvar({ tapId: ev.id, titulo: ev.titulo, inicio: ini.getTime(), fim: ini.getTime() + (ev.duracaoMin || 60) * 60000, calendario: copiar,
+          idExterno: m && !ev.repetir && !m.serie ? m.id : '', repetir: ev.repetir ? { freq: ev.repetir.freq, dias } : null, excecoes: ev.repetir ? ev.excecoes || [] : [] });
+        mapa[ev.id] = { id: r.idExterno, assinatura, serie: !!ev.repetir };
+      } catch (e) { console.warn('Calendário: copiar', e); }
+    }
+    for (const id of Object.keys(mapa)) if (!vivos.has(id)) { await Calendario.apagar({ idExterno: mapa[id].id }).catch(() => {}); delete mapa[id]; }
+    gravarJSON('agenda.calMapa', mapa);
+  }, 1500);
+}
+
+function abrirExterno(ev) {
+  if (!ev) return;
+  const ini = new Date(ev.inicio);
+  abrirFolha(`<div class="cal-externo">
+      <h3>${esc(ev.titulo)}</h3>
+      <p>${maiuscula(fmtDataLonga(ini))} · ${fmtHora(ini)} às ${fmtHora(fimDe(ev, ini))}</p>
+      <p class="cal-origem">📅 Da agenda <b>${esc(ev.externo)}</b>, no Calendário do iPhone. Para mudar ou apagar, use o app Calendário ou o Google Agenda.</p>
+    </div>`);
+}
+
+function atualizarRotuloCalendario() {
+  const el = document.getElementById('calRot');
+  if (!el) return;
+  const { ligado, copiar, nome } = calPrefs();
+  el.textContent = !ligado ? tr('Conectar ao Calendário do iPhone') : copiar ? `${tr('Calendário conectado')} · ${tr('copiando para')} ${nome || ''}` : tr('Calendário conectado');
+}
+async function abrirCalendario() {
+  if (!Calendario) return toast('Disponível no app para iPhone.');
+  let ok = false;
+  try { ok = (await Calendario.permissao({ pedir: true })).ok; } catch {}
+  if (!ok) return abrirFolha(`<div class="cal-externo"><h3>Sem acesso ao Calendário</h3><p>Para conectar, libere o acesso em <b>Ajustes do iPhone → Tap Bee → Calendários → Acesso Total</b>.</p></div>`);
+  let lista = [], padrao = '';
+  try { ({ calendarios: lista, padrao } = await Calendario.calendarios()); } catch {}
+  const pref = calPrefs(), graváveis = lista.filter(c => c.escreve);
+  const contas = [...new Set(lista.map(c => c.conta))];
+  abrirFolha(`<div class="cal-folha">
+      <h3>Calendário e Google Agenda</h3>
+      <p>Os compromissos do Calendário do iPhone aparecem aqui no Tap Bee${contas.length ? ` (${contas.map(esc).join(', ')})` : ''}.</p>
+      <h4>Copiar o que você marca com a Bee para</h4>
+      <div class="cal-opcoes">
+        <button class="${!pref.copiar && pref.ligado ? 'on' : ''}" data-cal-copiar="">Não copiar</button>
+        ${graváveis.map(c => `<button class="${(pref.ligado ? pref.copiar : padrao) === c.id ? 'on' : ''}" data-cal-copiar="${esc(c.id)}" data-cal-nome="${esc(c.titulo)}"><i style="background:${c.cor}"></i><span>${esc(c.titulo)}<small>${esc(c.conta)}</small></span></button>`).join('')}
+      </div>
+      <p class="cal-dica">Usa Google Agenda? Adicione sua conta Google em <b>Ajustes do iPhone → Apps → Calendário → Contas</b> e ela aparece aqui.</p>
+      <button class="primario" data-cal-salvar>Pronto</button>
+      ${pref.ligado ? '<button class="cal-desligar" data-cal-desligar>Desconectar</button>' : ''}
+    </div>`);
+  let escolha = pref.ligado ? pref.copiar : padrao, nome = (lista.find(c => c.id === escolha) || {}).titulo || '';
+  sheet.querySelectorAll('[data-cal-copiar]').forEach(b => b.onclick = () => {
+    escolha = b.dataset.calCopiar; nome = b.dataset.calNome || ''; vibrar('selecao');
+    sheet.querySelectorAll('[data-cal-copiar]').forEach(x => x.classList.toggle('on', x === b));
+  });
+  sheet.querySelector('[data-cal-salvar]').onclick = () => {
+    if (escolha !== pref.copiar) gravarJSON('agenda.calMapa', {});   // agenda nova: copia tudo de novo para lá
+    gravarJSON('agenda.calendario', { ligado: true, copiar: escolha, nome });
+    fecharFolha(); atualizarRotuloCalendario(); lerCalendario(); copiarParaCalendario();
+    vibrar('sucesso'); toast(escolha ? 'Calendário conectado. Seus compromissos vão aparecer nos dois lugares.' : 'Calendário conectado.', 4000);
+  };
+  sheet.querySelector('[data-cal-desligar]')?.addEventListener('click', () => {
+    gravarJSON('agenda.calendario', { ligado: false, copiar: '' });
+    fecharFolha(); atualizarRotuloCalendario(); lerCalendario(); toast('Calendário desconectado.');
+  });
+}
+document.getElementById('btnCalendario').onclick = abrirCalendario;
+atualizarRotuloCalendario();
+setTimeout(lerCalendario, 600);
+
 // ---------- Reuniões: grava a conversa, a Bee transcreve e resume ----------
 // O áudio sai do iPhone só para virar texto e resumo; aqui fica guardado só o texto
 const Gravador = pluginNativo('Gravador');

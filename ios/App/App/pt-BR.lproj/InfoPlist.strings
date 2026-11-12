@@ -1,2 +1,4 @@
 NSMicrophoneUsageDescription = "O Tap Bee usa o microfone para você falar seus compromissos para a Bee e para gravar suas reuniões.";
 NSSpeechRecognitionUsageDescription = "O Tap Bee transforma sua fala em texto para a Bee anotar seus compromissos.";
+NSCalendarsFullAccessUsageDescription = "O Tap Bee mostra os compromissos do seu Calendário (Apple, Google e outras contas) e copia para lá o que você marca com a Bee.";
+NSCalendarsUsageDescription = "O Tap Bee mostra os compromissos do seu Calendário (Apple, Google e outras contas) e copia para lá o que você marca com a Bee.";

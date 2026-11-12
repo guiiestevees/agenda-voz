@@ -1,5 +1,6 @@
 import Foundation
 import AVFoundation
+import EventKit
 import Speech
 import Capacitor
 import WidgetKit
@@ -14,6 +15,7 @@ class TapBeeViewController: CAPBridgeViewController {
         bridge?.registerPluginInstance(MetricasPlugin())
         bridge?.registerPluginInstance(TelaPlugin())
         bridge?.registerPluginInstance(GravadorPlugin())
+        bridge?.registerPluginInstance(CalendarioPlugin())
         // App nativo não dá zoom: um toque duplo sem querer mudava o tamanho da tela
         webView?.scrollView.minimumZoomScale = 1
         webView?.scrollView.maximumZoomScale = 1
@@ -392,6 +394,103 @@ public class GravadorPlugin: CAPPlugin, CAPBridgedPlugin {
 
     @objc func apagar(_ call: CAPPluginCall) {
         try? FileManager.default.removeItem(at: pastaDe(call.getString("id") ?? ""))
+        call.resolve()
+    }
+}
+
+// ---------- Calendário do iPhone: lê os compromissos (Apple, Google e outras contas) e copia os do Tap Bee ----------
+public class CalendarioPlugin: CAPPlugin, CAPBridgedPlugin {
+    public let identifier = "CalendarioPlugin"
+    public let jsName = "Calendario"
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "permissao", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "calendarios", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "eventos", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "salvar", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "apagar", returnType: CAPPluginReturnPromise),
+    ]
+    private let loja = EKEventStore()
+
+    override public func load() {
+        NotificationCenter.default.addObserver(self, selector: #selector(mudou), name: .EKEventStoreChanged, object: loja)
+    }
+    @objc private func mudou() { notifyListeners("mudou", data: [:]) }
+
+    private var liberado: Bool {
+        let s = EKEventStore.authorizationStatus(for: .event)
+        if #available(iOS 17.0, *) { return s == .fullAccess }
+        return s == .authorized
+    }
+
+    private func hex(_ cor: CGColor?) -> String {
+        guard let c = cor?.components, c.count >= 3 else { return "#888888" }
+        return String(format: "#%02X%02X%02X", Int(c[0] * 255), Int(c[1] * 255), Int(c[2] * 255))
+    }
+
+    // pedir: false só diz se já tem permissão; true mostra o pedido do iPhone
+    @objc func permissao(_ call: CAPPluginCall) {
+        if liberado || !(call.getBool("pedir") ?? false) { return call.resolve(["ok": liberado]) }
+        let fim: (Bool, Error?) -> Void = { ok, _ in self.loja.reset(); call.resolve(["ok": ok]) }
+        if #available(iOS 17.0, *) { loja.requestFullAccessToEvents(completion: fim) } else { loja.requestAccess(to: .event, completion: fim) }
+    }
+
+    @objc func calendarios(_ call: CAPPluginCall) {
+        guard liberado else { return call.reject("sem-permissao") }
+        let lista = loja.calendars(for: .event).map { c -> [String: Any] in
+            ["id": c.calendarIdentifier, "titulo": c.title, "conta": c.source.title, "cor": hex(c.cgColor), "escreve": c.allowsContentModifications]
+        }
+        call.resolve(["calendarios": lista, "padrao": loja.defaultCalendarForNewEvents?.calendarIdentifier ?? ""])
+    }
+
+    // Compromissos entre duas datas, sem os que o próprio Tap Bee copiou para lá
+    @objc func eventos(_ call: CAPPluginCall) {
+        guard liberado else { return call.reject("sem-permissao") }
+        let de = Date(timeIntervalSince1970: (call.getDouble("de") ?? 0) / 1000)
+        let ate = Date(timeIntervalSince1970: (call.getDouble("ate") ?? 0) / 1000)
+        let busca = loja.predicateForEvents(withStart: de, end: ate, calendars: nil)
+        let lista = loja.events(matching: busca).filter { $0.url?.scheme != "tapbee" }.map { e -> [String: Any] in
+            ["id": "\(e.calendarItemIdentifier)@\(Int(e.startDate.timeIntervalSince1970))", "titulo": e.title ?? "", "inicio": e.startDate.timeIntervalSince1970 * 1000,
+             "fim": e.endDate.timeIntervalSince1970 * 1000, "diaTodo": e.isAllDay, "agenda": e.calendar.title, "cor": hex(e.calendar.cgColor)]
+        }
+        call.resolve(["eventos": lista])
+    }
+
+    // Cria ou atualiza a cópia de um compromisso do Tap Bee; séries vão com a regra de repetição e os dias tirados
+    @objc func salvar(_ call: CAPPluginCall) {
+        guard liberado else { return call.reject("sem-permissao") }
+        let tapId = call.getString("tapId") ?? UUID().uuidString
+        let ev = call.getString("idExterno").flatMap { $0.isEmpty ? nil : loja.event(withIdentifier: $0) } ?? EKEvent(eventStore: loja)
+        ev.title = call.getString("titulo") ?? ""
+        ev.startDate = Date(timeIntervalSince1970: (call.getDouble("inicio") ?? 0) / 1000)
+        ev.endDate = Date(timeIntervalSince1970: (call.getDouble("fim") ?? 0) / 1000)
+        ev.calendar = call.getString("calendario").flatMap { loja.calendar(withIdentifier: $0) } ?? loja.defaultCalendarForNewEvents
+        ev.url = URL(string: "tapbee://evento/\(tapId)")
+        ev.recurrenceRules = nil
+        if let r = call.getObject("repetir"), let freq = r["freq"] as? String {
+            let dias = (r["dias"] as? [Int] ?? []).compactMap { EKWeekday(rawValue: $0 + 1) }.map { EKRecurrenceDayOfWeek($0) }
+            let tipo: EKRecurrenceFrequency = freq == "diaria" ? .daily : freq == "mensal" ? .monthly : freq == "anual" ? .yearly : .weekly
+            ev.recurrenceRules = [EKRecurrenceRule(recurrenceWith: tipo, interval: 1, daysOfTheWeek: tipo == .weekly && !dias.isEmpty ? dias : nil,
+                                                   daysOfTheMonth: nil, monthsOfTheYear: nil, weeksOfTheYear: nil, daysOfTheYear: nil, setPositions: nil, end: nil)]
+        }
+        do {
+            try loja.save(ev, span: .futureEvents, commit: true)
+            let id = ev.eventIdentifier ?? ""
+            // Dias tirados da série ("só neste domingo"): apaga só aquela ocorrência
+            let fmt = DateFormatter(); fmt.dateFormat = "yyyy-MM-dd"; fmt.locale = Locale(identifier: "en_US_POSIX")
+            for dia in call.getArray("excecoes", String.self) ?? [] {
+                guard let d = fmt.date(from: dia), let cal = ev.calendar else { continue }
+                let busca = loja.predicateForEvents(withStart: d, end: d.addingTimeInterval(86400), calendars: [cal])
+                for o in loja.events(matching: busca) where o.eventIdentifier == id { try? loja.remove(o, span: .thisEvent, commit: true) }
+            }
+            call.resolve(["idExterno": id])
+        } catch {
+            call.reject("nao-salvou: \(error.localizedDescription)")
+        }
+    }
+
+    @objc func apagar(_ call: CAPPluginCall) {
+        guard liberado else { return call.reject("sem-permissao") }
+        if let id = call.getString("idExterno"), let ev = loja.event(withIdentifier: id) { try? loja.remove(ev, span: .futureEvents, commit: true) }
         call.resolve()
     }
 }

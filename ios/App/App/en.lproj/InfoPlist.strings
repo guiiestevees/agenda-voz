@@ -1,2 +1,4 @@
 NSMicrophoneUsageDescription = "Tap Bee uses the microphone so you can tell Bee your appointments and record your meetings.";
 NSSpeechRecognitionUsageDescription = "Tap Bee turns your speech into text so Bee can save your appointments.";
+NSCalendarsFullAccessUsageDescription = "Tap Bee shows the events in your Calendar (Apple, Google and other accounts) and copies the ones you add with Bee there.";
+NSCalendarsUsageDescription = "Tap Bee shows the events in your Calendar (Apple, Google and other accounts) and copies the ones you add with Bee there.";
