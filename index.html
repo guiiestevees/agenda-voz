@@ -231,11 +231,11 @@
   body[data-aba="hoje"] header.ceu h1 { grid-column: 1; grid-row: 1; margin-top: 4px; }
   body[data-aba="hoje"] header.ceu .topo-data { grid-column: 1; grid-row: 2; padding: 0; margin: 2px 0 0 !important; background: none; font-size: 14px; font-weight: 600; color: var(--muted); }
   body[data-aba="hoje"] header.ceu .topo-dir { grid-column: 2; grid-row: 1 / span 2; align-self: center; }
-  .pote-mini { display: flex; flex-direction: column; align-items: center; gap: 1px; }
-  .pote-mini .ampulheta.pote { width: 58px; height: 76px; display: block; }
-  .pote-mini #poteNivel { transition: transform 1.2s cubic-bezier(.3,.9,.3,1); }
-  .pote-mini b { font-size: 12px; font-weight: 800; color: var(--muted); white-space: nowrap; }
-  .pote-mini.cheio b { color: #b86e00; }
+  .pote-centro { display: flex; flex-direction: column; align-items: center; gap: 4px; margin: 4px 0 6px; }
+  .pote-centro .ampulheta.pote { width: 96px; height: 126px; display: block; }
+  .pote-centro #poteNivel { transition: transform 1.2s cubic-bezier(.3,.9,.3,1); }
+  .pote-centro b { font-size: 14px; font-weight: 700; color: var(--muted); }
+  .pote-centro.cheio b { color: #b86e00; font-weight: 800; }
   body[data-aba="hoje"] .evento .hora small, body[data-aba="hoje"] .evento .lembrete { display: none; }
   body[data-aba="hoje"] .evento { min-height: 0; padding-top: 12px; padding-bottom: 12px; }
   .gt-acoes { display: flex; align-items: center; gap: 8px; }
@@ -3061,7 +3061,7 @@ function telaHoje() {
   // Um destaque só por vez: o check-in (enquanto não feito) ou o próximo compromisso
   chaveProximo = proximoDeHoje(agora);
   // um aviso de configuração por vez: primeiro os 2 toques, depois o WhatsApp
-  let html = '<div class="hoje-topo">' + (JOGO ? htmlLinhaStatus() : '') + (htmlDoisToques() || htmlCartaoWhats()) + (JOGO ? htmlResgate() : '') + '</div><div class="hoje-dir">';   // no fim do dia, o botão da câmera no cartão do bicho vira "Postar"
+  let html = '<div class="hoje-topo">' + (JOGO ? htmlLinhaStatus() : htmlPoteDoDia()) + (htmlDoisToques() || htmlCartaoWhats()) + (JOGO ? htmlResgate() : '') + '</div><div class="hoje-dir">';   // no fim do dia, o botão da câmera no cartão do bicho vira "Postar"
   if (diaHojeBase !== chaveDia(hoje)) { diaHojeBase = chaveDia(hoje); diaHoje = 0; }
   const dia = maisDias(hoje, diaHoje);
   const tituloDia = !diaHoje ? 'Hoje' : diaHoje === 1 ? 'Amanhã' : `${maiuscula(dia.toLocaleDateString(LOCALE, { weekday: 'long' }).replace('-feira', ''))}, ${dia.getDate()}`;
@@ -3073,10 +3073,11 @@ function telaHoje() {
 }
 // Pote de mel do dia: enche conforme a pessoa conclui os compromissos de hoje
 let poteAntes = null;
+const POTE_CHEIO = 10;   // 10 compromissos feitos no dia enchem o pote
 function htmlPoteDoDia() {
   const hoje = inicioDoDia(new Date()), deHoje = ocorrencias(hoje, maisDias(hoje, 1));
-  const total = deHoje.length, feitos = deHoje.filter(o => estaFeito(o.ev, o.inicio)).length;
-  const frac = total ? feitos / total : 0, y = (f) => Math.round(186 - f * 110);
+  const feitos = deHoje.filter(o => estaFeito(o.ev, o.inicio)).length;
+  const frac = Math.min(feitos / POTE_CHEIO, 1), y = (f) => Math.round(186 - f * 110);
   const de = poteAntes ?? frac;
   poteAntes = frac;
   // o mel escorre da colher enquanto o pote enche
@@ -3085,8 +3086,8 @@ function htmlPoteDoDia() {
     const amp = document.getElementById('ampulheta');
     if (amp && frac > de) { amp.classList.add('rodando'); setTimeout(() => amp.classList.remove('rodando'), 1300); }
   }, 80);
-  const rot = !total ? '' : feitos === total ? 'Cheio!' : `${feitos} de ${total}`;
-  return `<span class="pote-mini ${total && feitos === total ? 'cheio' : ''}" aria-label="Pote de mel de hoje: ${feitos} de ${total} feitos">${htmlAmpulheta(false).replace('translate(0 186)', `translate(0 ${y(de)})`)}${rot ? `<b>${rot}</b>` : ''}</span>`;
+  const rot = !feitos ? 'Conclua um compromisso e veja o mel cair' : feitos >= POTE_CHEIO ? `Pote cheio! ${feitos} feitos hoje` : feitos === 1 ? '1 feito hoje' : `${feitos} feitos hoje`;
+  return `<div class="pote-centro ${feitos >= POTE_CHEIO ? 'cheio' : ''}">${htmlAmpulheta(false).replace('translate(0 186)', `translate(0 ${y(de)})`)}<b>${rot}</b></div>`;
 }
 // "Pra não esquecer": anotações sem dia nem hora, no fim do Hoje
 let notasAbertas = false;
@@ -3393,7 +3394,7 @@ function render() {
   document.body.classList.toggle('cheia', aba === 'semana' && visao === 'semana');
   document.body.dataset.aba = aba;
   const n = sequencia();
-  document.getElementById('topoAcao').innerHTML = aba !== 'hoje' ? '' : !JOGO ? htmlPoteDoDia()
+  document.getElementById('topoAcao').innerHTML = aba !== 'hoje' || !JOGO ? ''
     : fezCheckinHoje() ? `<button class="pg-fogo" data-fogo aria-label="${n} dias seguidos de check-in, ${xp.protetores ?? 1} protetores">${ICO.fogo}<b>${n}</b>${(xp.protetores ?? 1) ? `<span class="pg-escudos">${ICO.escudo}${xp.protetores ?? 1}</span>` : ''}</button>`
     : '';   // antes do check-in, o cartão grande da tela Hoje cuida disso
   document.getElementById('visoes').hidden = aba !== 'semana';
