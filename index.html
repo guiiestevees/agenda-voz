@@ -3127,16 +3127,16 @@
   .tela-escrever .fm-sec { display: flex; align-items: center; gap: 8px; margin-top: 18px; }
   .tela-escrever .fe-recentes { margin-bottom: 4px; }
   /* Abertura: continua a tela nativa (creme + ícone no centro) e some suave */
-  html body #abertura { background: #FBF6EA; display: block; animation: abSai .4s cubic-bezier(.4,0,.2,1) 1.05s forwards; }
-  #abertura .ab-brilho { position: absolute; left: 50%; top: 50%; width: 300px; height: 300px; margin: -150px 0 0 -150px; border-radius: 50%; background: radial-gradient(circle, rgba(255,182,38,.42), rgba(255,182,38,0) 65%); animation: abBrilho 1.2s ease-out both; }
-  #abertura .ab-logo { position: absolute; left: 50%; top: 50%; width: 124px; height: 124px; margin: -62px 0 0 -62px; border-radius: 30px; box-shadow: 0 8px 24px rgba(168,88,8,.25); animation: abLogo .9s cubic-bezier(.34,1.56,.64,1) both; }
-  html body #abertura .ab-nome { position: absolute; left: 0; right: 0; top: calc(50% + 82px); text-align: center; font: 800 30px var(--font-display); letter-spacing: -.03em; color: #1E140A; opacity: 0; animation: abTexto .5s cubic-bezier(.2,.8,.2,1) .3s forwards; }
-  #abertura .ab-sub { position: absolute; left: 0; right: 0; top: calc(50% + 124px); text-align: center; font: 500 15px var(--font-body); color: rgba(30,20,10,.55); opacity: 0; animation: abTexto .5s cubic-bezier(.2,.8,.2,1) .45s forwards; }
+  html body #abertura { background: linear-gradient(180deg, #FFD268 0%, #FFB626 50%, #F08F0A 100%); display: block; animation: abSai .4s cubic-bezier(.4,0,.2,1) 1.05s forwards; }
+  #abertura .ab-brilho { position: absolute; left: 50%; top: 50%; width: 300px; height: 300px; margin: -150px 0 0 -150px; border-radius: 50%; background: radial-gradient(circle, rgba(255,236,170,.75), rgba(255,236,170,0) 65%); animation: abBrilho 1.2s ease-out both; }
+  #abertura .ab-logo { position: absolute; left: 50%; top: 50%; width: 124px; height: 124px; margin: -62px 0 0 -62px; border-radius: 30px; box-shadow: 0 10px 28px rgba(110,58,10,.35); animation: abLogo .9s cubic-bezier(.34,1.56,.64,1) both; }
+  html body #abertura .ab-nome { position: absolute; left: 0; right: 0; top: calc(50% + 82px); text-align: center; font: 800 30px var(--font-display); letter-spacing: -.03em; color: #2A1704; opacity: 0; animation: abTexto .5s cubic-bezier(.2,.8,.2,1) .3s forwards; }
+  #abertura .ab-sub { position: absolute; left: 0; right: 0; top: calc(50% + 124px); text-align: center; font: 600 15px var(--font-body); color: rgba(42,23,4,.62); opacity: 0; animation: abTexto .5s cubic-bezier(.2,.8,.2,1) .45s forwards; }
   @keyframes abLogo { 0% { transform: scale(1); } 35% { transform: scale(.94); } 100% { transform: scale(1); } }
   @keyframes abBrilho { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
   @keyframes abTexto { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
   @keyframes abSai { to { opacity: 0; transform: scale(1.04); visibility: hidden; } }
-  :root[data-modo="escuro"] html body #abertura { background: #FBF6EA; }
+  :root[data-modo="escuro"] html body #abertura { background: linear-gradient(180deg, #FFD268 0%, #FFB626 50%, #F08F0A 100%); }
 </style>
 </head>
 <body>
