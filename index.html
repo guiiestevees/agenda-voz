@@ -3148,6 +3148,31 @@
   html body .sb-assuntos ul li { display: list-item; grid-template-columns: none; padding: 0; margin: 4px 0; }
   html body .sb-assuntos ul li::before { display: none; }
   html body .sb-assuntos ul { list-style: disc; }
+  /* Festa do pote cheio (tela toda) */
+  #festaPote { position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
+  .fp-fundo { position: absolute; inset: 0; background: radial-gradient(circle at 50% 42%, rgba(255,236,170,.92), rgba(251,246,234,.94) 55%); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); animation: fpFundo .3s ease both; }
+  :root[data-modo="escuro"] .fp-fundo { background: radial-gradient(circle at 50% 42%, rgba(120,80,10,.85), rgba(13,8,25,.94) 60%); }
+  .fp-centro { position: relative; width: 300px; height: 300px; display: grid; place-items: center; }
+  .fp-raios { position: absolute; inset: -120px; border-radius: 50%; background: repeating-conic-gradient(from 0deg, rgba(255,201,79,.45) 0deg 8deg, rgba(255,201,79,0) 8deg 22deg); -webkit-mask: radial-gradient(circle, #000 25%, transparent 70%); mask: radial-gradient(circle, #000 25%, transparent 70%); animation: fpRaios 6s linear infinite, fpEntra .5s var(--ease-out) .1s both; }
+  .fp-pote { position: relative; transform: scale(1); transition: transform .62s cubic-bezier(.5,0,.2,1); animation: fpPote .7s cubic-bezier(.34,1.56,.64,1) both; }
+  html body #festaPote .pote-ds { width: 200px; height: 230px; }
+  .fp-jato { position: absolute; left: 50%; top: 36px; width: 30px; height: 120px; margin-left: -15px; border-radius: 15px 15px 8px 8px; transform-origin: 50% 100%; transform: scaleY(0); background: linear-gradient(90deg, #F59A0B, #FFD54A 40%, #FFF1B8 50%, #FFC93C 65%, #E8860A); box-shadow: 0 0 24px rgba(255,182,38,.55); animation: fpJato 1.1s cubic-bezier(.2,.8,.2,1) .6s both; }
+  .fp-gota { position: absolute; left: 50%; top: 40px; width: calc(var(--r) * 2); height: calc(var(--r) * 2.3); margin-left: calc(var(--r) * -1); border-radius: 50%; opacity: 0; background: radial-gradient(circle at 35% 30%, #FFF6D0, #FFC93C 60%, #F59A0B); animation: fpGota 1.3s var(--atraso) both; }
+  .fp-brilho { position: absolute; left: 50%; top: 50%; width: var(--t); height: var(--t); margin: calc(var(--t) / -2); border-radius: 50%; opacity: 0; background: radial-gradient(circle, #FFF6D0, #FFC93C 55%, #E8A10F); box-shadow: 0 0 12px rgba(255,201,79,.9); animation: fpBrilho 1.6s cubic-bezier(.2,.8,.2,1) var(--atraso) infinite both; }
+  .fp-brilho.estrela { border-radius: 2px; clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); width: calc(var(--t) * 1.8); height: calc(var(--t) * 1.8); }
+  .fp-texto { position: relative; margin-top: 36px; text-align: center; animation: fpTexto .5s var(--ease-out) .55s both; }
+  .fp-texto b { display: block; font: 800 40px/1.1 var(--font-display); letter-spacing: -.03em; color: var(--text); }
+  .fp-texto span { display: block; margin-top: 8px; font: 500 17px var(--font-body); color: var(--muted); }
+  .fp-toque { position: absolute; bottom: calc(40px + env(safe-area-inset-bottom)); font: 600 13px var(--font-body); color: var(--muted); animation: fpTexto .4s ease 1.6s both; }
+  #festaPote.saindo .fp-fundo, #festaPote.saindo .fp-raios, #festaPote.saindo .fp-brilho, #festaPote.saindo .fp-texto, #festaPote.saindo .fp-toque, #festaPote.saindo .fp-jato, #festaPote.saindo .fp-gota { transition: opacity .35s; opacity: 0 !important; animation-play-state: paused; }
+  @keyframes fpFundo { from { opacity: 0; } }
+  @keyframes fpEntra { from { opacity: 0; transform: scale(.6); } }
+  @keyframes fpRaios { to { rotate: 360deg; } }
+  @keyframes fpPote { from { transform: scale(.4) translateY(80px); opacity: 0; } }
+  @keyframes fpTexto { from { opacity: 0; transform: translateY(16px); } }
+  @keyframes fpJato { 0% { transform: scaleY(0); opacity: 1; } 25% { transform: scaleY(1); } 60% { transform: scaleY(.8); opacity: 1; } 100% { transform: scaleY(0); opacity: 0; } }
+  @keyframes fpGota { 0% { opacity: 0; transform: translate(0, 0) scale(.6); } 8% { opacity: 1; } 45% { transform: translate(var(--dx), var(--dy)) scale(1); } 100% { opacity: 0; transform: translate(calc(var(--dx) * 1.4), calc(var(--dy) + 230px)) scale(.8); } }
+  @keyframes fpBrilho { 0% { opacity: 0; transform: rotate(var(--a)) translateY(0) scale(.3); } 20% { opacity: 1; } 100% { opacity: 0; transform: rotate(var(--a)) translateY(calc(var(--d) * -1)) scale(1); } }
 </style>
 </head>
 <body>
@@ -3954,7 +3979,7 @@ const ICO_CAL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stro
 const POTE_CORPO = 'M64 58 C64 72 22 80 22 132 C22 190 54 216 100 216 C146 216 178 190 178 132 C178 80 136 72 136 58 Z';
 const POTE_ONDA = 'M-100 6' + ' q12.5 -7 25 0 q12.5 7 25 0'.repeat(8) + ' V40 H-100 Z';
 let poteFracAntes = null, poteDiaAntes = null;
-function htmlPoteDS(feitos, total, dia = diaHoje) {
+function htmlPoteDS(feitos, total, dia = diaHoje) {   // dia: só para saber se a animação de encher vale
   if (dia !== poteDiaAntes) { poteDiaAntes = dia; poteFracAntes = null; }   // trocou de dia: sem animação de encher
   const p = total ? feitos / total : 0, cheio = p >= 1, de = poteFracAntes ?? p, estourou = cheio && de < 1, enche = p > de && !estourou;
   poteFracAntes = p;
@@ -4912,6 +4937,49 @@ new MutationObserver((ms) => {
   clearTimeout(perfilTimer); perfilTimer = setTimeout(() => { if (aba === 'mais') desenharPerfil(); }, 120);
 })
   .observe(document.getElementById('mais'), { subtree: true, childList: true, attributes: true, characterData: true, attributeFilter: ['class', 'style'] });
+// Pote cheio: o pote aparece grande no meio da tela, com brilhos dourados e "Parabéns!", estoura o mel
+// e depois volta voando para o lugar dele no Início, já cheio e escorrendo
+function celebrarPoteCheio() {
+  if (document.getElementById('festaPote')) return;
+  const hoje = inicioDoDia(new Date()), ocs = ocorrencias(hoje, maisDias(hoje, 1)), n = ocs.length, nome = lerPref('agenda.nome', '').trim();
+  // um pote só para a festa (sem mexer na animação do pote do Início)
+  const [fa, da] = [poteFracAntes, poteDiaAntes]; poteDiaAntes = 'festa'; poteFracAntes = (n - 1) / n;
+  const pote = htmlPoteDS(n, n, 'festa'); poteFracAntes = fa; poteDiaAntes = da;
+  const brilhos = Array.from({ length: 28 }, (_, i) => { const a = (i / 28) * 360 + (i % 3) * 7, d = 150 + (i * 47) % 140, t = 6 + (i * 13) % 14;
+    return `<i class="fp-brilho ${i % 3 === 0 ? 'estrela' : ''}" style="--a:${a}deg;--d:${d}px;--t:${t}px;--atraso:${0.35 + (i % 7) * 0.05}s"></i>`; }).join('');
+  const gotas = Array.from({ length: 14 }, (_, i) => { const a = -90 + (i / 13 - 0.5) * 110, v = 70 + (i * 29) % 70;
+    return `<i class="fp-gota" style="--dx:${Math.cos(a * Math.PI / 180) * v * 1.6}px;--dy:${Math.sin(a * Math.PI / 180) * v * 1.6}px;--atraso:${0.62 + (i % 5) * 0.04}s;--r:${7 + (i * 5) % 8}px"></i>`; }).join('');
+  const el = document.createElement('div');
+  el.id = 'festaPote';
+  el.innerHTML = `<div class="fp-fundo"></div>
+    <div class="fp-centro"><div class="fp-raios"></div>${brilhos}
+      <div class="fp-pote">${pote}<div class="fp-jato"></div>${gotas}</div></div>
+    <div class="fp-texto"><b>Parabéns${nome ? `, ${esc(nome)}` : ''}!</b><span>Você cumpriu tudo de hoje. Pote cheio!</span></div>
+    <small class="fp-toque">Toque pra continuar</small>`;
+  document.body.appendChild(el);
+  tocarSom(true); vibrar('sucesso');
+  setTimeout(() => el.querySelector('.pote-ds')?.classList.add('estoura'), 420);
+  let saindo = false;
+  const voltar = () => {
+    if (saindo) return; saindo = true;
+    if (aba !== 'hoje') irPara('hoje');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setTimeout(() => {
+      const alvo = document.querySelector('#lista .pote-linha .pote-ds'), meu = el.querySelector('.fp-pote .pote-ds');
+      el.classList.add('saindo');
+      if (alvo && meu) {
+        const a = alvo.getBoundingClientRect(), m = meu.getBoundingClientRect();
+        const dx = a.left + a.width / 2 - (m.left + m.width / 2), dy = a.top + a.height / 2 - (m.top + m.height / 2);
+        el.querySelector('.fp-pote').style.transform = `translate(${dx}px, ${dy}px) scale(${a.width / m.width})`;
+        alvo.style.opacity = '0';
+        setTimeout(() => { alvo.style.opacity = ''; }, 640);
+      }
+      setTimeout(() => el.remove(), 700);
+    }, 260);
+  };
+  el.onclick = voltar;
+  setTimeout(voltar, 3600);
+}
 // Pote cheio: a Bee comemora e mostra os dias de pote cheio da semana
 function abrirPoteCheio() {
   const hoje = inicioDoDia(new Date()), seg = maisDias(hoje, -((hoje.getDay() + 6) % 7)), nome = lerPref('agenda.nome', '');
@@ -4957,7 +5025,7 @@ function marcarFeito(botao) {
       setTimeout(() => ganhar(PONTOS.diaCompleto, { x: innerWidth / 2, y: innerHeight / 3 }), 400);
     }
     if (diaCompleto) setTimeout(() => { confete(innerWidth / 2, innerHeight / 3, true); if (JOGO) toast(`Dia concluído! +${PONTOS.diaCompleto} de bônus.`, 6000, { rotulo: 'Compartilhar', fn: abrirCompartilhar }); }, 250);
-    if (diaCompleto) setTimeout(abrirPoteCheio, 2300);   // o pote estoura primeiro, depois a festa
+    if (diaCompleto) setTimeout(celebrarPoteCheio, 450);   // a festa aparece na tela toda, esteja onde estiver na lista
   }
   if (feito && dia <= chaveDia(new Date())) toast('Feito!', 4000, { rotulo: 'Desfazer', fn: () => { const b = document.querySelector(`.check[data-check="${botao.dataset.check}"]`); if (b) marcarFeito(b); } });
   setTimeout(render, 700);
