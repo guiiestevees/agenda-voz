@@ -2939,6 +2939,50 @@
   .pn-dia svg { width: 18px; height: 18px; }
   .pn-add { display: flex; align-items: center; gap: 8px; width: 100%; padding: 14px 16px; border: 0; background: none; color: var(--accent-text); font: 600 15px var(--font-body); cursor: pointer; }
   .pn-add svg { width: 18px; height: 18px; }
+  html body .pn .pn-deslize { margin: 0; border-radius: 0; border-bottom: 1px solid var(--border-subtle); }
+  html body .pn .pn-deslize .pn-item { border-bottom: 0; background: var(--card); position: relative; }
+  .pn .deslize-fundo { border-radius: 0; }
+  /* Novo compromisso escrevendo uma frase */
+  .fe-texto { display: block; width: 100%; min-height: 96px; padding: 16px 18px; border-radius: 22px; border: 1px solid var(--border-default); background: var(--card); box-shadow: var(--shadow-card);
+    font: 700 26px/1.25 var(--font-display); letter-spacing: -.02em; color: var(--text); resize: none; outline: none; overflow: hidden; }
+  .fe-texto::placeholder { color: var(--muted); opacity: .45; }
+  .fe-texto:focus { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+  .fe-dica { display: flex; align-items: center; gap: 6px; margin: 10px 4px 12px; font-size: 14px; color: var(--muted); }
+  .fe-dica svg { width: 15px; height: 15px; color: var(--accent-text); }
+  .fe-atalhos { display: flex; gap: 8px; overflow-x: auto; margin: 0 -16px 16px; padding: 0 16px 2px; scrollbar-width: none; }
+  .fe-atalhos::-webkit-scrollbar { display: none; }
+  .fe-atalhos button { flex: none; height: 36px; padding: 0 14px; border-radius: 999px; border: 1px dashed var(--accent); background: var(--accent-soft); color: var(--accent-text); font: 600 14px var(--font-body); cursor: pointer; white-space: nowrap; }
+  .fe-recentes small { display: block; margin: 0 4px 8px; font: 700 12px var(--font-body); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .fe-recentes .fe-atalhos button { border-style: solid; border-color: var(--border-default); background: var(--card); color: var(--text); }
+  .fe-cartao { border-radius: 22px; overflow: hidden; background: var(--card); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-card); }
+  .fe-linha { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 58px; padding: 10px 16px; border: 0; border-top: 1px solid var(--border-subtle); background: none; font: inherit; color: var(--text); text-align: left; cursor: pointer; }
+  .fe-linha:first-child { border-top: 0; cursor: default; }
+  .fe-linha > span { width: 74px; flex: none; font-size: 14px; font-weight: 600; color: var(--muted); }
+  .fe-linha > b { flex: 1; min-width: 0; font-size: 17px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fe-linha > b small { font-weight: 500; font-size: 14px; color: var(--muted); }
+  .fe-linha > b.vazio { color: var(--muted); font-weight: 500; opacity: .6; }
+  .fe-linha .pf-seta { transform: rotate(135deg); transition: transform 200ms var(--ease-out); }
+  .fe-linha.aberta .pf-seta { transform: rotate(-45deg); }
+  .fe-bee { flex: none; padding: 2px 7px; border-radius: 999px; background: var(--gradient-honey); color: var(--text-on-honey); font: 800 10px var(--font-body); letter-spacing: .06em; font-style: normal; animation: tb-pop 420ms var(--ease-spring); }
+  @keyframes tb-pop { 0% { transform: scale(.6); } 60% { transform: scale(1.15); } 100% { transform: scale(1); } }
+  .fe-editor { padding: 4px 16px 16px; animation: tb-rise 180ms var(--ease-out); }
+  .fe-editor .fm-chips + .fm-chips { margin-top: 10px; }
+  .fe-editor input[type=date], .fe-editor input[type=time] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  /* Mel caindo no pote a cada check */
+  .pote-ds { --ate-gota: calc(var(--ate) - 4px); }
+  .pote-ds.enche .pd-mel { animation: pdSobe 1100ms 520ms cubic-bezier(.34,1.56,.64,1) both; }
+  .pote-ds.enche .pd-tampa { transform-origin: 140px 40px; animation: pdTampa 620ms cubic-bezier(.2,.8,.2,1); }
+  @keyframes pdTampa { 0% { transform: none; } 35% { transform: translate(-6px, -22px) rotate(-14deg); } 70% { transform: translate(-2px, -6px) rotate(-4deg); } 100% { transform: none; } }
+  .pd-gota { opacity: 0; animation: pdGota 640ms 160ms cubic-bezier(.55,0,.9,.45) both; }
+  @keyframes pdGota { 0% { opacity: 0; transform: translateY(-30px) scale(.7, .9); } 15% { opacity: 1; } 85% { opacity: 1; transform: translateY(var(--ate-gota)) scale(.9, 1.15); } 100% { opacity: 0; transform: translateY(var(--ate-gota)) scale(1.4, .5); } }
+  .pd-anel { opacity: 0; transform-box: fill-box; transform-origin: center; animation: pdAnel 700ms 760ms ease-out both; }
+  @keyframes pdAnel { 0% { opacity: .9; transform: scale(.4); } 100% { opacity: 0; transform: scale(3.2); } }
+  .pote-ds.enche .pd-onda { animation-duration: 1.4s; }
+  .pote-ds.enche .pd-bolha { animation-duration: 1.6s; }
+  .pote-ds.enche::before { animation: pdBrilho 1.4s .5s ease-out; }
+  @keyframes pdBrilho { 0%, 100% { opacity: 1; } 40% { opacity: 1; transform: scale(1.15); filter: brightness(1.2); } }
+  .pote-ds.esvazia .pd-mel { animation: pdSobe 700ms ease-out both; }
+  html body.com-tela #barraTopo { display: none; }
 </style>
 </head>
 <body>
@@ -3743,10 +3787,10 @@ const POTE_CORPO = 'M64 58 C64 72 22 80 22 132 C22 190 54 216 100 216 C146 216 1
 const POTE_ONDA = 'M-100 6' + ' q12.5 -7 25 0 q12.5 7 25 0'.repeat(8) + ' V40 H-100 Z';
 let poteFracAntes = null;
 function htmlPoteDS(feitos, total) {
-  const p = total ? feitos / total : 0, cheio = p >= 1, de = poteFracAntes ?? p, estourou = cheio && de < 1;
+  const p = total ? feitos / total : 0, cheio = p >= 1, de = poteFracAntes ?? p, estourou = cheio && de < 1, enche = p > de && !estourou;
   poteFracAntes = p;
   const nivel = (f) => 214 - f * 148;
-  return `<div class="pote-ds ${estourou ? 'estoura' : ''}" style="--de:${nivel(de)}px;--ate:${nivel(p)}px;--brilho:${(.14 + p * .34).toFixed(2)}">
+  return `<div class="pote-ds ${estourou ? 'estoura' : ''} ${enche ? 'enche' : p < de ? 'esvazia' : ''}" style="--de:${nivel(de)}px;--ate:${nivel(p)}px;--brilho:${(.14 + p * .34).toFixed(2)}">
     <svg viewBox="0 0 200 230" role="img" aria-label="Pote ${Math.round(p * 100)}% cheio"><defs>
       <clipPath id="pdC"><path d="${POTE_CORPO}"/></clipPath>
       <linearGradient id="pdH" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="90"><stop offset="0" stop-color="#FFD54A"/><stop offset=".45" stop-color="#FFBE2E"/><stop offset="1" stop-color="#F59A0B"/></linearGradient>
@@ -3767,6 +3811,8 @@ function htmlPoteDS(feitos, total) {
     <path d="M44 104 C36 130 38 166 56 192" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width="7" stroke-linecap="round"/><circle cx="52" cy="90" r="4" fill="#fff" fill-opacity=".75"/>
     <path d="${POTE_CORPO}" class="pd-borda"/><rect x="58" y="46" width="84" height="14" rx="7" class="pd-vidro pd-borda"/>
     ${cheio ? '<g class="pd-escorre" fill="none" stroke="url(#pdS)" stroke-linecap="round"><path d="M66 52 C58 64 40 72 32 96 C26 116 26 150 30 176" stroke-width="12"/><path d="M134 52 C142 64 162 74 168 100 C174 122 172 150 168 168" stroke-width="11"/><path d="M86 52 C80 60 70 66 64 82 C60 94 60 104 62 112" stroke-width="8"/></g><g fill="url(#pdS)"><circle cx="30" cy="178" r="8"/><circle cx="168" cy="170" r="7"/><circle cx="62" cy="114" r="5"/></g>' : ''}
+    ${enche ? `<ellipse class="pd-anel" cx="100" cy="${nivel(p) + 8}" rx="14" ry="4" fill="none" stroke="#FFE9A8" stroke-width="3"/>
+      <g class="pd-gota"><path d="M100 2 C97 9 91 15 91 21 A9 9 0 0 0 109 21 C109 15 103 9 100 2 Z" fill="url(#pdH)"/><circle cx="97" cy="19" r="2.2" fill="#fff" fill-opacity=".8"/></g>` : ''}
     <g class="pd-tampa"><rect x="48" y="16" width="104" height="32" rx="13" fill="url(#pdL)"/><rect x="58" y="21" width="58" height="6" rx="3" fill="#fff" fill-opacity=".3"/><path d="M50 40 H150" stroke="#5E2F05" stroke-opacity=".35" stroke-width="2"/></g>
     <rect x="60" y="114" width="80" height="54" rx="14" fill="#FFF8E8" stroke="#A85808" stroke-opacity=".22" stroke-width="2"/>
     <text x="100" y="147" text-anchor="middle" class="pd-num">${feitos}/${total}</text><text x="100" y="160" text-anchor="middle" class="pd-cap">FEITOS</text>
@@ -3836,11 +3882,13 @@ document.addEventListener('toggle', (e) => { if (e.target.classList?.contains('n
 function htmlNotas() {
   if (!notas.length) return '';
   const itens = notas.map(n => `
+    <div class="deslize pn-deslize" data-deslize="n|${n.id}" data-esq="1">
+    <div class="deslize-fundo" aria-hidden="true"><span class="df-ok">${ICO.ok}Feito</span><span class="df-del">Excluir${ICO.lixo}</span></div>
     <div class="pn-item nota" data-nota="${n.id}">
       <button class="pn-anel" data-nota-feita="${n.id}" aria-label="Marcar “${esc(n.titulo)}” como feito">${ICONE_CHECK}</button>
       <span class="pn-txt">${esc(n.titulo)}</span>
       <button class="pn-dia" data-nota-agendar="${n.id}" aria-label="Marcar dia">${ICO_DET.cal}</button>
-    </div>`).join('');
+    </div></div>`).join('');
   const prev = notas.slice(0, 2).map(n => esc(n.titulo)).join(' · ');
   return `<details class="pn notas-dobra" ${notasAbertas ? 'open' : ''}>
     <summary><span class="pn-ic">${ICO_TB.lampada}</span><span class="pn-cab"><b>Pra não esquecer</b><small>${prev}</small></span><em>${notas.length}</em><i class="pf-seta"></i></summary>
@@ -4485,6 +4533,37 @@ document.body.appendChild(telaCheia);
 function abrirTela(html) { telaCheia.innerHTML = html; telaCheia.scrollTop = 0; telaCheia.classList.add('aberta'); document.body.classList.add('com-tela'); }
 function fecharTela() { telaCheia.classList.remove('aberta'); document.body.classList.remove('com-tela'); }
 telaCheia.addEventListener('click', (e) => { if (e.target.closest('[data-tela-voltar]')) { vibrar('leve'); fecharTela(); } });
+// Arrastar a tela para a direita volta para onde você estava (como no resto do iPhone)
+let arrastoTela = null;
+telaCheia.addEventListener('touchstart', (e) => {
+  if (e.touches.length > 1 || e.target.closest('input, textarea, .fm-chips, .sb-anel')) return;
+  arrastoTela = { x0: e.touches[0].clientX, y0: e.touches[0].clientY, t0: Date.now(), dx: 0, ativo: false };
+}, { passive: true });
+telaCheia.addEventListener('touchmove', (e) => {
+  const g = arrastoTela; if (!g) return;
+  const dx = e.touches[0].clientX - g.x0, dy = e.touches[0].clientY - g.y0;
+  if (!g.ativo) {
+    if (Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx)) { arrastoTela = null; return; }
+    if (dx < 14) return;
+    g.ativo = true; telaCheia.style.transition = 'none';
+  }
+  e.preventDefault();
+  g.dx = Math.max(0, dx);
+  telaCheia.style.transform = `translateX(${g.dx}px)`;
+  telaCheia.style.boxShadow = '-12px 0 30px rgba(0,0,0,.12)';
+}, { passive: false });
+function soltarTela() {
+  const g = arrastoTela; arrastoTela = null;
+  if (!g || !g.ativo) return;
+  const rapido = g.dx / Math.max(1, Date.now() - g.t0) > .5;
+  telaCheia.style.transition = 'transform .22s cubic-bezier(.2,.8,.2,1)';
+  if (g.dx > innerWidth * .3 || (rapido && g.dx > 40)) {
+    telaCheia.style.transform = 'translateX(100%)'; vibrar('leve');
+    setTimeout(() => { fecharTela(); telaCheia.style.transform = ''; telaCheia.style.transition = ''; telaCheia.style.boxShadow = ''; }, 220);
+  } else { telaCheia.style.transform = ''; setTimeout(() => { telaCheia.style.transition = ''; telaCheia.style.boxShadow = ''; }, 220); }
+}
+telaCheia.addEventListener('touchend', soltarTela);
+telaCheia.addEventListener('touchcancel', soltarTela);
 const ICO_TB = {
   voltar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>',
   share: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>',
@@ -6416,73 +6495,128 @@ function escolherComoCriar() {
 const chipsSel = (name, opcoes, atual) => `<div class="chips-sel" role="radiogroup">${opcoes.map(([v, t]) =>
   `<label class="chip-op"><input type="radio" name="${name}" value="${v}" ${String(v) === String(atual) ? 'checked' : ''}><span>${t}</span></label>`).join('')}</div>`;
 const ICO_SETA = (d) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="${d === 'cima' ? 'm6 15 6-6 6 6' : 'm6 9 6 6 6-6'}"/></svg>`;
+// Entende a frase digitada: "dentista sexta às 15h por 1h" vira título, dia, hora e duração (sem internet)
+function lerFrase(txt) {
+  const hoje = inicioDoDia(new Date());
+  let r = ' ' + semAcento(txt || '') + ' ', orig = ' ' + String(txt || '') + ' ';
+  const out = {};
+  const tirar = (m) => { const i = r.indexOf(m); if (i >= 0) { r = r.slice(0, i) + ' '.repeat(m.length) + r.slice(i + m.length); orig = orig.slice(0, i) + ' '.repeat(m.length) + orig.slice(i + m.length); } };
+  let m;
+  if ((m = r.match(/\s(?:(?:pra|para|de)\s)?depois de amanha(?=[\s,.!?])/))) { out.dia = maisDias(hoje, 2); tirar(m[0]); }
+  else if ((m = r.match(/\s(?:(?:pra|para|de)\s)?(hoje|amanha)(?=[\s,.!?])/))) { out.dia = maisDias(hoje, m[1] === 'hoje' ? 0 : 1); tirar(m[0]); }
+  else if ((m = r.match(/\s(?:(?:na|no|nessa|nesse|essa|esse|proxima|proximo|pra|para)\s)?(domingo|segunda|terca|quarta|quinta|sexta|sabado)(?:-feira| feira)?(?=[\s,.!?])/))) {
+    const alvo = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'].indexOf(m[1]);
+    out.dia = maisDias(hoje, (alvo - hoje.getDay() + 7) % 7); tirar(m[0]);
+  } else if ((m = r.match(/\s(?:(?:no|dia)\s)?(\d{1,2})\/(\d{1,2})(?=[\s,.!?])/)) || (m = r.match(/\s(?:no\s)?dia\s(\d{1,2})(?=[\s,.!?])/))) {
+    const d = +m[1], mes = m[2] ? +m[2] - 1 : hoje.getMonth();
+    let dt = new Date(hoje.getFullYear(), mes, d); if (dt < hoje) dt = m[2] ? new Date(hoje.getFullYear() + 1, mes, d) : new Date(hoje.getFullYear(), hoje.getMonth() + 1, d);
+    if (d >= 1 && d <= 31) { out.dia = dt; tirar(m[0]); }
+  }
+  if ((m = r.match(/\s(?:(?:as|a|ao|lá pelas|pelas)\s)?(\d{1,2})(?::|h)(\d{2})?(?:h|hs)?(?:\s(?:da|de)\s(manha|tarde|noite))?(?=[\s,.!?])/)) || (m = r.match(/\s(?:as|pelas)\s(\d{1,2})()(?:\s(?:horas?))?(?:\s(?:da|de)\s(manha|tarde|noite))?(?=[\s,.!?])/))) {
+    let h = +m[1]; const mi = +(m[2] || 0);
+    if (m[3] && /tarde|noite/.test(m[3]) && h < 12) h += 12;
+    else if (!m[3] && !/:|h/.test(m[0]) && h >= 1 && h <= 7) h += 12;   // "às 3" quase sempre é de tarde
+    if (h <= 23 && mi <= 59) { out.h = h; out.m = mi; tirar(m[0]); }
+  } else if ((m = r.match(/\s(?:ao\s)?meio[- ]dia(?=[\s,.!?])/))) { out.h = 12; out.m = 0; tirar(m[0]); }
+  if ((m = r.match(/\s(?:por|durante)\s(\d+)\s?(h|horas?|min|minutos)(?=[\s,.!?])/))) { out.dur = /^h/.test(m[2]) ? +m[1] * 60 : +m[1]; tirar(m[0]); }
+  else if ((m = r.match(/\s(?:por|durante)\s(meia hora|uma hora)(?=[\s,.!?])/))) { out.dur = m[1] === 'meia hora' ? 30 : 60; tirar(m[0]); }
+  let t = orig.replace(/\s+(às|as|no|na|de|em|pra|para|e)\s*$/i, ' ').replace(/^\s*(bee,?|lembrar de|lembra de|marcar|marca|anota|anotar)\s+/i, ' ').replace(/\s+/g, ' ').trim();
+  out.titulo = t ? t[0].toUpperCase() + t.slice(1) : '';
+  return out;
+}
 function abrirEdicao(ev, novo = false) {
   fecharFolha();
   const d0 = new Date(ev.inicio);
-  const st = { titulo: ev.titulo || '', dia: inicioDoDia(d0), h: d0.getHours(), m: d0.getMinutes(), dur: durDe(ev), lembrete: ev.lembreteMin ?? null,
-    freq: ev.repetir?.freq || 'nenhuma', diasSem: ev.repetir?.freq === 'semanal' ? [...diasDaSerie(ev)] : [d0.getDay()] };
-  const lembretes = [[null, 'Sem aviso'], [0, 'Na hora'], [5, '5 min'], [10, '10 min'], [15, '15 min'], [30, '30 min'], [60, '1h antes'], [120, '2h antes'], [1440, '1 dia antes']];
+  const st = { texto: ev.titulo || '', dia: inicioDoDia(d0), h: d0.getHours(), m: d0.getMinutes(), dur: durDe(ev), lembrete: ev.lembreteMin ?? null,
+    freq: ev.repetir?.freq || 'nenhuma', diasSem: ev.repetir?.freq === 'semanal' ? [...diasDaSerie(ev)] : [d0.getDay()], aberto: '', mexeu: {} };
+  const lembretes = [[null, 'Sem aviso'], [0, 'Na hora'], [10, '10 min antes'], [15, '15 min antes'], [30, '30 min antes'], [60, '1h antes'], [1440, '1 dia antes']];
   if (!lembretes.some(([v]) => v === st.lembrete)) lembretes.push([st.lembrete, fmtLembrete(st.lembrete)]);
-  st.mais = false;
-  const duracoes = [30, 60, 120]; if (!duracoes.includes(st.dur)) duracoes.push(st.dur), duracoes.sort((a, b) => a - b);
-  const chip = (attr, v, on, txt) => `<button type="button" class="fm-chip ${on ? 'on' : ''}" ${attr}="${v}">${txt}</button>`;
-  const desenhar = () => {
-    const hoje = inicioDoDia(new Date()), amanha = maisDias(hoje, 1), depois = maisDias(hoje, 2);
-    const mesmo = (a, b) => chaveDia(a) === chaveDia(b), outro = ![hoje, amanha, depois].some(x => mesmo(x, st.dia));
-    const fim = new Date(+st.dia + (st.h * 60 + st.m + st.dur) * 60000);
-    abrirTela(`<div class="tela-form">
-      <div class="tela-topo"><button class="tb-redondo" data-tela-voltar aria-label="Voltar">${ICO_TB.voltar}</button><h2>${novo ? 'Novo compromisso' : 'Editar compromisso'}</h2>${novo ? `<button class="tb-redondo mel" data-fm-falar aria-label="Falar">${ICO_MIC_G}</button>` : '<span class="tb-vazio"></span>'}</div>
-      <label class="fm-campo">${ICO_DET.lapis}<input id="fmTitulo" value="${esc(st.titulo)}" placeholder="O que vai rolar?" autocomplete="off" enterkeyhint="done"></label>
-      <h3 class="fm-sec">Quando</h3>
-      <div class="fm-chips">${chip('data-fm-dia', chaveDia(hoje), mesmo(st.dia, hoje), 'Hoje')}${chip('data-fm-dia', chaveDia(amanha), mesmo(st.dia, amanha), 'Amanhã')}${chip('data-fm-dia', chaveDia(depois), mesmo(st.dia, depois), `${maiuscula(DIAS_CURTOS[depois.getDay()])}, ${depois.getDate()}`)}
-        <label class="fm-chip ${outro ? 'on' : ''}">${ICO_DET.cal}${outro ? `${maiuscula(DIAS_CURTOS[st.dia.getDay()])}, ${st.dia.getDate()}/${pad(st.dia.getMonth() + 1)}` : 'Escolher…'}<input type="date" id="fmData" value="${chaveDia(st.dia)}"></label></div>
-      <h3 class="fm-sec">Que horas</h3>
-      <label class="fm-hora"><input type="time" id="fmHora" value="${pad(st.h)}:${pad(st.m)}"><b>${pad(st.h)}:${pad(st.m)}</b><span>até ${fmtHora(fim)}</span></label>
-      <h3 class="fm-sec">Quanto tempo</h3>
-      <div class="fm-chips">${duracoes.map(m => chip('data-fm-dur', m, st.dur === m, m >= 60 && m % 60 === 0 ? `${m / 60} h` : fmtMin(m))).join('')}</div>
-      <button type="button" class="fm-mais ${st.mais ? 'aberto' : ''}" data-fm-mais><span>${ICO_DET.sino}${st.lembrete === null ? 'Sem aviso' : `Aviso ${fmtLembrete(st.lembrete)}`}</span><span>${ICO_DET.repete}${{ nenhuma: 'Não repete', diaria: 'Todo dia', semanal: 'Toda semana', mensal: 'Todo mês', anual: 'Todo ano' }[st.freq]}</span><i class="pf-seta"></i></button>
-      ${st.mais ? `<div class="fm-extra">
-        <h3 class="fm-sec">Aviso</h3>
-        <div class="fm-chips">${lembretes.map(([v, t]) => chip('data-fm-lem', v === null ? 'nao' : v, st.lembrete === v, t)).join('')}</div>
-        <h3 class="fm-sec">Repetir</h3>
-        <div class="fm-chips">${[['nenhuma', 'Não repete'], ['diaria', 'Todo dia'], ['semanal', 'Toda semana'], ['mensal', 'Todo mês'], ['anual', 'Todo ano']].map(([v, t]) => chip('data-fm-rep', v, st.freq === v, t)).join('')}</div>
-        ${st.freq === 'semanal' ? `<div class="fm-chips fm-dias">${['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((l, i) => chip('data-fm-ds', i, st.diasSem.includes(i), l)).join('')}</div>` : ''}
-      </div>` : ''}
-      ${novo ? '' : `<button class="det-excluir" data-fm-excluir>${ICO.lixo}Excluir compromisso</button>`}
-      <div class="det-rodape"><button class="bt-mel" data-fm-salvar ${st.titulo.trim() ? '' : 'disabled'}>${ICONE_CHECK}${novo ? 'Salvar compromisso' : 'Salvar alterações'}</button></div>
-    </div>`);
-    const inp = document.getElementById('fmTitulo');
-    inp.oninput = () => { st.titulo = inp.value; telaCheia.querySelector('[data-fm-salvar]').disabled = !inp.value.trim(); };
-    inp.onkeydown = (e) => { if (e.key === 'Enter') inp.blur(); };
-    document.getElementById('fmHora').onchange = (e) => { const [h, m] = (e.target.value || '').split(':').map(Number); if (!isNaN(h)) { st.h = h; st.m = m || 0; redesenhar(); } };
-    document.getElementById('fmData').onchange = (e) => { if (e.target.value) { const [a, m, d] = e.target.value.split('-').map(Number); st.dia = new Date(a, m - 1, d); redesenhar(); } };
+  const REPETE = [['nenhuma', 'Não repete'], ['diaria', 'Todo dia'], ['semanal', 'Toda semana'], ['mensal', 'Todo mês'], ['anual', 'Todo ano']];
+  const recentes = [...new Set(eventos.slice().reverse().map(e => e.titulo).filter(Boolean))].slice(0, 6);
+  const chip = (attr, v, on, txt) => `<button type="button" class="fm-chip ${on ? 'on' : ''}" ${attr}="${esc(String(v))}">${txt}</button>`;
+  // o que a frase diz vale, a não ser que a pessoa tenha mexido no campo
+  const valor = () => {
+    const f = lerFrase(st.texto), v = { titulo: f.titulo || '', dia: st.dia, h: st.h, m: st.m, dur: st.dur, bee: {} };
+    if (f.dia && !st.mexeu.dia) { v.dia = f.dia; v.bee.dia = 1; }
+    if (f.h != null && !st.mexeu.hora) { v.h = f.h; v.m = f.m; v.bee.hora = 1; }
+    if (f.dur && !st.mexeu.dur) { v.dur = f.dur; v.bee.dur = 1; }
+    return v;
   };
-  const redesenhar = () => { const y = telaCheia.scrollTop; desenhar(); telaCheia.scrollTop = y; };
+  const nomeDia = (d) => { const dif = Math.round((d - inicioDoDia(new Date())) / 86400000); return dif === 0 ? 'Hoje' : dif === 1 ? 'Amanhã' : `${maiuscula(DIAS_CURTOS[d.getDay()])}, ${d.getDate()} de ${d.toLocaleDateString(LOCALE, { month: 'short' }).replace('.', '')}`; };
+  const linhas = () => {
+    const v = valor(), fim = new Date(+v.dia + (v.h * 60 + v.m + v.dur) * 60000), hoje = inicioDoDia(new Date());
+    const tag = (k) => v.bee[k] ? '<em class="fe-bee">BEE</em>' : '';
+    const linha = (k, rot, val, editor) => `<button type="button" class="fe-linha ${st.aberto === k ? 'aberta' : ''}" data-fe-abrir="${k}"><span>${rot}</span><b>${val}</b>${tag(k)}<i class="pf-seta"></i></button>${st.aberto === k ? `<div class="fe-editor">${editor}</div>` : ''}`;
+    return `<div class="fe-cartao">
+      <div class="fe-linha fe-oque"><span>O quê</span><b class="${v.titulo ? '' : 'vazio'}">${esc(v.titulo || 'Escreva acima')}</b></div>
+      ${linha('dia', 'Quando', nomeDia(v.dia), `<div class="fm-chips">${[0, 1, 2, 3, 4, 5, 6].map(i => { const d = maisDias(hoje, i); return chip('data-fe-dia', chaveDia(d), chaveDia(d) === chaveDia(v.dia), i === 0 ? 'Hoje' : i === 1 ? 'Amanhã' : `${maiuscula(DIAS_CURTOS[d.getDay()])}, ${d.getDate()}`); }).join('')}<label class="fm-chip">${ICO_DET.cal}Outro dia<input type="date" id="feData" value="${chaveDia(v.dia)}"></label></div>`)}
+      ${linha('hora', 'Hora', `${pad(v.h)}:${pad(v.m)}<small> até ${fmtHora(fim)}</small>`, `<div class="fm-chips">${[8, 9, 10, 12, 14, 15, 16, 18, 19, 20].map(h => chip('data-fe-hora', h, v.h === h && v.m === 0, `${h}h`)).join('')}<label class="fm-chip">${ICO_DET.relogio}Outra hora<input type="time" id="feHora" value="${pad(v.h)}:${pad(v.m)}"></label></div>`)}
+      ${linha('dur', 'Duração', fmtMin(v.dur), `<div class="fm-chips">${[15, 30, 45, 60, 90, 120, 180].map(m => chip('data-fe-dur', m, v.dur === m, fmtMin(m))).join('')}</div>`)}
+      ${linha('aviso', 'Aviso', esc(lembretes.find(([x]) => x === st.lembrete)?.[1] || fmtLembrete(st.lembrete)), `<div class="fm-chips">${lembretes.map(([x, t]) => chip('data-fe-lem', x === null ? 'nao' : x, st.lembrete === x, t)).join('')}</div>`)}
+      ${linha('rep', 'Repetir', REPETE.find(([x]) => x === st.freq)[1], `<div class="fm-chips">${REPETE.map(([x, t]) => chip('data-fe-rep', x, st.freq === x, t)).join('')}</div>${st.freq === 'semanal' ? `<div class="fm-chips fm-dias">${['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((l, i) => chip('data-fe-ds', i, st.diasSem.includes(i), l)).join('')}</div>` : ''}`)}
+    </div>`;
+  };
+  const atalhos = () => st.texto.trim()
+    ? `<div class="fe-atalhos">${['hoje', 'amanhã', 'às 9h', 'às 14h', 'às 19h', 'por 30 min', 'por 1h'].map(t => `<button type="button" data-fe-add="${t}">+ ${t}</button>`).join('')}</div>`
+    : recentes.length ? `<div class="fe-recentes"><small>Usados por último</small><div class="fe-atalhos">${recentes.map(t => `<button type="button" data-fe-titulo="${esc(t)}">${esc(t)}</button>`).join('')}</div></div>` : '';
+  const desenhar = () => {
+    abrirTela(`<div class="tela-form tela-escrever">
+      <div class="tela-topo"><button class="tb-redondo" data-tela-voltar aria-label="Voltar">${ICO_TB.voltar}</button><h2>${novo ? 'Novo compromisso' : 'Editar compromisso'}</h2>${novo ? `<button class="tb-redondo mel" data-fm-falar aria-label="Falar">${ICO_MIC_G}</button>` : '<span class="tb-vazio"></span>'}</div>
+      <textarea id="feTexto" class="fe-texto" rows="2" placeholder="Dentista sexta às 15h" enterkeyhint="done">${esc(st.texto)}</textarea>
+      <p class="fe-dica">${ICO_TB.brilho}Escreva do seu jeito. A Bee entende o dia e a hora.</p>
+      <div id="feAtalhos">${atalhos()}</div>
+      <div id="feLinhas">${linhas()}</div>
+      ${novo ? '' : `<button class="det-excluir" data-fm-excluir>${ICO.lixo}Excluir compromisso</button>`}
+      <div class="det-rodape"><button class="bt-mel" data-fm-salvar ${valor().titulo ? '' : 'disabled'}>${ICONE_CHECK}${novo ? 'Salvar compromisso' : 'Salvar alterações'}</button></div>
+    </div>`);
+    ligar();
+  };
+  // só redesenha as partes de baixo: o campo de texto não perde o foco nem o teclado
+  const atualizar = () => {
+    document.getElementById('feLinhas').innerHTML = linhas();
+    document.getElementById('feAtalhos').innerHTML = atalhos();
+    telaCheia.querySelector('[data-fm-salvar]').disabled = !valor().titulo;
+    ligarCampos();
+  };
+  const ligarCampos = () => {
+    const dt = document.getElementById('feData'), hr = document.getElementById('feHora');
+    if (dt) dt.onchange = () => { if (!dt.value) return; const [a, m, d] = dt.value.split('-').map(Number); st.dia = new Date(a, m - 1, d); st.mexeu.dia = 1; st.aberto = ''; atualizar(); };
+    if (hr) hr.onchange = () => { const [h, m] = (hr.value || '').split(':').map(Number); if (isNaN(h)) return; st.h = h; st.m = m || 0; st.mexeu.hora = 1; st.aberto = ''; atualizar(); };
+  };
+  const ligar = () => {
+    const tx = document.getElementById('feTexto');
+    const ajustar = () => { tx.style.height = 'auto'; tx.style.height = tx.scrollHeight + 'px'; };
+    tx.oninput = () => { st.texto = tx.value.replace(/\n/g, ' '); ajustar(); atualizar(); };
+    tx.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); tx.blur(); } };
+    setTimeout(ajustar, 0);
+    ligarCampos();
+  };
   telaCheia.onclick = (e) => {
-    const t = e.target.closest('button'); if (!t || !telaCheia.querySelector('.tela-form')) return;
-    const ds = t.dataset;
+    const t = e.target.closest('button'); if (!t || !telaCheia.querySelector('.tela-escrever')) return;
+    const ds = t.dataset, v = valor();
     if ('fmFalar' in ds) { fecharTela(); return setTimeout(abrirVoz, 250); }
-    if (ds.fmDia) { const [a, m, d] = ds.fmDia.split('-').map(Number); st.dia = new Date(a, m - 1, d); }
-    else if (ds.fmH) st.h = (st.h + +ds.fmH + 24) % 24;
-    else if (ds.fmM) { const tot = (st.h * 60 + Math.round(st.m / 5) * 5 + +ds.fmM + 1440) % 1440; st.h = Math.floor(tot / 60); st.m = tot % 60; }
-    else if (ds.fmDur) st.dur = +ds.fmDur;
-    else if ('fmMais' in ds) st.mais = !st.mais;
-    else if (ds.fmLem) st.lembrete = ds.fmLem === 'nao' ? null : +ds.fmLem;
-    else if (ds.fmRep) st.freq = ds.fmRep;
-    else if (ds.fmDs) { const x = +ds.fmDs; st.diasSem = st.diasSem.includes(x) ? st.diasSem.filter(y => y !== x) : [...st.diasSem, x].sort(); if (!st.diasSem.length) st.diasSem = [x]; }
+    if (ds.feAdd) { st.texto = (st.texto.trim() + ' ' + ds.feAdd).trim(); const tx = document.getElementById('feTexto'); tx.value = st.texto; vibrar('selecao'); return atualizar(); }
+    if (ds.feTitulo) { st.texto = ds.feTitulo + ' '; const tx = document.getElementById('feTexto'); tx.value = st.texto; tx.focus(); vibrar('selecao'); return atualizar(); }
+    if (ds.feAbrir) { st.aberto = st.aberto === ds.feAbrir ? '' : ds.feAbrir; vibrar('selecao'); return atualizar(); }
+    if (ds.feDia) { const [a, m, d] = ds.feDia.split('-').map(Number); st.dia = new Date(a, m - 1, d); st.mexeu.dia = 1; st.aberto = ''; }
+    else if (ds.feHora) { st.h = +ds.feHora; st.m = 0; st.mexeu.hora = 1; st.aberto = ''; }
+    else if (ds.feDur) { st.dur = +ds.feDur; st.mexeu.dur = 1; st.aberto = ''; }
+    else if (ds.feLem) { st.lembrete = ds.feLem === 'nao' ? null : +ds.feLem; st.aberto = ''; }
+    else if (ds.feRep) { st.freq = ds.feRep; if (st.freq !== 'semanal') st.aberto = ''; }
+    else if (ds.feDs) { const x = +ds.feDs; st.diasSem = st.diasSem.includes(x) ? st.diasSem.filter(y => y !== x) : [...st.diasSem, x].sort(); if (!st.diasSem.length) st.diasSem = [x]; }
     else if ('fmExcluir' in ds) {
       const antes = JSON.stringify(eventos);
       eventos = eventos.filter(x => x.id !== ev.id); salvar(); render(); fecharTela(); telaCheia.onclick = null;
       return toast(`“${ev.titulo}” excluído`, 5000, { rotulo: 'Desfazer', fn: () => { eventos = JSON.parse(antes); salvar(); render(); } });
     }
-    else if ('fmSalvar' in ds) return salvarForm();
+    else if ('fmSalvar' in ds) return salvarForm(v);
     else return;
-    vibrar('selecao'); redesenhar();
+    vibrar('selecao'); atualizar();
   };
-  const salvarForm = () => {
-    ev.titulo = st.titulo.trim() || 'Compromisso';
-    ev.inicio = new Date(st.dia.getFullYear(), st.dia.getMonth(), st.dia.getDate(), st.h, st.m).toISOString();
-    ev.lembreteMin = st.lembrete; ev.duracaoMin = st.dur;
+  const salvarForm = (v) => {
+    ev.titulo = v.titulo || 'Compromisso';
+    ev.inicio = new Date(v.dia.getFullYear(), v.dia.getMonth(), v.dia.getDate(), v.h, v.m).toISOString();
+    ev.lembreteMin = st.lembrete; ev.duracaoMin = v.dur;
     ev.repetir = st.freq === 'nenhuma' ? null : montarRepetir(st.freq, st.freq === 'semanal' ? st.diasSem : []);
     ev.avisado = false; ev.avisados = [];
     if (novo) { eventos.push(ev); diaSel = inicioDoDia(new Date(ev.inicio)); rolarParaDia = true; mostrarDiaNoHoje(ev); }
@@ -6493,7 +6627,7 @@ function abrirEdicao(ev, novo = false) {
     if (choque) { toast(`Atenção: você já tem “${choque.ev.titulo}” às ${fmtHora(choque.inicio)}.`, 6000); return; } if (!(novo && dicaPosCriar())) toast(novo ? 'Compromisso criado' : 'Alterações salvas');
   };
   desenhar();
-  if (novo) setTimeout(() => document.getElementById('fmTitulo')?.focus(), 350);
+  if (novo) setTimeout(() => document.getElementById('feTexto')?.focus(), 300);
 }
 
 
@@ -6704,8 +6838,8 @@ const listaEl = document.getElementById('lista');
 const segurarClique = () => { ignorarClique = true; setTimeout(() => { ignorarClique = false; }, 400); };
 listaEl.addEventListener('touchstart', (e) => {
   const w = e.target.closest('[data-deslize]');
-  if (!w || e.touches.length > 1 || e.target.closest('.check')) return;
-  gesto = { w, el: w.querySelector('.evento, .hab'), x0: e.touches[0].clientX, y0: e.touches[0].clientY, dx: 0, ativo: false, passou: false, larg: w.offsetWidth };
+  if (!w || e.touches.length > 1 || e.target.closest('.check, .pn-anel')) return;
+  gesto = { w, el: w.querySelector('.evento, .hab, .pn-item'), x0: e.touches[0].clientX, y0: e.touches[0].clientY, dx: 0, ativo: false, passou: false, larg: w.offsetWidth };
 }, { passive: true });
 listaEl.addEventListener('touchmove', (e) => {
   if (!gesto) return;
@@ -6734,8 +6868,8 @@ function soltarGesto() {
   g.el.style.transition = 'transform .28s cubic-bezier(.2,.9,.3,1)';
   if (g.passou && g.dx > 0) {
     g.el.style.transform = '';
-    const b = g.w.querySelector('[data-check], [data-hab-check]');
-    setTimeout(() => { if (b) b.dataset.check ? marcarFeito(b) : marcarHabito(b); }, 120);
+    const b = g.w.querySelector('[data-check], [data-hab-check], [data-nota-feita]');
+    setTimeout(() => { if (!b) return; if (b.dataset.notaFeita) { b.classList.add('on'); tirarNota(b.dataset.notaFeita, 'feita'); } else if (b.dataset.check) marcarFeito(b); else marcarHabito(b); }, 120);
   } else if (g.passou && g.dx < 0) {
     g.el.style.transform = `translateX(${-g.larg - 30}px)`;
     g.w.classList.add('saindo');
@@ -6748,6 +6882,7 @@ listaEl.addEventListener('touchend', soltarGesto);
 listaEl.addEventListener('touchcancel', soltarGesto);
 function excluirPorGesto(chave) {
   const [id, dia] = chave.split('|');
+  if (id === 'n') return tirarNota(dia, 'apagada');
   const ev = eventos.find(e => e.id === id);
   if (!ev) return render();
   const antes = JSON.stringify(eventos);
