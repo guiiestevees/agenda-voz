@@ -852,6 +852,51 @@ function emParagrafos(r) {
   });
   return pars.join("\n\n").replace(/[ \t]+/g, " ").trim();
 }
+async function fazerResumo(env, texto, agora, ingles) {
+  const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
+  const resp = await client.beta.messages.stream({
+    model: "claude-sonnet-5-5",
+    max_tokens: 16000,
+    betas: ["server-side-fallback-2026-07-01"], fallbacks: "default",
+    output_config: { effort: "high", format: { type: "json_schema", schema: ESQUEMA_REUNIAO } },
+    system: ingles ? `${SISTEMA_REUNIAO}\n\nEsta pessoa fala INGLÊS: escreva tudo em inglês natural.` : SISTEMA_REUNIAO,
+    messages: [{ role: "user", content: `Hoje: ${agora}\n\nTranscrição:\n${texto}` }],
+  }).finalMessage();
+  if (resp.stop_reason === "refusal") { const x = new Error("recusa"); x.recusa = true; throw x; }
+  return JSON.parse(resp.content.find((b) => b.type === "text").text);
+}
+// Um trabalho de resumo por reunião: guarda a transcrição, faz o resumo num alarme (até 15 min) e guarda o resultado por 3 dias
+export class ResumoReuniao extends DurableObject {
+  async iniciar({ texto, agora, ingles }) {
+    const atual = await this.ctx.storage.get("estado");
+    if (atual) return this.situacao();
+    await this.ctx.storage.put({ estado: "fila", texto, agora, ingles: !!ingles, tentativas: 0, criado: Date.now() });
+    await this.ctx.storage.setAlarm(Date.now() + 50);
+    return { status: "fila" };
+  }
+  async situacao() {
+    const [estado, resultado, erro] = await Promise.all(["estado", "resultado", "erro"].map((k) => this.ctx.storage.get(k)));
+    if (!estado) return { status: "nenhum" };
+    return { status: estado, ...(resultado ? { resultado } : {}), ...(erro ? { erro } : {}) };
+  }
+  async alarm() {
+    const estado = await this.ctx.storage.get("estado");
+    if (estado === "pronto" || estado === "erro") return this.ctx.storage.deleteAll();   // limpeza depois de 3 dias
+    const { texto, agora, ingles, tentativas = 0 } = await this.ctx.storage.get(["texto", "agora", "ingles", "tentativas"]).then((m) => Object.fromEntries(m));
+    await this.ctx.storage.put({ estado: "fazendo", tentativas: tentativas + 1 });
+    try {
+      const resultado = await fazerResumo(this.env, texto, agora, ingles);
+      await this.ctx.storage.put({ estado: "pronto", resultado });
+      await this.ctx.storage.delete("texto");
+      await this.ctx.storage.setAlarm(Date.now() + 3 * 86400000);
+    } catch (x) {
+      console.error("Resumo em segundo plano:", x.message);
+      if (!x.recusa && tentativas + 1 < 3) { await this.ctx.storage.put({ estado: "fila" }); await this.ctx.storage.setAlarm(Date.now() + 8000); return; }
+      await this.ctx.storage.put({ estado: "erro", erro: x.recusa ? "recusa" : "falha" });
+      await this.ctx.storage.setAlarm(Date.now() + 3 * 86400000);
+    }
+  }
+}
 async function reuniao(req, env, origem) {
   if (!ORIGENS.includes(origem)) return responder({ erro: "origem não permitida" }, 403, origem);
   if (req.method !== "POST") return responder({ erro: "use POST" }, 405, origem);
@@ -874,20 +919,22 @@ async function reuniao(req, env, origem) {
         initial_prompt: ingles ? "Conversation recorded on a phone." : "Conversa gravada no celular, em português do Brasil, com pontuação." });
       return responder({ texto: limparAlucinacoes(emParagrafos(r)) }, 200, origem);
     }
-    if (e.acao === "resumir") {
+    // Resumo em segundo plano: o servidor termina sozinho mesmo se o iPhone fechar o app; o app pergunta depois
+    if (e.acao === "resumir" && e.job) {
+      if (!/^[a-z0-9]{6,40}$/i.test(String(e.job))) return responder({ erro: "job inválido" }, 400, origem);
       const texto = String(e.texto || "").slice(0, 300000).trim();
       if (!texto) return responder({ erro: "texto vazio" }, 400, origem);
-      const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
-      const resp = await client.beta.messages.create({
-        model: "claude-sonnet-5-5",
-        max_tokens: 16000,
-        betas: ["server-side-fallback-2026-07-01"], fallbacks: "default",
-        output_config: { effort: "high", format: { type: "json_schema", schema: ESQUEMA_REUNIAO } },
-        system: ingles ? `${SISTEMA_REUNIAO}\n\nEsta pessoa fala INGLÊS: escreva tudo em inglês natural.` : SISTEMA_REUNIAO,
-        messages: [{ role: "user", content: `Hoje: ${String(e.agora || "").slice(0, 80)}\n\nTranscrição:\n${texto}` }],
-      });
-      if (resp.stop_reason === "refusal") return responder({ erro: "recusa" }, 422, origem);
-      return responder(JSON.parse(resp.content.find((b) => b.type === "text").text), 200, origem);
+      const obj = env.RESUMOS.get(env.RESUMOS.idFromName(`${e.uid}:${e.job}`));
+      return responder(await obj.iniciar({ texto, agora: String(e.agora || "").slice(0, 80), ingles }), 200, origem);
+    }
+    if (e.acao === "resultado") {
+      if (!/^[a-z0-9]{6,40}$/i.test(String(e.job || ""))) return responder({ erro: "job inválido" }, 400, origem);
+      return responder(await env.RESUMOS.get(env.RESUMOS.idFromName(`${e.uid}:${e.job}`)).situacao(), 200, origem);
+    }
+    if (e.acao === "resumir") {   // versões antigas do app: resumo na hora
+      const texto = String(e.texto || "").slice(0, 300000).trim();
+      if (!texto) return responder({ erro: "texto vazio" }, 400, origem);
+      return responder(await fazerResumo(env, texto, String(e.agora || "").slice(0, 80), ingles), 200, origem);
     }
   } catch (x) {
     console.error("Reunião:", e.acao, x.message);

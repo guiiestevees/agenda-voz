@@ -3145,6 +3145,9 @@
   .fe-outro { display: flex; align-items: center; justify-content: center; }
   .fe-outro.on { background: var(--card); box-shadow: 0 1px 4px rgba(42,23,4,.14); color: var(--accent-text); font-weight: 800; }
   .fe-outro select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.011; font-size: 16px; -webkit-appearance: none; appearance: none; }
+  html body .sb-assuntos ul li { display: list-item; grid-template-columns: none; padding: 0; margin: 4px 0; }
+  html body .sb-assuntos ul li::before { display: none; }
+  html body .sb-assuntos ul { list-style: disc; }
 </style>
 </head>
 <body>
@@ -9049,7 +9052,7 @@ function htmlProgressoReuniao(r) {
   const total = Math.max(1, r.pedacos || 1), feitos = (r.textos || []).filter(t => t != null).length;
   const resumindo = r.estado === 'resumindo', pct = resumindo ? 82 : Math.round(5 + 75 * Math.min(1, feitos / total));
   const etapa = resumindo ? 'Escrevendo o resumo e separando os assuntos…' : total > 1 ? `Ouvindo a gravação · parte ${Math.min(feitos + 1, total)} de ${total}` : 'Ouvindo a gravação…';
-  return `<div class="rp-prog ${resumindo ? 'final' : ''}"><div class="rp-trilho"><i style="width:${pct}%"></i></div><div class="rp-rot"><span>${etapa}</span><b>${resumindo ? '' : pct + '%'}</b></div><small>Pode sair do app: a Bee avisa quando ficar pronto.</small></div>`;
+  return `<div class="rp-prog ${resumindo ? 'final' : ''}"><div class="rp-trilho"><i style="width:${pct}%"></i></div><div class="rp-rot"><span>${etapa}</span><b>${resumindo ? '' : pct + '%'}</b></div><small>${resumindo ? 'Pode bloquear a tela ou sair: o resumo continua sendo feito e aparece aqui quando você voltar.' : 'Pode sair do app: quando você voltar, a Bee continua de onde parou.'}</small></div>`;
 }
 function telaReunioes() {
   const g = gravacao, feitas = reunioes.filter(r => r.estado !== 'gravando');
@@ -9176,7 +9179,7 @@ async function encerrarReuniao() {
 async function pedirReuniao(corpo) {
   const resp = await fetch(IA_URL + 'reuniao', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ uid: meuId(), idioma: EM_INGLES ? 'en' : 'pt', ...corpo }) });
   const j = await resp.json().catch(() => ({}));
-  if (!resp.ok || j.erro) throw new Error(j.erro || `http ${resp.status}`);
+  if (!resp.ok || j.erro) { const x = new Error(j.erro || `http ${resp.status}`); x.status = resp.status || 500; throw x; }
   return j;
 }
 async function audioDoPedaco(r, i) {
@@ -9199,8 +9202,9 @@ Gravador?.addListener('pedaco', ({ indice }) => {
 async function processarReuniao(r) {
   if (emProcesso.has(r.id)) return;
   emProcesso.add(r.id);
+  Gravador?.segurar?.().catch(() => {});   // pede ao iPhone uns segundos extras se a pessoa sair do app
   try {
-    r.estado = 'transcrevendo'; r.erro = ''; atualizarReunioes();
+    r.estado = r.estado === 'resumindo' && r.job ? 'resumindo' : 'transcrevendo'; r.erro = ''; r.esperando = false; atualizarReunioes();
     // O app fechou no meio da gravação: conta os pedaços que ficaram no iPhone
     if (r.pedacos == null) { let n = 0; if (Gravador) while (await Gravador.ler({ id: r.id, indice: n }).then(() => true, () => false)) n++; r.pedacos = n; }
     const faltam = [...Array(r.pedacos).keys()].filter(i => r.textos[i] == null);
@@ -9209,19 +9213,39 @@ async function processarReuniao(r) {
     const texto = r.textos.join(' ').replace(/\s+/g, ' ').trim();
     // cada pedaço tem 5 minutos: a marca ajuda a Bee a dizer em que minuto cada assunto apareceu
     const comMarcas = r.textos.map((t, i) => `[${pad(i * 5)}:00] ${String(t || '').replace(/\s+/g, ' ').trim()}`).join('\n');
-    const resumo = texto.length < 20 ? { titulo: tr('Gravação sem conversa'), resumo: tr('Não deu para ouvir conversa nesta gravação.'), pontos: [], decisoes: [], tarefas: [] }
-      : await pedirReuniao({ acao: 'resumir', texto: comMarcas, agora: new Date().toLocaleString(LOCALE, { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) });
+    let resumo;
+    if (texto.length < 20) resumo = { titulo: tr('Gravação sem conversa'), resumo: tr('Não deu para ouvir conversa nesta gravação.'), pontos: [], decisoes: [], tarefas: [] };
+    else {
+      // o servidor faz o resumo sozinho; o app só pergunta se ficou pronto (assim não importa se a tela bloquear)
+      if (!r.job) { r.job = (novoId() + Date.now().toString(36)).replace(/[^a-z0-9]/gi, '').slice(0, 30); salvarReunioes(); }
+      let sit = await pedirReuniao({ acao: 'resumir', job: r.job, texto: comMarcas, agora: new Date().toLocaleString(LOCALE, { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) });
+      const limite = Date.now() + 12 * 60000;
+      while (sit.status !== 'pronto') {
+        if (sit.status === 'erro') { r.job = ''; const x = new Error(sit.erro || 'falha'); x.status = 500; throw x; }
+        if (sit.status === 'nenhum') { r.job = ''; const x = new Error('perdido'); x.status = 500; throw x; }
+        if (Date.now() > limite) throw new Error('demorou');
+        await new Promise(ok => setTimeout(ok, 4000));
+        sit = await pedirReuniao({ acao: 'resultado', job: r.job });
+      }
+      resumo = sit.resultado;
+    }
     Object.assign(r, resumo, { estado: 'pronta' }, r.tituloEv ? { titulo: r.tituloEv } : {});
     r.temAudio = !!Gravador || !!audiosWeb[r.id];   // o áudio fica guardado no iPhone para ouvir depois
     vibrar('sucesso');
     if (aba !== 'reunioes') toast(tr('Resumo da reunião pronto! 🐝'), 3500, { rotulo: 'Ver', fn: () => irPara('reunioes') });
   } catch (e) {
     console.warn('Reunião:', e);
-    r.estado = 'erro'; r.erro = e.message;
+    // sem resposta do servidor = o iPhone pausou o app (tela bloqueada) ou a internet caiu: continua quando voltar
+    if (!e.status && e.message !== 'demorou') r.esperando = true;
+    else { r.estado = 'erro'; r.erro = e.message; }
   } finally {
-    emProcesso.delete(r.id); salvarReunioes(); atualizarReunioes();
+    emProcesso.delete(r.id); salvarReunioes(); atualizarReunioes(); Gravador?.soltar?.().catch(() => {});
   }
 }
+// Voltou para o app: continua as reuniões que estavam sendo preparadas
+function retomarReunioes() { (reunioes || []).filter(r => ['transcrevendo', 'resumindo'].includes(r.estado) && !emProcesso.has(r.id)).forEach(r => { r.esperando = false; processarReuniao(r); }); }
+document.addEventListener('visibilitychange', () => { if (!document.hidden) setTimeout(retomarReunioes, 600); });
+window.Capacitor?.Plugins?.App?.addListener?.('resume', () => setTimeout(retomarReunioes, 600));
 
 // Texto do resumo: **negrito** vira <b>, linhas em branco viram parágrafos
 const comNegrito = (t) => esc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');

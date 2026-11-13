@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 import AVFoundation
 import EventKit
 import Speech
@@ -302,6 +303,8 @@ public class GravadorPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "ler", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "apagar", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "arquivos", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "segurar", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "soltar", returnType: CAPPluginReturnPromise),
     ]
     private let duracaoPedaco: TimeInterval = 300
     private var gravador: AVAudioRecorder?
@@ -406,6 +409,25 @@ public class GravadorPlugin: CAPPlugin, CAPBridgedPlugin {
     @objc func apagar(_ call: CAPPluginCall) {
         try? FileManager.default.removeItem(at: pastaDe(call.getString("id") ?? ""))
         call.resolve()
+    }
+
+    // Ao sair do app no meio da preparação do resumo, o iPhone dá uns segundos extras para terminar o envio
+    private var tarefaFundo: UIBackgroundTaskIdentifier = .invalid
+    @objc func segurar(_ call: CAPPluginCall) {
+        DispatchQueue.main.async {
+            if self.tarefaFundo != .invalid { return call.resolve() }
+            self.tarefaFundo = UIApplication.shared.beginBackgroundTask(withName: "resumo-reuniao") { [weak self] in
+                guard let self = self else { return }
+                UIApplication.shared.endBackgroundTask(self.tarefaFundo); self.tarefaFundo = .invalid
+            }
+            call.resolve()
+        }
+    }
+    @objc func soltar(_ call: CAPPluginCall) {
+        DispatchQueue.main.async {
+            if self.tarefaFundo != .invalid { UIApplication.shared.endBackgroundTask(self.tarefaFundo); self.tarefaFundo = .invalid }
+            call.resolve()
+        }
     }
 
     // Lista os pedaços da gravação, com o caminho e a duração de cada um, para o player do app

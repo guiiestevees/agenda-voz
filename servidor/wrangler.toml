@@ -32,3 +32,12 @@ new_sqlite_classes = ["AvisosWhatsapp"]
 # Whisper: transforma os áudios do WhatsApp em texto
 [ai]
 binding = "AI"
+
+# Resumo das reuniões em segundo plano (continua mesmo se o iPhone fechar o app)
+[[durable_objects.bindings]]
+name = "RESUMOS"
+class_name = "ResumoReuniao"
+
+[[migrations]]
+tag = "v3"
+new_sqlite_classes = ["ResumoReuniao"]
