@@ -3173,6 +3173,22 @@
   @keyframes fpJato { 0% { transform: scaleY(0); opacity: 1; } 25% { transform: scaleY(1); } 60% { transform: scaleY(.8); opacity: 1; } 100% { transform: scaleY(0); opacity: 0; } }
   @keyframes fpGota { 0% { opacity: 0; transform: translate(0, 0) scale(.6); } 8% { opacity: 1; } 45% { transform: translate(var(--dx), var(--dy)) scale(1); } 100% { opacity: 0; transform: translate(calc(var(--dx) * 1.4), calc(var(--dy) + 230px)) scale(.8); } }
   @keyframes fpBrilho { 0% { opacity: 0; transform: rotate(var(--a)) translateY(0) scale(.3); } 20% { opacity: 1; } 100% { opacity: 0; transform: rotate(var(--a)) translateY(calc(var(--d) * -1)) scale(1); } }
+  /* Estouro do pote, igual ao design system: bola de mel, jato fino, gotas em duas ondas e a gota pingando da tampa */
+  .pd-domo { transform-origin: 100px 52px; transform: scaleY(0); animation: tb-dome 1.6s .3s var(--ease-out) both; }
+  .pd-geiser { transform-origin: 100px 50px; opacity: 0; animation: tb-geyser 1.3s .32s var(--ease-out) both; }
+  .pd-jorro { transform-box: fill-box; transform-origin: center; opacity: 0; animation-name: tb-gush; animation-timing-function: cubic-bezier(.2,.7,.4,1); animation-fill-mode: both; }
+  .pd-pinga { transform-origin: 120px 46px; animation: tb-drip 2.4s ease-in-out infinite; }
+  @keyframes tb-dome { 0% { transform: scaleY(0); } 25% { transform: scaleY(1.4); } 55% { transform: scaleY(1); } 100% { transform: scaleY(.6); } }
+  @keyframes tb-geyser { 0% { transform: scaleY(0) scaleX(.6); opacity: 1; } 30% { transform: scaleY(1.15) scaleX(1); opacity: 1; } 70% { transform: scaleY(.7) scaleX(.8); opacity: .9; } 100% { transform: scaleY(0) scaleX(.5); opacity: 0; } }
+  @keyframes tb-gush { 0% { transform: translate(0, 0) scale(.3); opacity: 0; } 6% { opacity: 1; } 40% { transform: translate(calc(var(--dx) * .6), var(--dy)) scale(1.05); } 100% { transform: translate(var(--dx), calc(var(--dy) + var(--fall, 190px))) scale(.75); opacity: 0; } }
+  @keyframes tb-drip { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(1.18); } }
+  .pote-ds.estoura .pd-tampa { animation: tb-lid-pop 1.7s .28s cubic-bezier(.2,.8,.3,1) both; }
+  .pote-ds.estoura svg { animation: tb-jar-shake .6s cubic-bezier(.65,0,.35,1); }
+  .pote-ds .pd-poca { transform-origin: 100px 221px; }
+  .pote-ds.estoura .pd-poca { animation: tb-puddle 1.4s 1s var(--ease-out) both; }
+  .pote-ds.estoura .pd-escorre path { animation: tb-flow 1.2s .45s var(--ease-out) both; }
+  /* a festa usa o estouro do pote; o jato e as gotas antigas saem */
+  #festaPote .fp-jato, #festaPote .fp-gota { display: none; }
 </style>
 </head>
 <body>
@@ -4007,10 +4023,20 @@ function htmlPoteDS(feitos, total, dia = diaHoje) {   // dia: só para saber se 
     ${cheio ? '<g class="pd-escorre" fill="none" stroke="url(#pdS)" stroke-linecap="round"><path d="M66 52 C58 64 40 72 32 96 C26 116 26 150 30 176" stroke-width="12"/><path d="M134 52 C142 64 162 74 168 100 C174 122 172 150 168 168" stroke-width="11"/><path d="M86 52 C80 60 70 66 64 82 C60 94 60 104 62 112" stroke-width="8"/></g><g fill="url(#pdS)"><circle cx="30" cy="178" r="8"/><circle cx="168" cy="170" r="7"/><circle cx="62" cy="114" r="5"/></g>' : ''}
     ${enche ? `<ellipse class="pd-anel" cx="100" cy="${nivel(p) + 8}" rx="14" ry="4" fill="none" stroke="#FFE9A8" stroke-width="3"/>
       <g class="pd-gota"><path d="M100 2 C97 9 91 15 91 21 A9 9 0 0 0 109 21 C109 15 103 9 100 2 Z" fill="url(#pdH)"/><circle cx="97" cy="19" r="2.2" fill="#fff" fill-opacity=".8"/></g>` : ''}
+    ${estourou ? `<ellipse class="pd-domo" cx="100" cy="42" rx="58" ry="30" fill="url(#pdS)"/>
+      <path class="pd-geiser" d="M84 50 C84 10 92 -30 100 -60 C108 -30 116 10 116 50 Z" fill="url(#pdS)"/>
+      ${POTE_JORRO.map(g => `<ellipse class="pd-jorro" cx="100" cy="44" rx="${g.r}" ry="${(g.r * 1.2).toFixed(1)}" fill="${g.claro ? 'url(#pdS)' : '#FFB524'}" style="--dx:${g.dx.toFixed(1)}px;--dy:${g.dy.toFixed(1)}px;--fall:${g.fall}px;animation-duration:${g.dur.toFixed(2)}s;animation-delay:${g.d.toFixed(2)}s"/>`).join('')}` : ''}
     <g class="pd-tampa"><rect x="48" y="16" width="104" height="32" rx="13" fill="url(#pdL)"/><rect x="58" y="21" width="58" height="6" rx="3" fill="#fff" fill-opacity=".3"/><path d="M50 40 H150" stroke="#5E2F05" stroke-opacity=".35" stroke-width="2"/></g>
+    ${cheio ? '<g class="pd-pinga"><path d="M112 46 C112 58 114 62 114 70 A6.5 6.5 0 0 0 127 70 C127 62 129 58 129 46 Z" fill="url(#pdS)"/><circle cx="118" cy="69" r="1.8" fill="#fff" fill-opacity=".8"/></g>' : ''}
     <rect x="60" y="114" width="80" height="54" rx="14" fill="#FFF8E8" stroke="#A85808" stroke-opacity=".22" stroke-width="2"/>
     <text x="100" y="147" text-anchor="middle" class="pd-num">${feitos}/${total}</text><text x="100" y="160" text-anchor="middle" class="pd-cap">FEITOS</text>
   </svg></div>`;
+}
+// Estouro do pote (igual ao HoneyJar do design system): duas ondas de gotas saindo da boca
+const POTE_JORRO = [];
+for (let w = 0; w < 2; w++) for (let i = 0; i < 22; i++) {
+  const a = (-168 + (i / 21) * 156) * Math.PI / 180, sp = 120 + ((i * 37 + w * 53) % 90);
+  POTE_JORRO.push({ dx: Math.cos(a) * sp * (w ? .8 : 1.15), dy: Math.sin(a) * sp * (w ? 1.15 : 1), r: 4 + ((i * 7 + w * 3) % 8), d: .3 + w * .42 + (i % 6) * .04, dur: 1.4 + (i % 5) * .16, fall: 200 + (i % 4) * 40, claro: i % 3 });
 }
 const ICO_NAV = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 11 19-9-9 19-2-8-8-2z"/></svg>';
 var visaoHoje = 'dia', semanaDesloc = 0, mesDesloc = 0, mesSel = null;
@@ -4943,8 +4969,13 @@ function celebrarPoteCheio() {
   if (document.getElementById('festaPote')) return;
   const hoje = inicioDoDia(new Date()), ocs = ocorrencias(hoje, maisDias(hoje, 1)), n = ocs.length, nome = lerPref('agenda.nome', '').trim();
   // um pote só para a festa (sem mexer na animação do pote do Início)
-  const [fa, da] = [poteFracAntes, poteDiaAntes]; poteDiaAntes = 'festa'; poteFracAntes = (n - 1) / n;
-  const pote = htmlPoteDS(n, n, 'festa'); poteFracAntes = fa; poteDiaAntes = da;
+  // o pote entra quase cheio e, um instante depois, estoura (igual ao design system)
+  const [fa, da] = [poteFracAntes, poteDiaAntes];
+  poteDiaAntes = 'festa'; poteFracAntes = (n - 1) / n;
+  const pote = htmlPoteDS(n - 1, n, 'festa');
+  poteFracAntes = (n - 1) / n;
+  const poteEstoura = htmlPoteDS(n, n, 'festa');
+  poteFracAntes = fa; poteDiaAntes = da;
   const brilhos = Array.from({ length: 28 }, (_, i) => { const a = (i / 28) * 360 + (i % 3) * 7, d = 150 + (i * 47) % 140, t = 6 + (i * 13) % 14;
     return `<i class="fp-brilho ${i % 3 === 0 ? 'estrela' : ''}" style="--a:${a}deg;--d:${d}px;--t:${t}px;--atraso:${0.35 + (i % 7) * 0.05}s"></i>`; }).join('');
   const gotas = Array.from({ length: 14 }, (_, i) => { const a = -90 + (i / 13 - 0.5) * 110, v = 70 + (i * 29) % 70;
@@ -4958,7 +4989,7 @@ function celebrarPoteCheio() {
     <small class="fp-toque">Toque pra continuar</small>`;
   document.body.appendChild(el);
   tocarSom(true); vibrar('sucesso');
-  setTimeout(() => el.querySelector('.pote-ds')?.classList.add('estoura'), 420);
+  setTimeout(() => { const v = el.querySelector('.fp-pote .pote-ds'); if (v) v.outerHTML = poteEstoura; vibrar('sucesso'); }, 650);
   let saindo = false;
   const voltar = () => {
     if (saindo) return; saindo = true;
@@ -4978,7 +5009,7 @@ function celebrarPoteCheio() {
     }, 260);
   };
   el.onclick = voltar;
-  setTimeout(voltar, 3600);
+  setTimeout(voltar, 4200);
 }
 // Pote cheio: a Bee comemora e mostra os dias de pote cheio da semana
 function abrirPoteCheio() {
