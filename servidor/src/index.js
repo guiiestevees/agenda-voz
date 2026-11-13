@@ -796,12 +796,14 @@ const ESQUEMA_REUNIAO = {
     resumo: { type: "string" },
     assuntos: { type: "array", items: { type: "object", properties: { quando: { type: "string" }, titulo: { type: "string" }, resumo: { type: "string" }, detalhes: { type: "array", items: { type: "string" } } }, required: ["quando", "titulo", "resumo", "detalhes"], additionalProperties: false } },
     decisoes: { type: "array", items: { type: "object", properties: { texto: { type: "string" }, porque: { type: "string" } }, required: ["texto", "porque"], additionalProperties: false } },
-    tarefas: { type: "array", items: { type: "object", properties: { texto: { type: "string" }, agenda: { type: "string" } }, required: ["texto", "agenda"], additionalProperties: false } },
+    tarefas: { type: "array", items: { type: "object", properties: { texto: { type: "string" }, agenda: { type: "string" }, data: { type: "string" }, hora: { type: "string" } }, required: ["texto", "agenda", "data", "hora"], additionalProperties: false } },
     frase: { type: "string" },
     pontos: { type: "array", items: { type: "string" } },
     proxima: { type: "string" },
+    proximaData: { type: "string" },
+    proximaHora: { type: "string" },
   },
-  required: ["titulo", "resumo", "assuntos", "decisoes", "tarefas", "frase", "pontos", "proxima"],
+  required: ["titulo", "resumo", "assuntos", "decisoes", "tarefas", "frase", "pontos", "proxima", "proximaData", "proximaHora"],
   additionalProperties: false,
 };
 const SISTEMA_REUNIAO = `Você é a Bee, secretária pessoal. Você recebe a transcrição automática de uma reunião, consulta, aula ou mentoria que a pessoa gravou com o celular.
@@ -814,10 +816,13 @@ Escreva um resumo gostoso de ler, em português do Brasil, falando com a pessoa 
   "quando" é o minuto em que o assunto começou, no formato mm:ss tirado das marcas (ex.: "06:45"); "titulo" tem até 6 palavras; "resumo" é 1 ou 2 frases contando o que foi dito; "detalhes" são até 4 itens curtos com números, nomes, valores e combinados daquele assunto (pode ser vazio).
 - decisoes: o que ficou decidido ou combinado. "texto" é a decisão; "porque" é o motivo, se foi dito, ou "". Vazio se nada foi decidido.
 - tarefas: o que a pessoa precisa fazer depois. "texto" é uma frase curta começando com verbo (ex.: "Tomar o remédio de manhã por 30 dias").
-  "agenda": se a tarefa tem dia, prazo ou horário dito na conversa, escreva como a pessoa falaria para a secretária marcar (ex.: "Retorno no cardiologista daqui a 30 dias", "Enviar a proposta sexta às 10"); se não tem quando, deixe "".
+  "agenda": se a tarefa tem dia, prazo ou horário dito na conversa, escreva o nome curto do compromisso como ficaria na agenda (ex.: "Retorno no cardiologista", "Enviar a proposta"); se não tem quando, deixe "".
+  "data": o dia em que isso acontece, no formato AAAA-MM-DD, calculado a partir de "Hoje" (ex.: "daqui a 30 dias", "sexta", "dia 20"). Se o prazo é "até" um dia, use esse dia. Sem dia dito, "".
+  "hora": o horário no formato HH:MM, se foi dito; senão "".
 - frase: a frase mais marcante dita na conversa, quase palavra por palavra, ou "" se nenhuma se destaca.
 - pontos: informações soltas que valem guardar (valores, nomes, telefones, recomendações), até 6 frases curtas. Não repita o que já está nas outras partes.
-- proxima: se combinaram um próximo encontro, escreva como a pessoa falaria para marcar (ex.: "Próxima mentoria terça às 10"); senão "".
+- proxima: se combinaram um próximo encontro, o nome dele como ficaria na agenda (ex.: "Próxima mentoria"); senão "".
+- proximaData e proximaHora: o dia (AAAA-MM-DD) e a hora (HH:MM) do próximo encontro, calculados a partir de "Hoje"; "" se não foi dito.
 Cuidado para não errar:
 - A transcrição automática erra palavras. Se um trecho não faz sentido, ignore em vez de adivinhar. Nunca transforme uma palavra estranha em nome, remédio, valor ou compromisso.
 - Nem toda conversa é reunião. Se for um bate-papo (casal, família, amigos), resuma o assunto de forma leve e só coloque em decisões e tarefas o que a pessoa claramente combinou de fazer.
