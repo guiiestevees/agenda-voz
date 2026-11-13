@@ -3953,8 +3953,9 @@ const ICO_CAL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stro
 // Pote de mel do design: enche com os checks do dia; cheio, o mel escorre
 const POTE_CORPO = 'M64 58 C64 72 22 80 22 132 C22 190 54 216 100 216 C146 216 178 190 178 132 C178 80 136 72 136 58 Z';
 const POTE_ONDA = 'M-100 6' + ' q12.5 -7 25 0 q12.5 7 25 0'.repeat(8) + ' V40 H-100 Z';
-let poteFracAntes = null;
-function htmlPoteDS(feitos, total) {
+let poteFracAntes = null, poteDiaAntes = null;
+function htmlPoteDS(feitos, total, dia = diaHoje) {
+  if (dia !== poteDiaAntes) { poteDiaAntes = dia; poteFracAntes = null; }   // trocou de dia: sem animação de encher
   const p = total ? feitos / total : 0, cheio = p >= 1, de = poteFracAntes ?? p, estourou = cheio && de < 1, enche = p > de && !estourou;
   poteFracAntes = p;
   const nivel = (f) => 214 - f * 148;
@@ -4009,7 +4010,6 @@ function htmlMesDS(hoje, agora) {
   h += doDia.length ? doDia.map(o => cartao(o, agora)).join('') : `<div class="sw-livre">${ICO_PF.lua}Dia livre</div>`;
   return h + `<button class="add-linha mm-add" data-mes-novo="${chaveDia(mesSel)}">${ICO.mais}Adicionar neste dia</button>`;
 }
-var semanaPassados = false;
 const DIAS_LONGOS = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 // Semana do design: faixa com as bolinhas, dias que já passaram dobrados numa pílula e uma lista por dia
 function htmlSemanaDS(hoje, agora) {
@@ -4024,7 +4024,6 @@ function htmlSemanaDS(hoje, agora) {
   const passados = dias.filter(x => x.passado);
   let h = `<div class="nav-per"><button class="nav-seta" data-sem-ir="-1" aria-label="Semana anterior">${ICO_SETA_L}</button><b ${semanaDesloc ? 'data-sem-ir="0"' : ''}>${faixa}</b><button class="nav-seta" data-sem-ir="1" aria-label="Próxima semana">${ICO_SETA_R}</button></div>
     <div class="sw-faixa">${dias.map(x => `<button class="sw-dia ${x.hj ? 'hj' : ''} ${x.foi ? 'passou' : ''}" data-sw-ir="${chaveDia(x.d)}"><small>${DIAS_CURTOS[x.d.getDay()]}</small><b>${x.d.getDate()}</b><span>${x.ocs.slice(0, 4).map(o => `<i class="${estaFeito(o.ev, o.inicio) ? 'ok' : ''}"></i>`).join('')}</span></button>`).join('')}</div>`;
-  if (false) h += `<button class="sw-passados" data-sw-passados>${semanaPassados ? `${ICO_SETA('cima')}Esconder dias anteriores` : `${ICO_DET.relogio}${passados.map(x => DIAS_CURTOS[x.d.getDay()]).join(passados.length === 2 ? ' e ' : ', ').replace(/^./, c => c.toUpperCase())} · ${passados.reduce((a, x) => a + x.feitos, 0)} feitos`}</button>`;
   h += dias.filter(x => !x.passado).map(x => `<section class="sw-sec ${x.passado ? 'passou' : ''}" id="sw-${chaveDia(x.d)}">
       <button class="sw-tit" data-sem-dia-data="${chaveDia(x.d)}"><b>${DIAS_LONGOS[x.d.getDay()]}, ${x.d.getDate()}</b>${x.hj ? '<em>Hoje</em>' : ''}<span></span>${x.ocs.length ? `<small>${x.feitos === x.ocs.length ? 'Tudo feito' : `${x.feitos} de ${x.ocs.length}`}</small>` : ''}</button>
       ${x.ocs.length ? `<div class="sw-lista">${x.ocs.map(o => { const f = estaFeito(o.ev, o.inicio), cat = categoria(o.ev.titulo); return `<button class="sw-item ${f ? 'feito' : ''}" data-id="${o.ev.id}" data-oc-dia="${chaveDia(o.inicio)}"><span class="sw-hora">${fmtHora(o.inicio)}</span><i class="sw-barra ${ehReuniao(o.ev) ? 'reu' : ''}"></i><span class="sw-txt"><b>${esc(o.ev.titulo)}</b>${cat ? `<small>${cat.nome}</small>` : ''}</span>${f ? ICONE_CHECK : ''}</button>`; }).join('')}</div>` : `<div class="sw-livre">${ICO_PF.lua}Dia livre</div>`}
@@ -4562,6 +4561,7 @@ document.querySelectorAll('[data-visao]').forEach(b => b.onclick = () => {
 window.addEventListener('resize', () => { if (aba === 'semana') render(); });
 document.getElementById('lista').addEventListener('click', (ev) => {
   if (ignorarClique) { ev.preventDefault(); ev.stopImmediatePropagation(); return; }
+  if (ev.target.closest('[data-gravar-ev], [data-reu-ver]')) return;   // quem cuida é o ouvinte de reuniões
   if (ev.target.closest('[data-fechar-ontem]')) return fecharOntem();
   if (ev.target.closest('[data-fogo]')) return mostrarSequencia();
   if (ev.target.closest('[data-dois-toques]')) return abrirDoisToques(-1);
@@ -4577,7 +4577,7 @@ document.getElementById('lista').addEventListener('click', (ev) => {
   const mh = ev.target.closest('[data-modo-hoje]');
   if (mh) { visaoHoje = mh.dataset.modoHoje; semanaDesloc = 0; mesDesloc = 0; mesSel = null; vibrar('selecao'); window.scrollTo(0, 0); return render(); }
   const si = ev.target.closest('[data-sem-ir]');
-  if (si) { semanaDesloc = +si.dataset.semIr === 0 ? 0 : semanaDesloc + +si.dataset.semIr; semanaPassados = false; vibrar('selecao'); return render(); }
+  if (si) { semanaDesloc = +si.dataset.semIr === 0 ? 0 : semanaDesloc + +si.dataset.semIr; vibrar('selecao'); return render(); }
   const mi = ev.target.closest('[data-mes-ir]');
   if (mi) { mesDesloc = +mi.dataset.mesIr === 0 ? 0 : mesDesloc + +mi.dataset.mesIr; mesSel = null; vibrar('selecao'); return render(); }
   const md = ev.target.closest('[data-mes-dia]');
@@ -4585,11 +4585,10 @@ document.getElementById('lista').addEventListener('click', (ev) => {
     mesDesloc = (dt.getFullYear() - hj.getFullYear()) * 12 + dt.getMonth() - hj.getMonth(); mesSel = dt; vibrar('selecao'); return render(); }
   const mn = ev.target.closest('[data-mes-novo]');
   if (mn) return novoCompromisso(mn.dataset.mesNovo, '09:00');
-  if (ev.target.closest('[data-sw-passados]')) { semanaPassados = !semanaPassados; vibrar('selecao'); return render(); }
   const sw = ev.target.closest('[data-sw-ir]');
   if (sw) {
     const k = sw.dataset.swIr;
-    if (!document.getElementById('sw-' + k)) { semanaPassados = true; render(); }
+    if (!document.getElementById('sw-' + k)) { const [a, m, d] = k.split('-').map(Number), alvo = new Date(a, m - 1, d), hj = new Date(); visaoHoje = 'mes'; mesSel = alvo; mesDesloc = (alvo.getFullYear() - hj.getFullYear()) * 12 + alvo.getMonth() - hj.getMonth(); vibrar('selecao'); window.scrollTo(0, 0); return render(); }
     vibrar('selecao');
     const alvo = document.getElementById('sw-' + k);
     if (alvo) window.scrollTo({ top: alvo.getBoundingClientRect().top + scrollY - 80, behavior: 'smooth' });
@@ -4854,13 +4853,6 @@ telaCheia.addEventListener('click', (e) => {
   }
   if (e.target.closest('[data-gravar-ev], [data-reu-ver]')) fecharTela();
 });
-// Hexágonos da semana: dias em que o pote encheu
-function diasDaSemanaMel() {
-  const hoje = inicioDoDia(new Date()), seg = maisDias(hoje, -((hoje.getDay() + 6) % 7));
-  const cheio = (d) => { const o = ocorrencias(d, maisDias(d, 1)); return o.length > 0 && o.every(x => estaFeito(x.ev, x.inicio)); };
-  return Array.from({ length: 7 }, (_, i) => { const d = maisDias(seg, i); return { d, ok: d <= hoje && cheio(d), hj: chaveDia(d) === chaveDia(hoje) }; });
-}
-const hexSemana = (dias) => `<div class="pf-semana">${dias.map(x => `<span class="${x.ok ? 'ok' : ''} ${x.hj ? 'hj' : ''}"><i>${x.ok ? ICONE_CHECK : ''}</i><small>${DIAS_CURTOS[x.d.getDay()]}</small></span>`).join('')}</div>`;
 // Perfil do design: linhas agrupadas em cartões; cada linha aciona o botão antigo (que continua cuidando da lógica)
 const ICO_PF = {
   sorriso: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg>',
@@ -4920,10 +4912,6 @@ new MutationObserver((ms) => {
   clearTimeout(perfilTimer); perfilTimer = setTimeout(() => { if (aba === 'mais') desenharPerfil(); }, 120);
 })
   .observe(document.getElementById('mais'), { subtree: true, childList: true, attributes: true, characterData: true, attributeFilter: ['class', 'style'] });
-function htmlSemanaMel() {
-  const dias = diasDaSemanaMel(), n = dias.filter(x => x.ok).length;
-  return `<div class="pt-semana"><h2 class="sec">Sua semana</h2><div class="pt-sem-cartao">${hexSemana(dias)}<small>${n ? `${n} ${n === 1 ? 'dia' : 'dias'} de pote cheio` : 'Complete o dia pra encher o primeiro pote'}</small></div></div>`;
-}
 // Pote cheio: a Bee comemora e mostra os dias de pote cheio da semana
 function abrirPoteCheio() {
   const hoje = inicioDoDia(new Date()), seg = maisDias(hoje, -((hoje.getDay() + 6) % 7)), nome = lerPref('agenda.nome', '');
@@ -6759,7 +6747,7 @@ function abrirEdicao(ev, novo = false) {
   fecharFolha();
   const d0 = new Date(ev.inicio);
   const st = { texto: ev.titulo || '', dia: inicioDoDia(d0), h: d0.getHours(), m: d0.getMinutes(), dur: durDe(ev), lembrete: ev.lembreteMin ?? null,
-    freq: ev.repetir?.freq || 'nenhuma', diasSem: ev.repetir?.freq === 'semanal' ? [...diasDaSerie(ev)] : [d0.getDay()], aberto: '', mexeu: {} };
+    freq: ev.repetir?.freq || 'nenhuma', diasSem: ev.repetir?.freq === 'semanal' ? [...diasDaSerie(ev)] : [d0.getDay()], aberto: '', mexeu: {}, textoOriginal: ev.titulo || '' };
   const lembretes = [[null, 'Sem aviso'], [0, 'Na hora'], [10, '10 min antes'], [15, '15 min antes'], [30, '30 min antes'], [60, '1h antes'], [1440, '1 dia antes']];
   if (!lembretes.some(([v]) => v === st.lembrete)) lembretes.push([st.lembrete, fmtLembrete(st.lembrete)]);
   const REPETE = [['nenhuma', 'Não repete'], ['diaria', 'Todo dia'], ['semanal', 'Toda semana'], ['mensal', 'Todo mês'], ['anual', 'Todo ano']];
@@ -6767,7 +6755,7 @@ function abrirEdicao(ev, novo = false) {
   const chip = (attr, v, on, txt) => `<button type="button" class="fm-chip ${on ? 'on' : ''}" ${attr}="${esc(String(v))}">${txt}</button>`;
   // o que a frase diz vale, a não ser que a pessoa tenha mexido no campo
   const valor = () => {
-    const f = lerFrase(st.texto), v = { titulo: f.titulo || '', dia: st.dia, h: st.h, m: st.m, dur: st.dur, bee: {} };
+    const f = !novo && st.texto === st.textoOriginal ? { titulo: st.texto.trim() } : lerFrase(st.texto), v = { titulo: f.titulo || '', dia: st.dia, h: st.h, m: st.m, dur: st.dur, bee: {} };
     if (f.dia && !st.mexeu.dia) { v.dia = f.dia; v.bee.dia = 1; }
     if (f.h != null && !st.mexeu.hora) { v.h = f.h; v.m = f.m; v.bee.hora = 1; }
     if (f.dur && !st.mexeu.dur) { v.dur = f.dur; v.bee.dur = 1; }
@@ -9145,7 +9133,7 @@ document.addEventListener('click', (e) => {
   if (g) { const [id, dia] = g.dataset.gravarEv.split('|'); return gravarCompromisso(id, dia); }
   if (ir) return irPara('reunioes');
   if (e.target.closest('#topoAcao [data-falar]')) { vibrar('medio'); return abrirVoz(); }
-  if (e.target.closest('#topoAcao [data-topo-novo]')) return diaHoje ? novoCompromisso(chaveDia(maisDias(new Date(), diaHoje)), '09:00') : novoCompromisso();
+  if (e.target.closest('#topoAcao [data-topo-novo]')) return visaoHoje === 'mes' && mesSel ? novoCompromisso(chaveDia(mesSel), '09:00') : visaoHoje === 'dia' && diaHoje ? novoCompromisso(chaveDia(maisDias(new Date(), diaHoje)), '09:00') : novoCompromisso();
   if (ver) { const r = reunioes.find(x => x.id === ver.dataset.reuVer); if (r?.estado === 'pronta') { fecharFolha(); setTimeout(() => abrirReuniao(r), 300); } else toast('A Bee ainda está preparando o resumo.'); }
 });
 async function pausarReuniao() {
@@ -9223,9 +9211,10 @@ async function processarReuniao(r) {
       while (sit.status !== 'pronto') {
         if (sit.status === 'erro') { r.job = ''; const x = new Error(sit.erro || 'falha'); x.status = 500; throw x; }
         if (sit.status === 'nenhum') { r.job = ''; const x = new Error('perdido'); x.status = 500; throw x; }
-        if (Date.now() > limite) throw new Error('demorou');
+        if (Date.now() > limite) { r.job = ''; throw new Error('demorou'); }
         await new Promise(ok => setTimeout(ok, 4000));
-        sit = await pedirReuniao({ acao: 'resultado', job: r.job });
+        try { sit = await pedirReuniao({ acao: 'resultado', job: r.job }); }
+        catch (x) { if (x.status || document.hidden) throw x; }   // internet piscou com o app aberto: tenta de novo no próximo giro
       }
       resumo = sit.resultado;
     }
