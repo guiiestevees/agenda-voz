@@ -2857,6 +2857,25 @@
   .fm-mais span { display: inline-flex; align-items: center; gap: 6px; } .fm-mais span:nth-of-type(2) { flex: 1; }
   .fm-mais svg { width: 16px; height: 16px; }
   .fm-mais.aberto .pf-seta { transform: rotate(135deg); }
+  /* sem atraso ao trocar claro/escuro */
+  html body { transition: none !important; }
+  /* Telas cheias: aparecem na hora, com fundo sólido (o deslize deixava o fundo meio transparente no iPhone) */
+  html body #telaCheia { display: none; transform: none; visibility: visible; transition: none; background-color: var(--bg); }
+  html body #telaCheia.aberta { display: block; }
+  html body #telaCheia.aberta > div { animation: tb-rise 200ms var(--ease-out); }
+  @keyframes tb-rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  .dt-tela { margin: 4px 0 14px; padding: 12px; border-radius: 22px; text-align: left; background: #F2F2F7; border: 1px solid var(--border-subtle); }
+  :root[data-modo="escuro"] .dt-tela { background: #1C1C1E; }
+  .dt-tela .dt-busca { margin: 0 0 10px; }
+  .dt-res { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; background: var(--card); }
+  .dt-res.on { box-shadow: 0 0 0 2px var(--accent); }
+  .dt-res > span:nth-child(2) { flex: 1; } .dt-res b { display: block; font-size: 16px; } .dt-res small { display: block; font-size: 12px; color: var(--muted); }
+  .dt-dedo { font-size: 24px; animation: tb-bob 1.4s ease-in-out infinite; }
+  .dt-lista-ios { border-radius: 14px; background: var(--card); overflow: hidden; }
+  .dt-lista-ios small { display: block; padding: 10px 14px 4px; background: #F2F2F7; font-size: 11px; font-weight: 600; letter-spacing: .04em; color: var(--muted); }
+  :root[data-modo="escuro"] .dt-lista-ios small { background: #1C1C1E; }
+  .dt-lista-ios i { display: flex; justify-content: space-between; padding: 11px 14px; border-top: 1px solid var(--line); font-style: normal; font-size: 15px; }
+  .dt-lista-ios i.on { font-weight: 700; color: #007AFF; box-shadow: inset 0 0 0 2px var(--accent); border-radius: 10px; }
 </style>
 </head>
 <body>
@@ -4489,12 +4508,15 @@ document.getElementById('perfilTopo').onclick = (e) => {
   const clicar = (id) => document.getElementById(id)?.click();
   vibrar('selecao');
   ({ nome: () => pedirNome(), ia: () => clicar('btnIA'), whats: () => clicar('btnWhats'), toques: () => clicar('btnDoisToques'), notif: () => clicar('btnNotif'), cal: () => clicar('btnCalendario'),
-    escuro: () => { document.querySelector(`[data-escolher-modo="${document.documentElement.dataset.modo === 'escuro' ? 'claro' : 'escuro'}"]`)?.click(); setTimeout(desenharPerfil, 50); },
+    escuro: () => { const ir = document.documentElement.dataset.modo === 'escuro' ? 'claro' : 'escuro'; b.querySelector('.pf-chave')?.classList.toggle('on', ir === 'escuro'); document.querySelector(`[data-escolher-modo="${ir}"]`)?.click(); },
     priv: () => window.open(EM_INGLES ? 'privacy.html' : 'privacidade.html', '_blank'), sup: () => window.open(EM_INGLES ? 'support.html' : 'suporte.html', '_blank') }[b.dataset.pf] || (() => {}))();
 };
 // quando um botão antigo muda de texto ou estado (avisos, calendário, WhatsApp), o perfil acompanha
 let perfilTimer;
-new MutationObserver(() => { clearTimeout(perfilTimer); perfilTimer = setTimeout(() => { if (aba === 'mais') desenharPerfil(); }, 120); })
+new MutationObserver((ms) => {
+  if (ms.every(m => m.target.closest?.('#perfilTopo') || m.target.parentElement?.closest('#perfilTopo'))) return;   // mudanças do próprio perfil não contam
+  clearTimeout(perfilTimer); perfilTimer = setTimeout(() => { if (aba === 'mais') desenharPerfil(); }, 120);
+})
   .observe(document.getElementById('mais'), { subtree: true, childList: true, attributes: true, characterData: true, attributeFilter: ['class', 'style'] });
 function htmlSemanaMel() {
   const dias = diasDaSemanaMel(), n = dias.filter(x => x.ok).length;
@@ -7269,41 +7291,47 @@ const ICO_TOQUE = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-wid
 const ROTA_AJUSTES = [['⚙️', 'Ajustes', 'o ícone cinza de engrenagem'], ['♿', 'Acessibilidade', ''], [ICO_TOQUE, 'Toque', 'o botão azul com a mãozinha branca'], ['📳', 'Tocar Atrás', 'role a tela até lá embaixo'], ['✌️', 'Toque Duplo', ''], ['🐝', 'Falar com a Bee', 'na parte de Atalhos, lá embaixo']];
 const rotaHtml = (itens) => `<ol class="dt-rota">${itens.map(([ico, nome, dica]) => `<li><span class="dt-ico ${ico === ICO_TOQUE ? 'azul' : ''}">${ico}</span><span><b>${nome}</b>${dica ? `<small>${dica}</small>` : ''}</span><span class="dt-seta"></span></li>`).join('')}</ol>`;
 function abrirDoisToques(passo = 0) {
-  const pontos = (n) => `<div class="dt-passos">${[0, 1, 2].map(i => `<i class="${i === n ? 'on' : i < n ? 'feito' : ''}"></i>`).join('')}</div>`;
-  const lista = (itens) => `<ol class="dt-lista">${itens.map((t, i) => `<li><span>${i + 1}</span><p>${t}</p></li>`).join('')}</ol>`;
+  const pontos = (n) => `<div class="dt-passos">${[0, 1, 2, 3].map(i => `<i class="${i === n ? 'on' : i < n ? 'feito' : ''}"></i>`).join('')}</div>`;
+  const topo = (n) => `<div class="dt-barra"><b>Passo ${n + 1} de 4</b></div>${pontos(n)}`;
   const telas = [
-    () => `<div class="dt-barra"><b>Dois toques</b></div>${pontos(0)}
-      <h3>Baixe o atalho da Bee</h3>
-      <p class="dt-sub">Com ele, <b>2 toques atrás do celular</b> abrem a Bee direto no microfone, pra anotar um compromisso falando. Basta o celular estar desbloqueado.</p>
+    () => `${topo(0)}
+      <h3>Instale o atalho da Bee</h3>
+      <p class="dt-sub">É ele que faz <b>2 toques atrás do celular</b> abrirem a Bee pra você falar o compromisso.</p>
       <div class="dt-tile" aria-hidden="true"><span class="dt-tile-ic">${ICONE_MIC}</span><b>Falar com a Bee</b></div>
-      ${lista(['Toque em <b>Instalar o atalho</b>.', 'No app Atalhos, toque em <b>Adicionar Atalho</b>.', 'Volte pra cá e toque em <b>Já adicionei</b>.'])}
-      <div class="botoes dt-col"><a class="primario dt-instalar" id="dtInstalar" href="${ATALHO_URL}">${ICO_BAIXAR}Instalar o atalho</a><button id="dtProx">Já adicionei</button></div>`,
-    () => `<div class="dt-barra"><b>Dois toques</b></div>${pontos(1)}
-      <h3>Ative nos Ajustes</h3>
-      <p class="dt-sub">Agora é só dizer pro iPhone usar o atalho quando você tocar duas vezes atrás.</p>
-      ${lista(['Abra os <b>Ajustes</b> do iPhone e toque em <b>Buscar</b>, lá embaixo na tela.', 'Digite <b>Toque Duplo</b> e toque no primeiro resultado, com o botão azul.', 'Lá embaixo, em Atalhos, escolha <b>Falar com a Bee</b>.'])}
-      <div class="dt-mock" aria-hidden="true">
+      <p class="dt-sub">Vai abrir o app <b>Atalhos</b>. Lá, toque em <b>Adicionar Atalho</b> e volte pra cá.</p>
+      <div class="botoes dt-col"><a class="primario dt-instalar" id="dtInstalar" href="${ATALHO_URL}">${ICO_BAIXAR}Instalar o atalho</a><button id="dtProx">Já instalei</button></div>`,
+    () => `${topo(1)}
+      <h3>Busque “Toque Duplo”</h3>
+      <p class="dt-sub">Abra o app <b>Ajustes</b> do iPhone, toque na busca 🔍 e digite <b>Toque Duplo</b>. Depois toque no resultado.</p>
+      <div class="dt-tela" aria-hidden="true">
         <div class="dt-busca"><span class="dt-lupa"></span><b>Toque Duplo</b><i class="dt-cursor"></i></div>
-        <small>TOQUE DUPLO</small><i>Nenhuma</i><i>Central de Controle</i><i>Captura de Tela</i><em>…</em><i class="on">Falar com a Bee<span>✓</span></i>
+        <div class="dt-res on"><span class="dt-ico azul">${ICO_TOQUE}</span><span><b>Toque Duplo</b><small>Acessibilidade › Toque › Tocar Atrás</small></span><span class="dt-dedo">👆</span></div>
       </div>
-      <details class="dt-ajuda"><summary>Não achou pela busca? Siga o caminho completo</summary>${rotaHtml(ROTA_AJUSTES)}</details>
-      <p class="dt-dica">Dica: tire um print desta tela para seguir olhando.</p>
-      <div class="botoes dt-col"><button class="primario" id="dtProx">${ICONE_CHECK}Já ativei</button><button id="dtVolta">Voltar</button></div>`,
-    () => `<div class="dt-barra"><b>Dois toques</b></div>${pontos(2)}
-      <h3>Vamos testar?</h3>
-      <p class="dt-sub">Segure o celular e dê <b>2 toques firmes</b> atrás, perto da câmera. Quando o microfone aparecer, diga: <b>“testando a Bee”</b>.</p>
+      <p class="dt-dica">Dica: tire um print desta tela pra seguir olhando.</p>
+      <div class="botoes dt-col"><button class="primario" id="dtProx">Achei, próximo</button><button id="dtVolta">Voltar</button></div>`,
+    () => `${topo(2)}
+      <h3>Escolha “Falar com a Bee”</h3>
+      <p class="dt-sub">Role a lista até o final. Na parte <b>Atalhos</b>, toque em <b>Falar com a Bee</b> pra ficar com o ✓.</p>
+      <div class="dt-tela" aria-hidden="true">
+        <div class="dt-lista-ios"><small>TOQUE DUPLO</small><i>Nenhuma</i><i>Central de Controle</i><i>Captura de Tela</i><small>ATALHOS</small><i class="on">Falar com a Bee<span>✓</span></i></div>
+      </div>
+      <details class="dt-ajuda"><summary>Não achou? Siga o caminho completo</summary>${rotaHtml(ROTA_AJUSTES)}</details>
+      <div class="botoes dt-col"><button class="primario" id="dtProx">${ICONE_CHECK}Pronto, escolhi</button><button id="dtVolta">Voltar</button></div>`,
+    () => `${topo(3)}
+      <h3>Agora, teste!</h3>
+      <p class="dt-sub">Dê <b>2 toques firmes</b> atrás do celular, perto da câmera. Quando o microfone abrir, diga <b>“testando a Bee”</b>.</p>
       <div class="dt-teste"><span class="dt-anel"></span><img src="${MASCOTES.bee_ouvindo}" alt=""></div>
-      <p class="dt-sub">Pode testar daqui mesmo. A Bee avisa quando funcionar.</p>
+      <p class="dt-sub">Pode ser daqui mesmo. A Bee avisa quando funcionar.</p>
       <details class="dt-ajuda"><summary>Não funcionou?</summary><ul>
         <li>Dê os toques <b>mais firmes</b> e um pouco mais rápidos. Capinha grossa pode atrapalhar.</li>
-        <li>Confira em Ajustes → Acessibilidade → Toque → Tocar Atrás → Toque Duplo se está marcado <b>Falar com a Bee</b>.</li>
-        <li>O microfone não abriu? Ligue o Ditado em Ajustes → Geral → Teclado → <b>Ativar Ditado</b>.</li>
+        <li>Volte nos Ajustes e confira se <b>Falar com a Bee</b> está com o ✓ em Toque Duplo.</li>
+        <li>O microfone não abriu? Ligue o Ditado em Ajustes › Geral › Teclado › <b>Ativar Ditado</b>.</li>
         <li>Se o iPhone perguntar se o atalho pode abrir o Tap Bee, toque em <b>Permitir</b>.</li>
         <li>Ainda não? <a href="${ATALHO_URL}">Instale o atalho de novo</a>.</li>
       </ul></details>
-      <div class="botoes dt-col"><button id="dtDepois">Testo depois</button><button id="dtVolta">Voltar</button></div>`,
+      <div class="botoes dt-col"><button id="dtDepois">Fechar e testar depois</button><button id="dtVolta">Voltar</button></div>`,
   ];
-  if (passo === 2) gravarPref('agenda.doisToquesTeste', '1');
+  if (passo === 3) gravarPref('agenda.doisToquesTeste', '1');
   abrirFolha(`<div class="dois-toques">${telas[passo]()}</div>`);
   const on = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
   on('dtProx', () => { vibrar('selecao'); abrirDoisToques(passo + 1); });
@@ -7360,7 +7388,7 @@ document.getElementById('btnOutrosJeitos').onclick = () => abrirFolha(`<div clas
     <div class="jeito"><b>Central de Controle</b><small>iOS 18 ou mais novo</small><ol><li>Abra a <b>Central de Controle</b>.</li><li>Segure um espaço vazio.</li><li>Toque em <b>Adicionar um Controle</b>.</li><li>Busque <b>Atalho</b> e escolha <b>Falar com a Bee</b>.</li></ol></div>
   </div>`);
 marcarBotaoDoisToques();
-document.getElementById('btnDoisToques').onclick = () => abrirDoisToques(doisToquesOk() ? 2 : 0);
+document.getElementById('btnDoisToques').onclick = () => abrirDoisToques(doisToquesOk() ? 3 : 0);
 
 // ---------- iCloud: cada pessoa guarda os dados no próprio iCloud, sem login ----------
 // O aparelho guarda tudo no localStorage e manda uma cópia comprimida para o iCloud a cada mudança.
