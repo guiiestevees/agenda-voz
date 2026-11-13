@@ -3139,6 +3139,7 @@
   :root[data-modo="escuro"] html body #abertura { background: linear-gradient(180deg, #FFD268 0%, #FFB626 50%, #F08F0A 100%); }
   label.det-mudar { position: relative; display: inline-flex; align-items: center; overflow: hidden; cursor: pointer; }
   label.det-mudar input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.011; font-size: 16px; }
+  label.det-mudar select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.011; font-size: 16px; -webkit-appearance: none; appearance: none; }
 </style>
 </head>
 <body>
@@ -4801,16 +4802,22 @@ function abrirAcoes(ev, dia) {
     </div>
     ${reu ? `<div class="det-cartao det-reu">${botaoReuniaoDoEvento(ev, chaveDia(quando))}</div>` : ''}
     <h2 class="det-sec">Lembretes</h2>
-    <div class="det-cartao"><div class="det-linha"><span class="det-ic verde">${ICO_DET.sino}</span><div><b>Aviso no iPhone</b><small>${esc(fmtLembrete(ev.lembreteMin))}</small></div><button class="det-mudar" data-det-editar>Mudar</button></div></div>
+    <div class="det-cartao"><div class="det-linha"><span class="det-ic verde">${ICO_DET.sino}</span><div><b>Aviso no iPhone</b><small>${esc(fmtLembrete(ev.lembreteMin))}</small></div><label class="det-mudar">Mudar<select id="detAviso" aria-label="Quando avisar">${OPCOES_AVISO.concat(OPCOES_AVISO.some(([v]) => v === ev.lembreteMin) ? [] : [[ev.lembreteMin, fmtLembrete(ev.lembreteMin)]]).map(([v, t]) => `<option value="${v === null ? 'nao' : v}" ${v === (ev.lembreteMin ?? null) ? 'selected' : ''}>${t}</option>`).join('')}</select></label></div></div>
     <button class="det-excluir" data-det-apagar>${ICO.lixo}${ev.repetir ? 'Apagar só este dia' : 'Excluir compromisso'}</button>
     <div class="det-rodape"><button class="bt-mel" data-det-feito>${ICONE_CHECK}${feito ? 'Desmarcar como feito' : 'Marcar como feito'}</button></div>
   </div>`);
 }
 const chaveProximoDe = (agora) => proximoDeHoje(agora);
-// Mudar dia ou horário direto no detalhe, sem abrir o formulário
+const OPCOES_AVISO = [[null, 'Sem aviso'], [0, 'Na hora'], [5, '5 min antes'], [10, '10 min antes'], [15, '15 min antes'], [30, '30 min antes'], [45, '45 min antes'], [60, '1 hora antes'], [120, '2 horas antes'], [180, '3 horas antes'], [1440, '1 dia antes'], [2880, '2 dias antes'], [10080, '1 semana antes']];
+// Mudar dia, horário ou aviso direto no detalhe, sem abrir o formulário
 telaCheia.addEventListener('change', (e) => {
   if (!acoesAbertas || !e.target.closest('.tela-det')) return;
   const { ev, quando } = acoesAbertas, ini = new Date(ev.inicio), antes = JSON.stringify(eventos);
+  if (e.target.id === 'detAviso') {
+    ev.lembreteMin = e.target.value === 'nao' ? null : +e.target.value; ev.avisado = false; ev.avisados = [];
+    salvar(); render(); vibrar('sucesso'); abrirAcoes(ev, chaveDia(quando));
+    return toast(ev.lembreteMin === null ? 'Sem aviso para este compromisso' : `Vou te avisar ${fmtLembrete(ev.lembreteMin)}`, 3500, { rotulo: 'Desfazer', fn: () => { eventos = JSON.parse(antes); salvar(); render(); fecharTela(); } });
+  }
   if (e.target.id === 'detHora') {
     const [h, m] = (e.target.value || '').split(':').map(Number); if (isNaN(h)) return;
     ini.setHours(h, m || 0, 0, 0);   // em série, vale para todos os dias dela
@@ -8833,7 +8840,8 @@ function qzDesenhar() {
   on('qzSemAviso', () => { qz.i += 2; qzDesenhar(); });
   on('qzRestaurar', rcRestaurar);
   const nome = document.getElementById('qzNome');
-  if (nome) nome.oninput = () => { qz.r.nome = nome.value; qzAtualizarBotao(); };
+  // o nome já fica guardado ao digitar: se a compra der certo, o app abre chamando a pessoa pelo nome (no modo demonstração, não)
+  if (nome) nome.oninput = () => { qz.r.nome = nome.value; qzAtualizarBotao(); if (!qz.demo && nome.value.trim()) gravarPref('agenda.nome', nome.value.trim()); };
   palco.querySelectorAll('[data-qz-op]').forEach(b => b.onclick = () => {
     const c = b.dataset.qzOp, v = b.dataset.valor;
     vibrar('selecao');
