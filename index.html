@@ -3041,6 +3041,54 @@
   .dt-toc { position: absolute; top: 18px; right: calc(50% - 110px); padding: 4px 10px; border-radius: 999px; background: var(--gradient-honey); color: var(--text-on-honey); font: 800 13px var(--font-body); animation: dtToc 1.4s ease-in-out infinite; }
   @keyframes dtToc { 0%, 100% { transform: scale(.9); opacity: .6; } 20%, 40% { transform: scale(1.08); opacity: 1; } }
   .wa-espera .cf { margin-top: 10px; }
+  html body .reu-bts { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  html body .reu-bts .reu-encerrar { display: inline-flex; align-items: center; gap: 10px; height: 56px; padding: 0 28px; border: 0; border-radius: 999px; background: var(--recording); color: #fff; font: 700 17px var(--font-body); box-shadow: 0 10px 28px rgba(240,71,90,.35); }
+  html body .reu-bts .reu-encerrar i { width: 14px; height: 14px; border-radius: 3px; background: #fff; }
+  html body .reu-deslize { margin-bottom: 10px; border-radius: 22px; }
+  html body .reu-deslize .reu-item { margin: 0; position: relative; }
+  .conf-apagar { text-align: center; }
+  .ca-ic { width: 56px; height: 56px; margin: 4px auto 10px; border-radius: 18px; display: grid; place-items: center; background: var(--danger-soft); color: var(--danger); }
+  .ca-ic svg { width: 26px; height: 26px; }
+  .conf-apagar p { margin: 6px 0 4px !important; font-size: 16px; line-height: 1.45; }
+  html body .conf-apagar .ca-sim { background: var(--danger) !important; color: #fff !important; border: 0; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  html body .conf-apagar .ca-sim svg { width: 18px; height: 18px; }
+  .rp-prog { width: 100%; max-width: 340px; margin-top: 18px; text-align: left; }
+  .rp-trilho { height: 10px; border-radius: 999px; background: var(--surface-pressed); overflow: hidden; }
+  .rp-trilho i { position: relative; display: block; height: 100%; border-radius: 999px; background: var(--gradient-honey); transition: width .8s var(--ease-out); overflow: hidden; }
+  .rp-trilho i::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent); animation: rpBrilho 1.4s linear infinite; }
+  @keyframes rpBrilho { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+  .rp-prog.final .rp-trilho i { animation: rpFinal 40s cubic-bezier(.1,.6,.3,1) forwards; }
+  @keyframes rpFinal { from { width: 82%; } to { width: 97%; } }
+  .rp-rot { display: flex; justify-content: space-between; gap: 10px; margin-top: 8px; font-size: 14px; font-weight: 600; color: var(--text); }
+  .rp-rot b { font-variant-numeric: tabular-nums; color: var(--accent-text); }
+  .rp-prog small { display: block; margin-top: 6px; font-size: 13px; color: var(--muted); }
+  /* Navegar entre semanas e meses */
+  .nav-per { display: flex; align-items: center; gap: 10px; margin: 0 0 4px; }
+  .nav-per > div { flex: 1; min-width: 0; text-align: center; }
+  .nav-per > div b { display: block; font: 700 20px var(--font-display); letter-spacing: -.02em; }
+  .nav-per .tb-redondo { width: 40px; height: 40px; }
+  .nav-hoje { margin-top: 4px; padding: 3px 10px; border: 0; border-radius: 999px; background: var(--accent-soft); color: var(--accent-text); font: 600 12px var(--font-body); cursor: pointer; }
+  html body .sw-cab { padding: 0 4px 12px; text-align: center; }
+  .mm-grade { margin: 10px 0 20px; padding: 12px 8px; border-radius: 22px; background: var(--card); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-card); }
+  .mm-sem, .mm-dias { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .mm-sem span { text-align: center; font-size: 11px; font-weight: 700; color: var(--muted); padding-bottom: 6px; }
+  .mm-dia { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; height: 46px; border: 0; border-radius: 14px; background: none; font: inherit; color: var(--text); cursor: pointer; }
+  .mm-dia b { font: 700 16px var(--font-body); font-variant-numeric: tabular-nums; }
+  .mm-dia span { display: flex; gap: 2px; height: 5px; }
+  .mm-dia span i { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); } .mm-dia span i.ok { opacity: .4; }
+  .mm-dia.fora { opacity: .3; } .mm-dia.passou b { color: var(--muted); }
+  .mm-dia.hj b { color: var(--accent-text); font-weight: 800; }
+  .mm-dia.sel { background: var(--gradient-honey); box-shadow: var(--shadow-button); } .mm-dia.sel b { color: var(--text-on-honey); } .mm-dia.sel span i { background: var(--text-on-honey); }
+  .mm-add { margin-top: 10px; }
+  .seg-visao button { padding: 0 12px; }
+  html body button.cf-google { display: flex; align-items: center; gap: 12px; width: 100%; margin: 0 0 14px; padding: 12px 14px; border: 1px solid var(--border-subtle); border-radius: 18px; background: var(--card); text-align: left; cursor: pointer; font: inherit; color: var(--text); }
+  .cf-google .g-logo { flex: none; width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.12); font: 800 20px Arial, sans-serif; color: #4285F4; }
+  .cf-google > span:nth-child(2) { flex: 1; } .cf-google b { display: block; font-size: 16px; } .cf-google small { display: block; font-size: 14px; color: var(--accent-text); font-weight: 600; }
+  .g-txt { color: #4285F4; }
+  .ios-chave { position: relative; width: 42px; height: 26px; border-radius: 999px; background: #E9E9EA; }
+  .ios-chave::after { content: ''; position: absolute; top: 2px; left: 2px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+  .ios-chave.on { background: #34C759; } .ios-chave.on::after { left: 18px; }
+  .dt-lista-ios i { align-items: center; }
 </style>
 </head>
 <body>
@@ -3803,8 +3851,9 @@ function telaHoje() {
   if (diaHojeBase !== chaveDia(hoje)) { diaHojeBase = chaveDia(hoje); diaHoje = 0; }
   const dia = maisDias(hoje, diaHoje);
   const ocsDia = ocorrencias(dia, maisDias(dia, 1)), feitosDia = ocsDia.filter(o => estaFeito(o.ev, o.inicio)).length, faltam = ocsDia.length - feitosDia;
-  html += `<section class="grupo"><div class="seg-visao"><button class="${semanaHoje ? '' : 'on'}" data-modo-hoje="dia">${ICO_SOL}Dia</button><button class="${semanaHoje ? 'on' : ''}" data-modo-hoje="semana">${ICO_CAL}Semana</button></div>`;
-  if (semanaHoje) return html + htmlSemanaDS(hoje, agora) + '</section></div>' + htmlNotas();
+  html += `<section class="grupo"><div class="seg-visao">${[['dia', ICO_SOL, 'Dia'], ['semana', ICO_CAL, 'Semana'], ['mes', ICO_DET.cal, 'Mês']].map(([k, ic, t]) => `<button class="${visaoHoje === k ? 'on' : ''}" data-modo-hoje="${k}">${ic}${t}</button>`).join('')}</div>`;
+  if (visaoHoje === 'semana') return html + htmlSemanaDS(hoje, agora) + '</section></div>' + htmlNotas();
+  if (visaoHoje === 'mes') return html + htmlMesDS(hoje, agora) + '</section></div>' + htmlNotas();
   html += htmlFaixaDias(hoje);
   if (!ocsDia.length) html += `<div class="ds-vazio"><img src="${MASCOTES.bee_relax}" alt=""><b>Dia livre</b><span>Nenhum compromisso por aqui. Aproveite pra descansar.</span><button data-falar-vazio>${ICONE_MIC}Anotar algo</button></div>`;
   else {
@@ -3837,6 +3886,8 @@ function botaoDoDia() {
   if (gravacao) return `<button class="hd-falar gravando" data-ir-reunioes><i class="hd-rec"></i>Gravando</button>`;
   return `<button class="hd-redondo" data-topo-novo aria-label="Novo compromisso">${ICO.mais}</button>`;
 }
+const ICO_SETA_L = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>';
+const ICO_SETA_R = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>';
 const ICO_BAIXAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>';
 const ICO_SOL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
 const ICO_CAL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16.5" rx="3"/><path d="M8 2.5v4M16 2.5v4M3 10h18"/></svg>';
@@ -3877,25 +3928,47 @@ function htmlPoteDS(feitos, total) {
   </svg></div>`;
 }
 const ICO_NAV = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 11 19-9-9 19-2-8-8-2z"/></svg>';
-var semanaHoje = false;
+var visaoHoje = 'dia', semanaDesloc = 0, mesDesloc = 0, mesSel = null;
+// Mês: grade do mês com bolinhas; toca num dia e a lista dele aparece embaixo, com "Adicionar neste dia"
+function htmlMesDS(hoje, agora) {
+  const base = new Date(hoje.getFullYear(), hoje.getMonth() + mesDesloc, 1);
+  if (!mesSel || mesSel.getMonth() !== base.getMonth() || mesSel.getFullYear() !== base.getFullYear()) mesSel = mesDesloc ? base : hoje;
+  const ini = maisDias(base, -((base.getDay() + 6) % 7)), fimMes = new Date(base.getFullYear(), base.getMonth() + 1, 0);
+  const semanas = Math.ceil((((base.getDay() + 6) % 7) + fimMes.getDate()) / 7);
+  const ocs = ocorrencias(ini, maisDias(ini, semanas * 7)), porDia = new Map();
+  ocs.forEach(o => { const k = chaveDia(o.inicio); if (!porDia.has(k)) porDia.set(k, []); porDia.get(k).push(o); });
+  const titulo = maiuscula(base.toLocaleDateString(LOCALE, { month: 'long', year: 'numeric' }));
+  let h = `<div class="nav-per"><button class="tb-redondo" data-mes-ir="-1" aria-label="Mês anterior">${ICO_SETA_L}</button><div><b>${titulo}</b>${mesDesloc ? '<button class="nav-hoje" data-mes-ir="0">Voltar pra hoje</button>' : ''}</div><button class="tb-redondo" data-mes-ir="1" aria-label="Próximo mês">${ICO_SETA_R}</button></div>
+    <div class="mm-grade"><div class="mm-sem">${['S', 'T', 'Q', 'Q', 'S', 'S', 'D'].map(l => `<span>${l}</span>`).join('')}</div><div class="mm-dias">`;
+  for (let i = 0; i < semanas * 7; i++) {
+    const d = maisDias(ini, i), k = chaveDia(d), lst = porDia.get(k) || [], fora = d.getMonth() !== base.getMonth();
+    h += `<button class="mm-dia ${fora ? 'fora' : ''} ${k === chaveDia(hoje) ? 'hj' : ''} ${k === chaveDia(mesSel) ? 'sel' : ''} ${d < hoje ? 'passou' : ''}" data-mes-dia="${k}"><b>${d.getDate()}</b><span>${lst.slice(0, 3).map(o => `<i class="${estaFeito(o.ev, o.inicio) ? 'ok' : ''}"></i>`).join('')}</span></button>`;
+  }
+  h += '</div></div>';
+  const doDia = porDia.get(chaveDia(mesSel)) || [], rel = Math.round((mesSel - hoje) / 86400000);
+  h += `<div class="grupo-topo"><h2>${rel === 0 ? 'Hoje' : rel === 1 ? 'Amanhã' : maiuscula(mesSel.toLocaleDateString(LOCALE, { weekday: 'long', day: 'numeric', month: 'long' }))}</h2><span class="gt-conta">${doDia.length ? `${doDia.length} ${doDia.length === 1 ? 'compromisso' : 'compromissos'}` : ''}</span></div>`;
+  h += doDia.length ? doDia.map(o => cartao(o, agora)).join('') : `<div class="sw-livre">${ICO_PF.lua}Dia livre</div>`;
+  return h + `<button class="add-linha mm-add" data-mes-novo="${chaveDia(mesSel)}">${ICO.mais}Adicionar neste dia</button>`;
+}
 var semanaPassados = false;
 const DIAS_LONGOS = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 // Semana do design: faixa com as bolinhas, dias que já passaram dobrados numa pílula e uma lista por dia
 function htmlSemanaDS(hoje, agora) {
-  const seg = maisDias(hoje, -((hoje.getDay() + 6) % 7));
+  const seg = maisDias(hoje, -((hoje.getDay() + 6) % 7) + semanaDesloc * 7);
   const dias = Array.from({ length: 7 }, (_, i) => {
     const d = maisDias(seg, i), ocs = ocorrencias(d, maisDias(d, 1));
-    return { d, i, ocs, feitos: ocs.filter(o => estaFeito(o.ev, o.inicio)).length, hj: chaveDia(d) === chaveDia(hoje), passado: d < hoje };
+    return { d, i, ocs, feitos: ocs.filter(o => estaFeito(o.ev, o.inicio)).length, hj: chaveDia(d) === chaveDia(hoje), passado: semanaDesloc === 0 && d < hoje, foi: d < hoje };
   });
   const total = dias.reduce((a, x) => a + x.ocs.length, 0), livres = dias.filter(x => !x.ocs.length).length, fim = dias[6].d;
   const faixa = seg.getMonth() === fim.getMonth() ? `${seg.getDate()} – ${fim.getDate()} de ${fim.toLocaleDateString(LOCALE, { month: 'long' })}`
     : `${seg.getDate()} de ${seg.toLocaleDateString(LOCALE, { month: 'short' }).replace('.', '')} – ${fim.getDate()} de ${fim.toLocaleDateString(LOCALE, { month: 'short' }).replace('.', '')}`;
   const passados = dias.filter(x => x.passado);
-  let h = `<div class="sw-cab"><b>${faixa}</b><small>${total} ${total === 1 ? 'compromisso' : 'compromissos'} · ${livres} ${livres === 1 ? 'dia livre' : 'dias livres'}</small></div>
-    <div class="sw-faixa">${dias.map(x => `<button class="sw-dia ${x.hj ? 'hj' : ''} ${x.passado ? 'passou' : ''}" data-sw-ir="${chaveDia(x.d)}"><small>${DIAS_CURTOS[x.d.getDay()]}</small><b>${x.d.getDate()}</b><span>${x.ocs.slice(0, 4).map(o => `<i class="${estaFeito(o.ev, o.inicio) ? 'ok' : ''}"></i>`).join('')}</span></button>`).join('')}</div>`;
+  let h = `<div class="nav-per"><button class="tb-redondo" data-sem-ir="-1" aria-label="Semana anterior">${ICO_SETA_L}</button><div><b>${faixa}</b>${semanaDesloc ? '<button class="nav-hoje" data-sem-ir="0">Voltar pra esta semana</button>' : ''}</div><button class="tb-redondo" data-sem-ir="1" aria-label="Próxima semana">${ICO_SETA_R}</button></div>
+    <div class="sw-cab"><small>${total} ${total === 1 ? 'compromisso' : 'compromissos'} · ${livres} ${livres === 1 ? 'dia livre' : 'dias livres'}</small></div>
+    <div class="sw-faixa">${dias.map(x => `<button class="sw-dia ${x.hj ? 'hj' : ''} ${x.foi ? 'passou' : ''}" data-sw-ir="${chaveDia(x.d)}"><small>${DIAS_CURTOS[x.d.getDay()]}</small><b>${x.d.getDate()}</b><span>${x.ocs.slice(0, 4).map(o => `<i class="${estaFeito(o.ev, o.inicio) ? 'ok' : ''}"></i>`).join('')}</span></button>`).join('')}</div>`;
   if (passados.length) h += `<button class="sw-passados" data-sw-passados>${semanaPassados ? `${ICO_SETA('cima')}Esconder dias anteriores` : `${ICO_DET.relogio}${passados.map(x => DIAS_CURTOS[x.d.getDay()]).join(passados.length === 2 ? ' e ' : ', ').replace(/^./, c => c.toUpperCase())} · ${passados.reduce((a, x) => a + x.feitos, 0)} feitos`}</button>`;
   h += dias.filter(x => semanaPassados || !x.passado).map(x => `<section class="sw-sec ${x.passado ? 'passou' : ''}" id="sw-${chaveDia(x.d)}">
-      <button class="sw-tit" data-sem-dia-data="${chaveDia(x.d)}"><b>${DIAS_LONGOS[x.d.getDay()]}, ${x.d.getDate()}</b>${x.hj ? '<em>Hoje</em>' : ''}<span></span>${x.ocs.length ? `<small class="${x.feitos === x.ocs.length ? 'cheio' : ''}">${x.feitos === x.ocs.length ? 'Pote cheio' : `${x.feitos} de ${x.ocs.length}`}</small>` : ''}</button>
+      <button class="sw-tit" data-sem-dia-data="${chaveDia(x.d)}"><b>${DIAS_LONGOS[x.d.getDay()]}, ${x.d.getDate()}</b>${x.hj ? '<em>Hoje</em>' : ''}<span></span>${x.ocs.length ? `<small>${x.feitos === x.ocs.length ? 'Tudo feito' : `${x.feitos} de ${x.ocs.length}`}</small>` : ''}</button>
       ${x.ocs.length ? `<div class="sw-lista">${x.ocs.map(o => { const f = estaFeito(o.ev, o.inicio), cat = categoria(o.ev.titulo); return `<button class="sw-item ${f ? 'feito' : ''}" data-id="${o.ev.id}" data-oc-dia="${chaveDia(o.inicio)}"><span class="sw-hora">${fmtHora(o.inicio)}</span><i class="sw-barra ${ehReuniao(o.ev) ? 'reu' : ''}"></i><span class="sw-txt"><b>${esc(o.ev.titulo)}</b>${cat ? `<small>${cat.nome}</small>` : ''}</span>${f ? ICONE_CHECK : ''}</button>`; }).join('')}</div>` : `<div class="sw-livre">${ICO_PF.lua}Dia livre</div>`}
     </section>`).join('');
   return h + `<div class="sw-legenda"><span><i></i>Compromisso</span><span><i class="reu"></i>Reunião</span></div>`;
@@ -4444,7 +4517,16 @@ document.getElementById('lista').addEventListener('click', (ev) => {
     return abrirNota(nt.dataset.nota);
   }
   const mh = ev.target.closest('[data-modo-hoje]');
-  if (mh) { semanaHoje = mh.dataset.modoHoje === 'semana'; vibrar('selecao'); return render(); }
+  if (mh) { visaoHoje = mh.dataset.modoHoje; semanaDesloc = 0; mesDesloc = 0; mesSel = null; vibrar('selecao'); window.scrollTo(0, 0); return render(); }
+  const si = ev.target.closest('[data-sem-ir]');
+  if (si) { semanaDesloc = +si.dataset.semIr === 0 ? 0 : semanaDesloc + +si.dataset.semIr; semanaPassados = false; vibrar('selecao'); return render(); }
+  const mi = ev.target.closest('[data-mes-ir]');
+  if (mi) { mesDesloc = +mi.dataset.mesIr === 0 ? 0 : mesDesloc + +mi.dataset.mesIr; mesSel = null; vibrar('selecao'); return render(); }
+  const md = ev.target.closest('[data-mes-dia]');
+  if (md) { const [a, m, d] = md.dataset.mesDia.split('-').map(Number), dt = new Date(a, m - 1, d), hj = inicioDoDia(new Date());
+    mesDesloc = (dt.getFullYear() - hj.getFullYear()) * 12 + dt.getMonth() - hj.getMonth(); mesSel = dt; vibrar('selecao'); return render(); }
+  const mn = ev.target.closest('[data-mes-novo]');
+  if (mn) return novoCompromisso(mn.dataset.mesNovo, '09:00');
   if (ev.target.closest('[data-sw-passados]')) { semanaPassados = !semanaPassados; vibrar('selecao'); return render(); }
   const sw = ev.target.closest('[data-sw-ir]');
   if (sw) {
@@ -4457,9 +4539,10 @@ document.getElementById('lista').addEventListener('click', (ev) => {
   }
   const sdd = ev.target.closest('[data-sem-dia-data]');
   if (sdd) { const [a, m, d] = sdd.dataset.semDiaData.split('-').map(Number), alvo = new Date(a, m - 1, d), dif = Math.round((alvo - inicioDoDia(new Date())) / 86400000);
-    if (dif >= 0 && dif < DIAS_FAIXA) { semanaHoje = false; diaHoje = dif; vibrar('selecao'); return render(); } return; }
+    if (dif >= 0 && dif < DIAS_FAIXA) { visaoHoje = 'dia'; diaHoje = dif; } else { visaoHoje = 'mes'; mesSel = alvo; mesDesloc = (alvo.getFullYear() - new Date().getFullYear()) * 12 + alvo.getMonth() - new Date().getMonth(); }
+    vibrar('selecao'); window.scrollTo(0, 0); return render(); }
   const sd = ev.target.closest('[data-sem-dia]');
-  if (sd) { semanaHoje = false; diaHoje = +sd.dataset.semDia; vibrar('selecao'); return render(); }
+  if (sd) { visaoHoje = 'dia'; diaHoje = +sd.dataset.semDia; vibrar('selecao'); return render(); }
   if (ev.target.closest('[data-falar-vazio]')) { vibrar('medio'); return abrirVoz(); }
   const fd = ev.target.closest('[data-dia-hoje]');
   if (fd) return irDiaHoje(+fd.dataset.diaHoje);
@@ -4727,7 +4810,6 @@ function desenharPerfil() {
   const iphone = NATIVO && !EH_IPAD, cal = calPrefs(), notifOk = document.getElementById('btnNotif')?.classList.contains('on');
   const html = `
     <div class="pf-topo"><span class="pt-avatar">${esc((nome || 'Você').trim().charAt(0).toUpperCase())}</span><b class="pt-nome">${esc(nome || 'Você')}</b></div>
-    ${htmlSemanaMel()}
     ${grupo('Você', [linha('nome', ICO_PF.sorriso, '', 'Como prefere ser chamado', '', esc(nome))])}
     ${grupo('Aparência', [linha('escuro', escuro ? ICO_PF.lua : ICO_PF.sol, 'violeta', 'Modo escuro', '', '', 'chave')])}
     ${grupo('Avisos e atalhos', [
@@ -6906,7 +6988,7 @@ const segurarClique = () => { ignorarClique = true; setTimeout(() => { ignorarCl
 listaEl.addEventListener('touchstart', (e) => {
   const w = e.target.closest('[data-deslize]');
   if (!w || e.touches.length > 1 || e.target.closest('.check, .pn-anel')) return;
-  gesto = { w, el: w.querySelector('.evento, .hab, .pn-item'), x0: e.touches[0].clientX, y0: e.touches[0].clientY, dx: 0, ativo: false, passou: false, larg: w.offsetWidth };
+  gesto = { w, el: w.querySelector('.evento, .hab, .pn-item, .reu-item'), x0: e.touches[0].clientX, y0: e.touches[0].clientY, dx: 0, ativo: false, passou: false, larg: w.offsetWidth };
 }, { passive: true });
 listaEl.addEventListener('touchmove', (e) => {
   if (!gesto) return;
@@ -6918,13 +7000,13 @@ listaEl.addEventListener('touchmove', (e) => {
     gesto.ativo = true; gesto.el.style.transition = 'none';
   }
   e.preventDefault();
-  const podeEsq = gesto.w.dataset.esq === '1';
-  const x = dx < 0 && !podeEsq ? dx / 5 : dx;
+  const podeEsq = gesto.w.dataset.esq === '1', podeDir = gesto.w.dataset.dir !== '0';
+  const x = dx < 0 && !podeEsq ? dx / 5 : dx > 0 && !podeDir ? dx / 5 : dx;
   gesto.dx = x;
   gesto.el.style.transform = `translateX(${x}px)`;
   gesto.w.classList.toggle('dir', x > 0);
   gesto.w.classList.toggle('esq', x < 0 && podeEsq);
-  const passou = Math.abs(x) > Math.min(110, gesto.larg * 0.3) && (x > 0 || podeEsq);
+  const passou = Math.abs(x) > Math.min(110, gesto.larg * 0.3) && (x > 0 ? podeDir : podeEsq);
   if (passou !== gesto.passou) { gesto.passou = passou; gesto.w.classList.toggle('pronto', passou); if (passou) vibrar('medio'); }
 }, { passive: false });
 function soltarGesto() {
@@ -6950,6 +7032,7 @@ listaEl.addEventListener('touchcancel', soltarGesto);
 function excluirPorGesto(chave) {
   const [id, dia] = chave.split('|');
   if (id === 'n') return tirarNota(dia, 'apagada');
+  if (id === 'r') return confirmarApagarReuniao(dia);
   const ev = eventos.find(e => e.id === id);
   if (!ev) return render();
   const antes = JSON.stringify(eventos);
@@ -6958,6 +7041,19 @@ function excluirPorGesto(chave) {
   salvar(); vibrar('leve'); render();
   toast(ev.repetir ? `“${ev.titulo}” removido só deste dia` : `“${ev.titulo}” excluído`, 5000,
     { rotulo: 'Desfazer', fn: () => { eventos = JSON.parse(antes); salvar(); render(); vibrar('leve'); } });
+}
+
+// Arrastou uma reunião para o lado: confirma antes de apagar (some o áudio e o resumo)
+function confirmarApagarReuniao(id) {
+  const r = reunioes.find(x => x.id === id);
+  if (!r) return render();
+  abrirFolha(`<div class="conf-apagar"><span class="ca-ic">${ICO.lixo}</span><h3>Excluir esta reunião?</h3>
+    <p>“${esc(r.tituloEv || r.titulo || tr('Reunião'))}” some com o áudio, o resumo e a transcrição. Os compromissos que você já pôs na agenda continuam lá.</p>
+    <div class="botoes dt-col"><button class="ca-sim" id="caSim">${ICO.lixo}Excluir reunião</button><button id="caNao">Cancelar</button></div></div>`);
+  document.getElementById('caSim').onclick = () => { reunioes = reunioes.filter(x => x !== r); salvarReunioes(); Gravador?.apagar({ id: r.id }).catch(() => {}); fecharFolha(); atualizarReunioes(); vibrar('sucesso'); toast('Reunião excluída'); };
+  document.getElementById('caNao').onclick = () => { fecharFolha(); render(); };
+  const obs = new MutationObserver(() => { if (!overlay.classList.contains('show')) { obs.disconnect(); render(); } });
+  obs.observe(overlay, { attributes: true, attributeFilter: ['class'] });
 }
 
 // ---------- Gestos: segurar e arrastar compromisso na grade da semana ----------
@@ -8770,11 +8866,28 @@ function introCalendario() {
     <h3>Sua agenda num lugar só</h3>
     <p class="dt-sub">Conecte o Calendário do iPhone e veja tudo junto: o que você marca com a Bee e o que já está no Calendário e no Google Agenda.</p>
     ${comoFunciona(['Os compromissos do <b>Calendário do iPhone</b> aparecem aqui no Tap Bee, com um 📅.', 'O que você marca com a Bee pode ir <b>pra lá também</b>. Você escolhe a agenda.', 'Mudou num lugar, muda no outro. <b>Nada sai do seu iPhone.</b>'])}
-    <div class="cf-google"><b>Usa Google Agenda?</b><p>Primeiro coloque sua conta Google no iPhone: <b>Ajustes › Apps › Calendário › Contas › Adicionar Conta › Google</b>. Depois é só conectar aqui.</p></div>
+    <button class="cf-google" id="icGoogle"><span class="g-logo">G</span><span><b>Usa Google Agenda?</b><small>Veja como ligar em 3 passos</small></span><i class="pf-seta"></i></button>
     <div class="botoes dt-col"><button class="primario" id="icConectar">${ICO_DET.cal}Conectar Calendário</button></div>
     <p class="cf-nota">O iPhone vai pedir permissão: toque em <b>Permitir Acesso Total</b>.</p>
   </div>`);
   document.getElementById('icConectar').onclick = () => { gravarPref('agenda.calIntro', '1'); abrirCalendario(); };
+  document.getElementById('icGoogle').onclick = () => guiaGoogle(0);
+}
+// Google Agenda: o iPhone já sabe ler a conta Google; o guia mostra onde tocar, com o desenho de cada tela
+function guiaGoogle(passo) {
+  const telas = [
+    ['Abra os Ajustes do iPhone', 'Toque em <b>Apps</b> e depois em <b>Calendário</b>.', `<div class="dt-lista-ios"><small>APPS</small><i>Atalhos</i><i class="on">📅 Calendário<span>›</span></i><i>Câmera</i></div>`],
+    ['Adicione a conta Google', 'Toque em <b>Contas</b>, depois em <b>Adicionar Conta</b> e escolha <b>Google</b>.', `<div class="dt-lista-ios"><small>ADICIONAR CONTA</small><i>iCloud</i><i>Microsoft Exchange</i><i class="on"><b class="g-txt">Google</b><span>›</span></i><i>Yahoo!</i></div>`],
+    ['Entre e ligue Calendários', 'Entre com seu e-mail do Gmail e deixe <b>Calendários</b> ligado. Pronto, volte pra cá.', `<div class="dt-lista-ios"><small>GMAIL</small><i>Mail<span class="ios-chave on"></span></i><i>Contatos<span class="ios-chave"></span></i><i class="on">Calendários<span class="ios-chave on"></span></i></div>`],
+  ];
+  const [tit, txt, mock] = telas[passo];
+  abrirFolha(`<div class="dois-toques intro-cf"><div class="dt-barra"><b>Google Agenda · ${passo + 1} de 3</b></div><div class="dt-passos">${[0, 1, 2].map(i => `<i class="${i === passo ? 'on' : i < passo ? 'feito' : ''}"></i>`).join('')}</div>
+    <h3>${tit}</h3><p class="dt-sub">${txt}</p><div class="dt-tela" aria-hidden="true">${mock}</div>
+    <div class="botoes dt-col">${passo < 2 ? '<button class="primario" id="ggProx">Próximo</button>' : `<button class="primario" id="ggFim">${ICO_DET.cal}Pronto, conectar</button>`}${passo ? '<button id="ggVolta">Voltar</button>' : '<button id="ggVolta">Voltar</button>'}</div></div>`);
+  const on = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
+  on('ggProx', () => { vibrar('selecao'); guiaGoogle(passo + 1); });
+  on('ggVolta', () => passo ? guiaGoogle(passo - 1) : introCalendario());
+  on('ggFim', () => { gravarPref('agenda.calIntro', '1'); abrirCalendario(); });
 }
 async function abrirCalendario() {
   if (!Calendario) return toast('Disponível no app para iPhone.');
@@ -8795,15 +8908,18 @@ async function abrirCalendario() {
         <button class="${!pref.copiar && pref.ligado ? 'on' : ''}" data-cal-copiar="">Não copiar</button>
         ${graváveis.map(c => `<button class="${(pref.ligado ? pref.copiar : padrao) === c.id ? 'on' : ''}" data-cal-copiar="${esc(c.id)}" data-cal-nome="${esc(c.titulo)}"><i style="background:${c.cor}"></i><span>${esc(c.titulo)}<small>${esc(c.conta)}</small></span></button>`).join('')}
       </div>
-      <p class="cal-dica">Não achou sua agenda do Google? Adicione a conta em <b>Ajustes › Apps › Calendário › Contas</b> e volte aqui.</p>
+      ${contas.some(c => /gmail|google/i.test(c)) ? '' : '<button class="cf-google" id="calGoogle"><span class="g-logo">G</span><span><b>Falta o Google Agenda?</b><small>Veja como ligar em 3 passos</small></span><i class="pf-seta"></i></button>'}
       <button class="primario" data-cal-salvar>Pronto</button>
       ${pref.ligado ? '<button class="cal-desligar" data-cal-desligar>Desconectar</button>' : ''}
     </div>`);
-  let escolha = pref.ligado ? pref.copiar : padrao, nome = (lista.find(c => c.id === escolha) || {}).titulo || '';
+  const google = graváveis.find(c => /gmail|google/i.test(c.conta || ''));
+  let escolha = pref.ligado ? pref.copiar : (google?.id || padrao), nome = (lista.find(c => c.id === escolha) || {}).titulo || '';
+  if (!pref.ligado && google) sheet.querySelectorAll('[data-cal-copiar]').forEach(x => x.classList.toggle('on', x.dataset.calCopiar === google.id));
   sheet.querySelectorAll('[data-cal-copiar]').forEach(b => b.onclick = () => {
     escolha = b.dataset.calCopiar; nome = b.dataset.calNome || ''; vibrar('selecao');
     sheet.querySelectorAll('[data-cal-copiar]').forEach(x => x.classList.toggle('on', x === b));
   });
+  document.getElementById('calGoogle')?.addEventListener('click', () => guiaGoogle(0));
   sheet.querySelector('[data-cal-salvar]').onclick = () => {
     if (escolha !== pref.copiar) gravarJSON('agenda.calMapa', {});   // agenda nova: copia tudo de novo para lá
     gravarJSON('agenda.calendario', { ligado: true, copiar: escolha, nome });
@@ -8834,6 +8950,13 @@ const ERROS_REUNIAO = { sem_assinatura: 'Gravar reuniões faz parte da assinatur
 const ICO_MIC_G = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2.5" width="6" height="12" rx="3"/><path d="M19 10.5a7 7 0 0 1-14 0M12 17.5V21"/></svg>';
 const ICO_ONDA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 10v4M7.5 6v12M12 9v6M16.5 4v16M21 10v4"/></svg>';
 const ICO_AGENDA_H = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5M16 2v4M8 2v4M3 10h5"/><circle cx="16" cy="16" r="6"/><path d="M16 14v2.2l1.4 1"/></svg>';
+// Barra de progresso do resumo: ouvir os pedaços vai até 80%, escrever o resumo anda devagar até quase o fim
+function htmlProgressoReuniao(r) {
+  const total = Math.max(1, r.pedacos || 1), feitos = (r.textos || []).filter(t => t != null).length;
+  const resumindo = r.estado === 'resumindo', pct = resumindo ? 82 : Math.round(5 + 75 * Math.min(1, feitos / total));
+  const etapa = resumindo ? 'Escrevendo o resumo e separando os assuntos…' : total > 1 ? `Ouvindo a gravação · parte ${Math.min(feitos + 1, total)} de ${total}` : 'Ouvindo a gravação…';
+  return `<div class="rp-prog ${resumindo ? 'final' : ''}"><div class="rp-trilho"><i style="width:${pct}%"></i></div><div class="rp-rot"><span>${etapa}</span><b>${resumindo ? '' : pct + '%'}</b></div><small>Pode sair do app: a Bee avisa quando ficar pronto.</small></div>`;
+}
 function telaReunioes() {
   const g = gravacao, feitas = reunioes.filter(r => r.estado !== 'gravando');
   const nomeG = g && reunioes.find(x => x.id === g.id)?.tituloEv;
@@ -8844,11 +8967,11 @@ function telaReunioes() {
       <span class="reu-status"><i></i>${g.pausado ? 'Pausado · toque em Continuar' : 'Gravando · toque para parar'}</span>
       <div class="reu-onda">${'<i></i>'.repeat(24)}</div>
       <p class="reu-dica">${g.pausado ? 'Toque em Continuar quando a conversa voltar.' : 'Pode bloquear a tela: a Bee continua ouvindo.'}</p>
-      <div class="reu-bts"><button data-reu-pausar>${g.pausado ? 'Continuar' : 'Pausar'}</button></div>
+      <div class="reu-bts"><button class="reu-encerrar" data-reu-parar><i></i>Encerrar e resumir</button><button data-reu-pausar>${g.pausado ? 'Continuar' : 'Pausar'}</button></div>
     </div>` : `<div class="rb-hero"><button class="rb-botao" data-reu-gravar aria-label="Gravar reunião"><span class="rb-halo"></span><span class="rb-disco">${ICO_MIC_G}</span></button>
       <b class="rb-tit">Toque para gravar</b><small class="rb-sub">Quando terminar, a gente faz o resumo.</small></div>`;
   const proc = !g && reunioes.find(r => ['transcrevendo', 'resumindo'].includes(r.estado));
-  if (proc) topo = `<div class="rb-hero rb-proc"><img src="${MASCOTES.bee_pensando}" alt=""><div class="reu-onda">${'<i></i>'.repeat(18)}</div><b class="rb-tit">Preparando seu resumo…</b><small class="rb-sub">${esc(proc.tituloEv || tr('Reunião'))} · ${fmtRelogio((proc.dur || 0) * 1000)}</small></div>`;
+  if (proc) topo = `<div class="rb-hero rb-proc"><img src="${MASCOTES.bee_pensando}" alt=""><b class="rb-tit">Preparando seu resumo…</b><small class="rb-sub">${esc(proc.tituloEv || tr('Reunião'))} · ${fmtRelogio((proc.dur || 0) * 1000)}</small>${htmlProgressoReuniao(proc)}</div>`;
   const agora = new Date();
   const proximas = g ? [] : ocorrencias(new Date(agora - 3 * 3600000), maisDias(agora, 7))
     .filter(o => ehReuniao(o.ev) && fimDe(o.ev, o.inicio) > agora && !reuniaoDe(o.ev.id, chaveDia(o.inicio))).slice(0, 3);
@@ -8863,7 +8986,7 @@ function telaReunioes() {
       : r.estado === 'resumindo' ? '<p class="reu-proc">A Bee está resumindo…</p>'
       : r.estado === 'erro' ? `<p class="reu-erro">${ERROS_REUNIAO[r.erro] || 'Não deu certo. Toque para tentar de novo.'}</p>`
       : '';
-    return `<button class="reu-item" data-reu-abrir="${r.id}"><span class="ri-ic">${ICO_ONDA}</span><span class="ri-txt"><b>${esc(r.tituloEv || r.titulo || tr('Reunião'))}</b><small>${quandoReuniao(r)}</small>${linha}</span><span class="ri-seta"></span></button>`;
+    return `<div class="deslize reu-deslize" data-deslize="r|${r.id}" data-esq="1" data-dir="0"><div class="deslize-fundo" aria-hidden="true"><span class="df-ok"></span><span class="df-del">Excluir${ICO.lixo}</span></div><button class="reu-item" data-reu-abrir="${r.id}"><span class="ri-ic">${ICO_ONDA}</span><span class="ri-txt"><b>${esc(r.tituloEv || r.titulo || tr('Reunião'))}</b><small>${quandoReuniao(r)}</small>${linha}</span><span class="ri-seta"></span></button></div>`;
   }).join('');
 }
 function quandoReuniao(r) {
