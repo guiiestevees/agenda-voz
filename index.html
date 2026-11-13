@@ -3189,6 +3189,75 @@
   .pote-ds.estoura .pd-escorre path { animation: tb-flow 1.2s .45s var(--ease-out) both; }
   /* a festa usa o estouro do pote; o jato e as gotas antigas saem */
   #festaPote .fp-jato, #festaPote .fp-gota { display: none; }
+  /* ---------- Guia do Google: telas dos Ajustes desenhadas como no iPhone ---------- */
+  html body .ios-m { text-align: left; }
+  .ios-m { margin: 14px 0 6px; padding: 10px 12px 14px; border-radius: 24px; background: #000; color: #fff; font: 400 16px -apple-system, 'SF Pro Text', system-ui, sans-serif; box-shadow: 0 0 0 6px #1c1c1e; }
+  .im-nav { position: relative; height: 40px; display: flex; align-items: center; justify-content: center; margin-bottom: 6px; }
+  .im-nav b { font-weight: 600; font-size: 16px; }
+  .im-volta { position: absolute; left: 0; top: 2px; width: 36px; height: 36px; border-radius: 50%; background: #1c1c1e; display: grid; place-items: center; font-size: 24px; line-height: 1; color: #fff; }
+  .im-rot { display: block; margin: 2px 14px 6px; font-size: 13px; font-weight: 600; color: #8e8e93; }
+  .im-grupo { border-radius: 18px; background: #1c1c1e; overflow: visible; margin-bottom: 10px; }
+  .im-capa { padding: 14px 14px 0; }
+  .im-capa > b { display: block; margin-top: 8px; font-size: 20px; font-weight: 700; }
+  .im-capa > small { display: block; margin: 2px 0 8px; font-size: 13px; color: #8e8e93; }
+  .im-capa > .im-cal { width: 44px; height: 44px; border-radius: 11px; }
+  .im-capa .im-linha { margin: 0 -14px; }
+  .im-linha { position: relative; display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 8px 14px; border-top: 0.5px solid #38383a; }
+  .im-grupo > .im-linha:first-child { border-top: 0; }
+  .im-linha > span:first-child { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .im-linha > span:first-child small { font-size: 12px; color: #8e8e93; }
+  .im-linha em { font-style: normal; color: #8e8e93; } .im-linha > b { color: #5a5a5e; font-size: 20px; font-weight: 400; }
+  .im-linha.alvo { z-index: 1; border-radius: 14px; box-shadow: 0 0 0 3px #FFB626, 0 0 18px rgba(255,182,38,.45); background: #2a2418; }
+  .im-dedo { position: absolute; right: 38px; top: 50%; width: 26px; height: 26px; margin-top: -13px; border-radius: 50%; background: rgba(255,255,255,.7); border: 2px solid #fff; animation: im-toque 1.6s ease-in-out infinite; }
+  @keyframes im-toque { 0%, 100% { transform: scale(1); opacity: .9; } 45% { transform: scale(.75); opacity: 1; } 60% { transform: scale(1.25); opacity: .6; } }
+  .im-cal { display: inline-grid; place-items: center; vertical-align: middle; width: 28px; height: 28px; margin-right: 8px; border-radius: 7px; background: #fff; position: relative; overflow: hidden; }
+  .im-cal::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 26%; background: #ff3b30; }
+  .im-cal i { width: 5px; height: 5px; margin-top: 4px; border-radius: 50%; background: #ff3b30; box-shadow: -7px 0 0 -1px #444, 7px 0 0 -1px #444, -7px -6px 0 -1px #444, 0 -6px 0 -1px #444, 7px -6px 0 -1px #444; }
+  .im-linha > span:first-child:has(.im-cal) { flex-direction: row; align-items: center; justify-content: flex-start; }
+  .im-prov .im-linha { min-height: 56px; }
+  .im-icloud { font-size: 26px; font-weight: 600; } .im-ms { font-size: 22px; }
+  .im-g { font: 500 28px 'Product Sans', Arial, sans-serif; letter-spacing: -.02em; }
+  .im-g i { font-style: normal; } .im-g i:nth-child(1), .im-g i:nth-child(4) { color: #4285F4; } .im-g i:nth-child(2), .im-g i:nth-child(6) { color: #EA4335; } .im-g i:nth-child(3) { color: #FBBC05; } .im-g i:nth-child(5) { color: #34A853; }
+  .im-chave { flex: none; width: 50px; height: 30px; border-radius: 15px; background: #39393d; position: relative; }
+  .im-chave::after { content: ''; position: absolute; top: 2px; left: 2px; width: 26px; height: 26px; border-radius: 50%; background: #fff; }
+  .im-chave.on { background: #30d158; } .im-chave.on::after { left: 22px; }
+  .guia-g .dt-barra b { display: inline-flex; align-items: center; gap: 8px; }
+  .g-logo.mini { width: 22px; height: 22px; border-radius: 6px; display: inline-grid; place-items: center; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.15); font: 800 13px Arial, sans-serif; color: #4285F4; }
+  html body .cal-folha .botoes.dt-col { margin-top: 6px; }
+  /* ---------- Deixar a Bee pronta ---------- */
+  .preparo { text-align: center; }
+  .preparo .pr-bee { width: 84px; height: 84px; object-fit: contain; margin: 4px auto 0; display: block; }
+  .preparo h3 { margin-top: 6px; }
+  .pr-barra { height: 8px; margin: 14px 0 16px; border-radius: 4px; background: var(--field); overflow: hidden; }
+  .pr-barra i { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, #FFD268, #FFB626); transition: width .5s; }
+  .pr-lista { display: flex; flex-direction: column; gap: 10px; text-align: left; }
+  html body button.pr-passo { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px; border: 1px solid var(--border-subtle, var(--line)); border-radius: 18px; background: var(--card); color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+  .pr-passo.prox { border: 2px solid var(--accent) !important; background: var(--accent-soft) !important; }
+  .pr-num { flex: none; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: var(--field); font-weight: 800; color: var(--muted); }
+  .pr-passo.prox .pr-num { background: var(--accent); color: #2A1704; }
+  .pr-passo.ok .pr-num { background: #22C27A; color: #fff; } .pr-passo.ok .pr-num svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 3; }
+  .pr-passo.ok b { color: var(--muted); }
+  .pr-txt { flex: 1; min-width: 0; } .pr-txt b { display: block; font-size: 16px; } .pr-txt small { display: block; margin-top: 2px; font-size: 13px; color: var(--muted); }
+  .pr-ir { flex: none; padding: 8px 14px; border-radius: 999px; background: linear-gradient(180deg,#FFD268 0%,#FFB626 45%,#F08F0A 100%); color: #2A1704; font-weight: 800; font-size: 14px; }
+  html body .pr-depois { display: block; width: 100%; margin-top: 14px; padding: 12px; border: 0; background: none; color: var(--muted); font: inherit; font-weight: 700; cursor: pointer; }
+  .pr-card { position: relative; margin: 4px 0 14px; }
+  html body button.pr-card-bt { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 40px 14px 14px; border: 0; border-radius: 20px; background: var(--accent-soft); color: var(--text); font: inherit; text-align: left; cursor: pointer; box-shadow: inset 0 0 0 1px rgba(245,154,11,.25); }
+  .pr-anel { flex: none; width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; background: conic-gradient(#FFB626 calc(var(--p) * 360deg), rgba(245,154,11,.18) 0); }
+  .pr-anel b { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: var(--card); font-size: 13px; font-weight: 800; }
+  html body .pr-x { position: absolute; top: 6px; right: 8px; width: 30px; height: 30px; border: 0; background: none; color: var(--muted); font-size: 22px; line-height: 1; cursor: pointer; }
+  /* ---------- Depois de ligar o WhatsApp ---------- */
+  .wa-dicas { text-align: center; } .wa-dicas h3 { margin-top: 8px; }
+  .wd-item { margin: 10px 0; padding: 14px; border-radius: 18px; background: var(--field); text-align: left; }
+  .wd-item > b { display: block; font-size: 16px; } .wd-item > span { display: block; margin-top: 2px; font-size: 14px; color: var(--muted); }
+  .wd-chat { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; padding: 10px; border-radius: 14px; background: #ECE5DD; }
+  :root[data-modo="escuro"] .wd-chat { background: #0B141A; }
+  .wd-chat i { max-width: 85%; padding: 7px 10px; border-radius: 10px; background: #fff; color: #111; font-style: normal; font-size: 14px; line-height: 1.35; align-self: flex-start; }
+  .wd-chat i.eu { align-self: flex-end; background: #D9FDD3; }
+  :root[data-modo="escuro"] .wd-chat i { background: #202C33; color: #E9EDEF; } :root[data-modo="escuro"] .wd-chat i.eu { background: #005C4B; }
+  .wd-bts { display: flex; flex-wrap: wrap; gap: 6px; } .wd-bts span { padding: 6px 10px; border-radius: 10px; background: #fff; color: #00A884; font-size: 13px; font-weight: 600; }
+  :root[data-modo="escuro"] .wd-bts span { background: #202C33; color: #00A884; }
+  .wa-dicas .wa-sec { display: flex; align-items: center; justify-content: center; gap: 8px; line-height: 1.2; }
+  .wa-dicas .wa-sec svg { width: 20px; height: 20px; }
 </style>
 </head>
 <body>
@@ -3951,6 +4020,7 @@ function telaHoje() {
   if (diaHojeBase !== chaveDia(hoje)) { diaHojeBase = chaveDia(hoje); diaHoje = 0; }
   const dia = maisDias(hoje, diaHoje);
   const ocsDia = ocorrencias(dia, maisDias(dia, 1)), feitosDia = ocsDia.filter(o => estaFeito(o.ev, o.inicio)).length, faltam = ocsDia.length - feitosDia;
+  html += htmlCartaoPreparo();
   html += `<section class="grupo"><div class="seg-visao">${[['dia', ICO_SOL, 'Dia'], ['semana', ICO_CAL, 'Semana'], ['mes', ICO_DET.cal, 'Mês']].map(([k, ic, t]) => `<button class="${visaoHoje === k ? 'on' : ''}" data-modo-hoje="${k}">${ic}${t}</button>`).join('')}</div>`;
   if (visaoHoje === 'semana') return html + htmlSemanaDS(hoje, agora) + '</section></div>' + htmlNotas();
   if (visaoHoje === 'mes') return html + htmlMesDS(hoje, agora) + '</section></div>' + htmlNotas();
@@ -4616,6 +4686,8 @@ document.getElementById('lista').addEventListener('click', (ev) => {
   if (ev.target.closest('[data-fechar-ontem]')) return fecharOntem();
   if (ev.target.closest('[data-fogo]')) return mostrarSequencia();
   if (ev.target.closest('[data-dois-toques]')) return abrirDoisToques(-1);
+  if (ev.target.closest('[data-preparo-fechar]')) { gravarPref('agenda.preparoFechado', '1'); vibrar('leve'); render(); return toast('Tudo bem. Os ajustes ficam no Perfil quando quiser.', 3500); }
+  if (ev.target.closest('[data-preparo]')) return abrirPreparo();
   if (ev.target.closest('[data-wa-sim]')) return abrirWhats();
   if (ev.target.closest('[data-wa-nao]')) { gravarPref('agenda.waCartao', 'nao'); vibrar('leve'); render(); return toast('Combinado: os avisos continuam no iPhone. Dá para mudar em Ajustes.', 4000); }
   const nt = ev.target.closest('[data-nova-nota], [data-nota-feita], [data-nota-agendar], [data-nota]');
@@ -7867,6 +7939,7 @@ const ICO_TOQUE = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-wid
 const ROTA_AJUSTES = [['⚙️', 'Ajustes', 'o ícone cinza de engrenagem'], ['♿', 'Acessibilidade', ''], [ICO_TOQUE, 'Toque', 'o botão azul com a mãozinha branca'], ['📳', 'Tocar Atrás', 'role a tela até lá embaixo'], ['✌️', 'Toque Duplo', ''], ['🐝', 'Falar com a Bee', 'na parte de Atalhos, lá embaixo']];
 const rotaHtml = (itens) => `<ol class="dt-rota">${itens.map(([ico, nome, dica]) => `<li><span class="dt-ico ${ico === ICO_TOQUE ? 'azul' : ''}">${ico}</span><span><b>${nome}</b>${dica ? `<small>${dica}</small>` : ''}</span><span class="dt-seta"></span></li>`).join('')}</ol>`;
 function abrirDoisToques(passo = 0) {
+  dtPasso = passo;
   const pontos = (n) => `<div class="dt-passos">${[0, 1, 2, 3].map(i => `<i class="${i === n ? 'on' : i < n ? 'feito' : ''}"></i>`).join('')}</div>`;
   const topo = (n) => `<div class="dt-barra"><b>Passo ${n + 1} de 4</b></div>${pontos(n)}`;
   if (passo === -1) {
@@ -7895,7 +7968,7 @@ function abrirDoisToques(passo = 0) {
         <div class="dt-busca"><span class="dt-lupa"></span><b>Toque Duplo</b><i class="dt-cursor"></i></div>
         <div class="dt-res on"><span class="dt-ico azul">${ICO_TOQUE}</span><span><b>Toque Duplo</b><small>Acessibilidade › Toque › Tocar Atrás</small></span><span class="dt-dedo">👆</span></div>
       </div>
-      <p class="dt-dica">Dica: tire um print desta tela pra seguir olhando.</p>
+      <p class="dt-dica">Veja também o próximo passo antes de ir. Quando voltar dos Ajustes, a Bee já mostra o teste.</p>
       <div class="botoes dt-col"><button class="primario" id="dtProx">Achei, próximo</button><button id="dtVolta">Voltar</button></div>`,
     () => `${topo(2)}
       <h3>Escolha “Falar com a Bee”</h3>
@@ -7926,6 +7999,15 @@ function abrirDoisToques(passo = 0) {
   on('dtVolta', () => abrirDoisToques(passo - 1 < 0 ? -1 : passo - 1));
   on('dtDepois', fecharFolha);
 }
+// Saiu pro app Atalhos ou pros Ajustes no meio do guia: ao voltar, a Bee já mostra o passo seguinte
+let dtPasso = -1, dtSaiuEm = -1;
+document.addEventListener('visibilitychange', () => {
+  const aberto = !!document.querySelector('#sheet .dois-toques:not(.festa):not(.guia-g)') && overlay.classList.contains('show');
+  if (document.hidden) { dtSaiuEm = aberto ? dtPasso : -1; return; }
+  if (!aberto || dtSaiuEm < 0 || dtSaiuEm > 2) return;
+  const prox = dtSaiuEm === 0 ? 1 : 3; dtSaiuEm = -1;
+  setTimeout(() => { if (!doisToquesOk()) { abrirDoisToques(prox); toast(prox === 1 ? 'Atalho instalado? Agora é nos Ajustes.' : 'Voltou! Agora é só testar.', 3000); } }, 400);
+});
 // Chegou pelo atalho: a primeira vez (ou o teste do assistente) vira comemoração
 function comemorarDoisToques(frase) {
   const primeira = !doisToquesOk(), teste = lerPref('agenda.doisToquesTeste', '') === '1';
@@ -7943,7 +8025,7 @@ function comemorarDoisToques(frase) {
     <div class="botoes">${frase && !/^testando/i.test(frase.trim()) ? '<button id="dtAnotar">Anotar isso</button>' : ''}<button class="primario" id="dtOk">Show!</button></div>
   </div>`);
   setTimeout(() => confete(innerWidth / 2, innerHeight * .35, true), 250);
-  document.getElementById('dtOk').onclick = () => { fecharFolha(); render(); };
+  document.getElementById('dtOk').onclick = () => { if (!preparoCompleto() && lerPref('agenda.preparoFechado', '') !== '1') abrirPreparo(); else fecharFolha(); render(); };
   const an = document.getElementById('dtAnotar'); if (an) an.onclick = () => criarDeFrase(frase);
   render();
   return true;
@@ -8495,6 +8577,7 @@ function qzEntrar() {
   el.classList.add('saindo'); setTimeout(() => el.remove(), 450);
   // Quem acabou de chegar já anota o primeiro compromisso; quem restaurou e já tem agenda segue direto
   if (eventos.length || !TUTORIAL_INICIAL) gravarPref('agenda.boasVindas', '1'); else setTimeout(boasVindas, 900);
+  mostrarPreparoNoInicio();
 }
 const rcPlugin = () => RC_CHAVE ? pluginNativo('Purchases') : null;
 let rcIniciado;
@@ -8669,9 +8752,9 @@ async function abrirWhats() {
     if (!document.getElementById('waFolha') || !overlay.classList.contains('show') || Date.now() > fim) return;
     try {
       if ((await waPedir('situacao')).ligado) {
-        gravarPref('agenda.whats', '1'); marcarWhats(); fecharFolha(); enviarWhats(); agendarLembretes(); render();
+        gravarPref('agenda.whats', '1'); marcarWhats(); enviarWhats(); agendarLembretes(); render();
         tocarSom(true); vibrar('sucesso'); confete(innerWidth / 2, innerHeight / 3, true);
-        return toast('Pronto! Agora a Bee te avisa pelo WhatsApp. 🐝', 3500);
+        return abrirDicasWhats();
       }
     } catch {}
     setTimeout(conferir, 3000);
@@ -9050,29 +9133,58 @@ function introCalendario() {
     <h3>Sua agenda num lugar só</h3>
     <p class="dt-sub">Conecte o Calendário do iPhone e veja tudo junto: o que você marca com a Bee e o que já está no Calendário e no Google Agenda.</p>
     ${comoFunciona(['Os compromissos do <b>Calendário do iPhone</b> aparecem aqui no Tap Bee, com um 📅.', 'O que você marca com a Bee pode ir <b>pra lá também</b>. Você escolhe a agenda.', 'Mudou num lugar, muda no outro. <b>Nada sai do seu iPhone.</b>'])}
-    <button class="cf-google" id="icGoogle"><span class="g-logo">G</span><span><b>Usa Google Agenda?</b><small>Veja como ligar em 3 passos</small></span><i class="pf-seta"></i></button>
+    <button class="cf-google" id="icGoogle"><span class="g-logo">G</span><span><b>Usa Google Agenda?</b><small>Veja como ligar, passo a passo</small></span><i class="pf-seta"></i></button>
     <div class="botoes dt-col"><button class="primario" id="icConectar">${ICO_DET.cal}Conectar Calendário</button></div>
     <p class="cf-nota">O iPhone vai pedir permissão: toque em <b>Permitir Acesso Total</b>.</p>
   </div>`);
   document.getElementById('icConectar').onclick = () => { gravarPref('agenda.calIntro', '1'); abrirCalendario(); };
   document.getElementById('icGoogle').onclick = () => guiaGoogle(0);
 }
-// Google Agenda: o iPhone já sabe ler a conta Google; o guia mostra onde tocar, com o desenho de cada tela
+// Nomes das contas como o iPhone devolve (às vezes em inglês) viram nomes que a pessoa reconhece
+function nomeConta(c) {
+  if (!c) return '';
+  if (/gmail|google/i.test(c)) return 'Google';
+  if (/subscri|assinad/i.test(c)) return 'Feriados e assinaturas';
+  if (/^(other|outros?|on my iphone|no iphone)$/i.test(c.trim())) return 'Neste iPhone';
+  return c;
+}
+// Google Agenda: o iPhone já sabe ler a conta Google; o guia mostra cada tela dos Ajustes como ela é, com o lugar do toque marcado
+const IOS_CAL = '<span class="im-cal" aria-hidden="true"><i></i></span>';
+const imLinha = (txt, { alvo, dir = '', chave, sub } = {}) => `<div class="im-linha ${alvo ? 'alvo' : ''}"><span>${txt}${sub ? `<small>${sub}</small>` : ''}</span>${chave !== undefined ? `<i class="im-chave ${chave ? 'on' : ''}"></i>` : `<em>${dir}</em><b>›</b>`}${alvo ? '<span class="im-dedo"></span>' : ''}</div>`;
+const imTela = (topo, corpo) => `<div class="ios-m" aria-hidden="true"><div class="im-nav"><span class="im-volta">‹</span>${topo ? `<b>${topo}</b>` : ''}</div>${corpo}</div>`;
 function guiaGoogle(passo) {
   const telas = [
-    ['Abra os Ajustes do iPhone', 'Toque em <b>Apps</b> e depois em <b>Calendário</b>.', `<div class="dt-lista-ios"><small>APPS</small><i>Atalhos</i><i class="on">📅 Calendário<span>›</span></i><i>Câmera</i></div>`],
-    ['Adicione a conta Google', 'Toque em <b>Contas</b>, depois em <b>Adicionar Conta</b> e escolha <b>Google</b>.', `<div class="dt-lista-ios"><small>ADICIONAR CONTA</small><i>iCloud</i><i>Microsoft Exchange</i><i class="on"><b class="g-txt">Google</b><span>›</span></i><i>Yahoo!</i></div>`],
-    ['Entre e ligue Calendários', 'Entre com seu e-mail do Gmail e deixe <b>Calendários</b> ligado. Pronto, volte pra cá.', `<div class="dt-lista-ios"><small>GMAIL</small><i>Mail<span class="ios-chave on"></span></i><i>Contatos<span class="ios-chave"></span></i><i class="on">Calendários<span class="ios-chave on"></span></i></div>`],
+    ['Abra o Calendário nos Ajustes', 'Abra o app <b>Ajustes</b> do iPhone, toque em <b>Apps</b> e depois em <b>Calendário</b>.',
+      imTela('Apps', `<div class="im-grupo">${imLinha('Atalhos')}${imLinha(`${IOS_CAL}Calendário`, { alvo: 1 })}${imLinha('Câmera')}</div>`)],
+    ['Toque em Contas de Calendário', 'Fica logo no começo da tela do Calendário.',
+      imTela('', `<div class="im-grupo im-capa">${IOS_CAL}<b>Calendário</b><small>Adicione ou remova contas…</small>${imLinha('Contas de Calendário', { alvo: 1, dir: '1' })}</div>`)],
+    ['Toque em Adicionar Conta', 'Fica embaixo do iCloud.',
+      imTela('Contas de Calendário', `<small class="im-rot">Contas</small><div class="im-grupo">${imLinha('iCloud', { sub: 'iCloud Drive, Contatos, Calendários…' })}${imLinha('Adicionar Conta', { alvo: 1 })}</div>`)],
+    ['Escolha Google e entre', 'Toque em <b>Google</b> e entre com o <b>e-mail e a senha do seu Gmail</b>, como você faz no Gmail.',
+      imTela('', `<div class="im-grupo im-capa">${IOS_CAL}<b>Adicionar Conta</b></div><div class="im-grupo im-prov">${imLinha('<span class="im-icloud">iCloud</span>')}${imLinha('<span class="im-g"><i>G</i><i>o</i><i>o</i><i>g</i><i>l</i><i>e</i></span>', { alvo: 1 })}${imLinha('<span class="im-ms">Outlook.com</span>')}</div>`)],
+    ['Deixe Calendários ligado', 'Confira se <b>Calendários</b> está verde e toque em <b>Salvar</b>. Depois é só voltar pro Tap Bee.',
+      imTela('Gmail', `<div class="im-grupo">${imLinha('E-mail', { chave: 1 })}${imLinha('Contatos', { chave: 1 })}${imLinha('Calendários', { chave: 1, alvo: 1 })}${imLinha('Notas', { chave: 0 })}</div>`)],
   ];
-  const [tit, txt, mock] = telas[passo];
-  abrirFolha(`<div class="dois-toques intro-cf"><div class="dt-barra"><b>Google Agenda · ${passo + 1} de 3</b></div><div class="dt-passos">${[0, 1, 2].map(i => `<i class="${i === passo ? 'on' : i < passo ? 'feito' : ''}"></i>`).join('')}</div>
-    <h3>${tit}</h3><p class="dt-sub">${txt}</p><div class="dt-tela" aria-hidden="true">${mock}</div>
-    <div class="botoes dt-col">${passo < 2 ? '<button class="primario" id="ggProx">Próximo</button>' : `<button class="primario" id="ggFim">${ICO_DET.cal}Pronto, conectar</button>`}${passo ? '<button id="ggVolta">Voltar</button>' : '<button id="ggVolta">Voltar</button>'}</div></div>`);
+  const [tit, txt, mock] = telas[passo], ultimo = passo === telas.length - 1;
+  guiaGoogleAberto = passo;
+  abrirFolha(`<div class="dois-toques intro-cf guia-g"><div class="dt-barra"><b><span class="g-logo mini">G</span>Google Agenda · ${passo + 1} de ${telas.length}</b></div><div class="dt-passos">${telas.map((_, i) => `<i class="${i === passo ? 'on' : i < passo ? 'feito' : ''}"></i>`).join('')}</div>
+    <h3>${tit}</h3><p class="dt-sub">${txt}</p>${mock}
+    ${passo === 0 ? '<p class="dt-dica">Quando terminar lá, volte pro Tap Bee: a Bee confere sozinha.</p>' : ''}
+    <div class="botoes dt-col">${ultimo ? `<button class="primario" id="ggFim">${ICONE_CHECK}Pronto, já liguei</button>` : '<button class="primario" id="ggProx">Próximo</button>'}<button id="ggVolta">Voltar</button></div></div>`);
   const on = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
   on('ggProx', () => { vibrar('selecao'); guiaGoogle(passo + 1); });
-  on('ggVolta', () => passo ? guiaGoogle(passo - 1) : introCalendario());
-  on('ggFim', () => { gravarPref('agenda.calIntro', '1'); abrirCalendario(); });
+  on('ggVolta', () => passo ? guiaGoogle(passo - 1) : (calPrefs().ligado ? abrirCalendario() : introCalendario()));
+  on('ggFim', () => { guiaGoogleAberto = null; gravarPref('agenda.calIntro', '1'); abrirCalendario(); });
 }
+let guiaGoogleAberto = null;
+// Voltou dos Ajustes no meio do guia: se a conta Google já aparece, a Bee comemora e mostra o Calendário
+document.addEventListener('visibilitychange', async () => {
+  if (document.hidden || guiaGoogleAberto === null || !Calendario || !document.querySelector('#sheet .guia-g')) return;
+  try {
+    const { calendarios } = await Calendario.calendarios();
+    if (calendarios.some(c => nomeConta(c.conta) === 'Google')) { guiaGoogleAberto = null; gravarPref('agenda.calIntro', '1'); await abrirCalendario(); vibrar('sucesso'); toast('Google Agenda ligado! 🎉', 3500); }
+  } catch {}
+});
 async function abrirCalendario() {
   if (!Calendario) return toast('Disponível no app para iPhone.');
   if (!calPrefs().ligado && !lerPref('agenda.calIntro', '')) return introCalendario();
@@ -9082,7 +9194,7 @@ async function abrirCalendario() {
   let lista = [], padrao = '';
   try { ({ calendarios: lista, padrao } = await Calendario.calendarios()); } catch {}
   const pref = calPrefs(), graváveis = lista.filter(c => c.escreve);
-  const contas = [...new Set(lista.map(c => c.conta))];
+  const contas = [...new Set(lista.map(c => nomeConta(c.conta)).filter(Boolean))];
   abrirFolha(`<div class="cal-folha">
       <h3>Calendário conectado</h3>
       <p class="dt-sub">${ICONE_CHECK} Já aparecem aqui os compromissos de: <b>${contas.length ? contas.map(esc).join(', ') : 'Calendário do iPhone'}</b>.</p>
@@ -9090,10 +9202,10 @@ async function abrirCalendario() {
       <p class="cal-ajuda">Escolha uma agenda e eles aparecem lá também, no Calendário do iPhone e no Google Agenda.</p>
       <div class="cal-opcoes">
         <button class="${!pref.copiar && pref.ligado ? 'on' : ''}" data-cal-copiar="">Não copiar</button>
-        ${graváveis.map(c => `<button class="${(pref.ligado ? pref.copiar : padrao) === c.id ? 'on' : ''}" data-cal-copiar="${esc(c.id)}" data-cal-nome="${esc(c.titulo)}"><i style="background:${c.cor}"></i><span>${esc(c.titulo)}<small>${esc(c.conta)}</small></span></button>`).join('')}
+        ${graváveis.map(c => `<button class="${(pref.ligado ? pref.copiar : padrao) === c.id ? 'on' : ''}" data-cal-copiar="${esc(c.id)}" data-cal-nome="${esc(c.titulo)}"><i style="background:${c.cor}"></i><span>${esc(c.titulo)}<small>${esc(nomeConta(c.conta) || c.conta)}</small></span></button>`).join('')}
       </div>
-      ${contas.some(c => /gmail|google/i.test(c)) ? '' : '<button class="cf-google" id="calGoogle"><span class="g-logo">G</span><span><b>Falta o Google Agenda?</b><small>Veja como ligar em 3 passos</small></span><i class="pf-seta"></i></button>'}
-      <button class="primario" data-cal-salvar>Pronto</button>
+      ${contas.includes('Google') ? '' : '<button class="cf-google" id="calGoogle"><span class="g-logo">G</span><span><b>Falta o Google Agenda?</b><small>Veja como ligar, passo a passo</small></span><i class="pf-seta"></i></button>'}
+      <div class="botoes dt-col"><button class="primario" data-cal-salvar>${ICONE_CHECK}Pronto</button></div>
       ${pref.ligado ? '<button class="cal-desligar" data-cal-desligar>Desconectar</button>' : ''}
     </div>`);
   const google = graváveis.find(c => /gmail|google/i.test(c.conta || ''));
@@ -9109,6 +9221,7 @@ async function abrirCalendario() {
     gravarJSON('agenda.calendario', { ligado: true, copiar: escolha, nome });
     fecharFolha(); atualizarRotuloCalendario(); lerCalendario(); copiarParaCalendario();
     vibrar('sucesso'); toast(escolha ? 'Calendário conectado. Seus compromissos vão aparecer nos dois lugares.' : 'Calendário conectado.', 4000);
+    seguirPreparo();
   };
   sheet.querySelector('[data-cal-desligar]')?.addEventListener('click', () => {
     gravarJSON('agenda.calendario', { ligado: false, copiar: '' });
@@ -9118,6 +9231,81 @@ async function abrirCalendario() {
 document.getElementById('btnCalendario').onclick = abrirCalendario;
 atualizarRotuloCalendario();
 setTimeout(lerCalendario, 600);
+
+// ---------- Deixar a Bee pronta: os 3 ajustes, na ordem mais fácil (WhatsApp, 2 toques, agenda) ----------
+let doPreparo = false;   // o passo foi aberto pela tela de preparo: ao terminar, ela volta mostrando o próximo
+const temDoisToques = () => (NATIVO && !EH_IPAD) || lerPref('agenda.waTeste', '') === '1';
+function passosPreparo() {
+  return [
+    waLiberado() && { k: 'whats', tit: 'A Bee no seu WhatsApp', sub: 'Lembretes e compromissos pela conversa', tempo: '30 s', ok: waLigado(), ico: ICO_WA },
+    temDoisToques() && { k: 'toques', tit: 'Anotar com 2 toques', sub: 'Toque atrás do iPhone e fale', tempo: '1 min', ok: doisToquesOk(), ico: '<span class="dt-fone mini"><i></i></span>' },
+    { k: 'agenda', tit: 'Trazer sua agenda', sub: 'Calendário do iPhone e Google Agenda', tempo: '1 min', ok: !!calPrefs().ligado, ico: ICO_DET.cal },
+  ].filter(Boolean);
+}
+const preparoCompleto = () => passosPreparo().every(p => p.ok);
+function abrirPassoPreparo(k) {
+  doPreparo = true; vibrar('selecao');
+  if (k === 'whats') return abrirWhats();
+  if (k === 'toques') return abrirDoisToques(-1);
+  return calPrefs().ligado ? abrirCalendario() : introCalendario();
+}
+function abrirPreparo() {
+  doPreparo = false;
+  const ps = passosPreparo(), feitos = ps.filter(p => p.ok).length, prox = ps.find(p => !p.ok), nome = esc(lerPref('agenda.nome', '').trim());
+  if (!prox) {
+    abrirFolha(`<div class="preparo pronto"><img class="bee-voz" src="${MASCOTES.bee_festa}" alt=""><h3>Tudo pronto${nome ? `, ${nome}` : ''}!</h3>
+      <p class="dt-sub">A Bee já está no WhatsApp, abre com 2 toques e enxerga sua agenda. Agora é só viver o dia que ela cuida do resto.</p>
+      <div class="botoes dt-col"><button class="primario" data-fechar-folha>Show!</button></div></div>`);
+    gravarPref('agenda.preparoFechado', '1'); setTimeout(() => confete(innerWidth / 2, innerHeight * .35, true), 200); render();
+    return;
+  }
+  abrirFolha(`<div class="preparo">
+    <img class="pr-bee" src="${MASCOTES.bee}" alt="">
+    <h3>Vamos deixar a Bee pronta${nome ? `, ${nome}` : ''}</h3>
+    <p class="dt-sub">${ps.length} passos rapidinhos. Dá pra fazer agora ou depois, pelo Início.</p>
+    <div class="pr-barra" role="progressbar" aria-valuenow="${feitos}" aria-valuemax="${ps.length}"><i style="width:${Math.max(6, feitos / ps.length * 100)}%"></i></div>
+    <div class="pr-lista">${ps.map((p, i) => `<button class="pr-passo ${p.ok ? 'ok' : p === prox ? 'prox' : ''}" data-preparo-passo="${p.k}">
+      <span class="pr-num">${p.ok ? ICONE_CHECK : i + 1}</span>
+      <span class="pr-txt"><b>${p.tit}</b><small>${p.ok ? 'Feito' : `${p.sub} · ${p.tempo}`}</small></span>
+      ${p === prox ? '<span class="pr-ir">Fazer</span>' : p.ok ? '' : '<i class="pf-seta"></i>'}</button>`).join('')}</div>
+    <button class="pr-depois" data-fechar-folha>Fazer depois</button>
+  </div>`);
+  sheet.querySelectorAll('[data-preparo-passo]').forEach(b => b.onclick = () => abrirPassoPreparo(b.dataset.preparoPasso));
+}
+// Terminou um passo: se veio do preparo, volta pra ele mostrando o próximo
+function seguirPreparo() { if (!doPreparo) return false; setTimeout(abrirPreparo, 350); return true; }
+// Cartão do Início até os 3 passos ficarem prontos
+function htmlCartaoPreparo() {
+  if (!quizLiberado() || lerPref('agenda.preparoFechado', '') === '1') return '';
+  const ps = passosPreparo(), feitos = ps.filter(p => p.ok).length, prox = ps.find(p => !p.ok);
+  if (!prox) return '';
+  return `<div class="pr-card"><button class="pr-card-bt" data-preparo>
+    <span class="pr-anel" style="--p:${feitos / ps.length}"><b>${feitos}/${ps.length}</b></span>
+    <span class="pr-txt"><b>Falta pouco pra Bee ficar pronta</b><small>Próximo: ${prox.tit}</small></span><i class="pf-seta"></i></button>
+    <button class="pr-x" data-preparo-fechar aria-label="Esconder">×</button></div>`;
+}
+// Depois de ligar o WhatsApp: o que dá pra fazer por lá, com exemplos de conversa
+function abrirDicasWhats() {
+  const nome = esc(lerPref('agenda.nome', '').trim());
+  abrirFolha(`<div class="wa-dicas">
+    <div class="wa-ativo"><img src="${MASCOTES.bee}" alt=""><span>${ICO.ok}</span></div>
+    <h3>A Bee está no seu WhatsApp!</h3>
+    <p class="dt-sub">Salve o contato <b>Tap Bee</b> e use a conversa como sua secretária:</p>
+    <div class="wd-item"><b>1. Marque compromissos</b><span>Escreva ou mande áudio, do jeito que você fala.</span>
+      <div class="wd-chat"><i class="eu">Dentista sexta às 15h</i><i>Anotado! 🐝 <b>Dentista</b>, sexta às 15:00.</i></div></div>
+    <div class="wd-item"><b>2. Receba os lembretes</b><span>A Bee avisa antes, e você responde com um toque.</span>
+      <div class="wd-chat"><i>Oi${nome ? `, ${nome}` : ''}! Daqui a 15 min: <b>Dentista</b> 🦷</i><div class="wd-bts"><span>Feito</span><span>Lembrar em 10 min</span><span>Mudar horário</span></div></div></div>
+    <div class="wd-item"><b>3. Tudo fica junto</b><span>O que você marca no WhatsApp aparece aqui no app, e o que marca aqui ela lembra por lá.</span></div>
+    <div class="botoes dt-col">${!preparoCompleto() ? '<button class="primario" id="wdProx">Próximo passo</button>' : '<button class="primario" data-fechar-folha>Show!</button>'}<a class="wa-sec" href="https://wa.me/${NUMERO_BEE}">${ICO_WA}Abrir conversa com a Bee</a></div>
+  </div>`);
+  document.getElementById('wdProx')?.addEventListener('click', () => { doPreparo = true; seguirPreparo(); });
+}
+// Mostra o preparo uma vez, logo depois de entrar no app (compra ou restauração)
+function mostrarPreparoNoInicio() {
+  if (lerPref('agenda.preparoVisto', '') || preparoCompleto()) return;
+  gravarPref('agenda.preparoVisto', '1');
+  setTimeout(abrirPreparo, 1100);
+}
 
 // ---------- Reuniões: grava a conversa, a Bee transcreve e resume ----------
 // O áudio sai do iPhone só para virar texto e resumo; aqui fica guardado só o texto
