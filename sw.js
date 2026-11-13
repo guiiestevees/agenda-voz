@@ -1,6 +1,6 @@
 // Guarda o app no aparelho para abrir mesmo sem internet.
 // Sempre tenta a versão nova primeiro; sem conexão, usa a cópia guardada.
-const CACHE = 'agenda-v89';
+const CACHE = 'agenda-v90';
 const ARQUIVOS = ['./', './index.html', './privacidade.html', './suporte.html', './privacy.html', './support.html', './i18n-en.js', './fontes/figtree.woff2', './fontes/bricolage.woff2', './mascotes/acenando.webp', './mascotes/comemorando.webp', './mascotes/dormindo.webp', './mascotes/ouvindo.webp', './mascotes/pensando.webp'];
 
 self.addEventListener('install', (e) => {

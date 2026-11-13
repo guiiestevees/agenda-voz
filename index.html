@@ -2880,6 +2880,43 @@
   html body .pt-avatar { box-shadow: 0 8px 24px rgba(245,154,11,.35); }
   html body .pf-cartao { box-shadow: 0 1px 2px rgba(42,23,4,.05), 0 4px 12px rgba(42,23,4,.05); }
   .pf-linha { touch-action: manipulation; -webkit-user-select: none; user-select: none; }
+
+  /* Semana (design novo) */
+  .sw-cab { padding: 2px 4px 12px; } .sw-cab b { display: block; font: 700 20px var(--font-display); letter-spacing: -.02em; } .sw-cab small { display: block; margin-top: 2px; font-size: 14px; color: var(--muted); }
+  .sw-faixa { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 20px; }
+  .sw-dia { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px 0 10px; border-radius: 18px; border: 1px solid var(--border-subtle); background: var(--card); color: var(--text); font: inherit; cursor: pointer; }
+  .sw-dia small { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; opacity: .7; }
+  .sw-dia b { font: 800 18px/1 var(--font-display); }
+  .sw-dia.passou b { opacity: .5; }
+  .sw-dia span { display: flex; gap: 2px; height: 5px; }
+  .sw-dia span i { width: 5px; height: 5px; border-radius: 50%; background: var(--border-strong, rgba(42,23,4,.2)); }
+  .sw-dia span i.ok { background: var(--accent); }
+  .sw-dia.hj { border: 0; background: var(--gradient-honey); color: var(--text-on-honey); box-shadow: var(--shadow-button); }
+  .sw-dia.hj span i { background: rgba(42,23,4,.3); } .sw-dia.hj span i.ok { background: var(--text-on-honey); }
+  .sw-passados { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; height: 38px; margin-bottom: 18px; border: 0; border-radius: 999px; background: var(--surface-pressed); color: var(--muted); font: 600 14px var(--font-body); cursor: pointer; }
+  .sw-passados svg { width: 15px; height: 15px; }
+  .sw-sec { margin-bottom: 18px; } .sw-sec.passou { opacity: .62; }
+  .sw-tit { display: flex; align-items: center; gap: 8px; width: 100%; padding: 0 4px 8px; border: 0; background: none; font: inherit; color: var(--text); cursor: pointer; text-align: left; }
+  .sw-tit b { font-size: 16px; font-weight: 800; } .sw-tit span { flex: 1; }
+  .sw-tit em { padding: 2px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-text); font-style: normal; font-size: 12px; font-weight: 700; }
+  .sw-tit small { font-size: 14px; font-weight: 600; color: var(--muted); } .sw-tit small.cheio { color: var(--accent-text); }
+  .sw-lista { border-radius: 22px; overflow: hidden; background: var(--card); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-card); }
+  .sw-item { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 54px; padding: 8px 16px; border: 0; border-top: 1px solid var(--border-subtle); background: none; font: inherit; color: var(--text); text-align: left; cursor: pointer; }
+  .sw-item:first-child { border-top: 0; }
+  .sw-hora { width: 46px; flex: none; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .sw-barra { width: 3px; align-self: stretch; border-radius: 2px; background: var(--accent); } .sw-barra.reu { background: #6B42DB; }
+  :root[data-modo="escuro"] .sw-barra.reu, :root[data-modo="escuro"] .sw-legenda i.reu { background: #8F6CF5; }
+  .sw-txt { flex: 1; min-width: 0; } .sw-txt b { display: block; font-size: 16px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .sw-txt small { display: block; font-size: 13px; color: var(--muted); }
+  .sw-item.feito .sw-hora { color: var(--muted); } .sw-item.feito .sw-barra { opacity: .4; } .sw-item.feito b { text-decoration: line-through; color: var(--muted); }
+  .sw-item svg { width: 18px; height: 18px; flex: none; fill: none; stroke: var(--accent-text); stroke-width: 2.4; }
+  .sw-livre { display: flex; align-items: center; gap: 8px; height: 48px; padding: 0 16px; border-radius: 16px; border: 1.5px dashed var(--border-default); font-size: 15px; color: var(--muted); }
+  .sw-livre svg { width: 16px; height: 16px; }
+  .sw-legenda { display: flex; justify-content: center; gap: 16px; margin-top: 4px; font-size: 13px; color: var(--muted); }
+  .sw-legenda span { display: inline-flex; align-items: center; gap: 6px; } .sw-legenda i { width: 3px; height: 14px; border-radius: 2px; background: var(--accent); } .sw-legenda i.reu { background: #6B42DB; }
+  /* Pote mais parecido com o design: vidro branco leitoso e mel mais vivo */
+  html body .pote-ds { --jar-glass: rgba(255,255,255,.88); --jar-stroke: rgba(168,88,8,.34); }
+  :root[data-modo="escuro"] html body .pote-ds { --jar-glass: rgba(255,255,255,.10); --jar-stroke: rgba(255,220,140,.45); }
+  html body .pote-ds::before { inset: -10% -28% -12%; }
 </style>
 </head>
 <body>
@@ -3690,11 +3727,11 @@ function htmlPoteDS(feitos, total) {
   return `<div class="pote-ds ${estourou ? 'estoura' : ''}" style="--de:${nivel(de)}px;--ate:${nivel(p)}px;--brilho:${(.14 + p * .34).toFixed(2)}">
     <svg viewBox="0 0 200 230" role="img" aria-label="Pote ${Math.round(p * 100)}% cheio"><defs>
       <clipPath id="pdC"><path d="${POTE_CORPO}"/></clipPath>
-      <linearGradient id="pdH" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="150"><stop offset="0" stop-color="#FFD965"/><stop offset=".4" stop-color="#FFB524"/><stop offset="1" stop-color="#E8860A"/></linearGradient>
+      <linearGradient id="pdH" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="90"><stop offset="0" stop-color="#FFD54A"/><stop offset=".45" stop-color="#FFBE2E"/><stop offset="1" stop-color="#F59A0B"/></linearGradient>
       <linearGradient id="pdS" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFE9A8"/><stop offset="1" stop-color="#FFC94F"/></linearGradient>
       <linearGradient id="pdL" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D88A24"/><stop offset="1" stop-color="#8A4A0C"/></linearGradient>
-      <radialGradient id="pdG" cx=".3" cy=".3" r=".9"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
-      <pattern id="pdP" width="28" height="48" patternUnits="userSpaceOnUse"><path d="M0 8 L14 0 L28 8 V24 L14 32 L0 24 Z M14 32 V48" fill="none" stroke="#A85808" stroke-opacity=".16" stroke-width="1.5"/></pattern></defs>
+      <radialGradient id="pdG" cx=".3" cy=".3" r=".9"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <pattern id="pdP" width="28" height="48" patternUnits="userSpaceOnUse"><path d="M0 8 L14 0 L28 8 V24 L14 32 L0 24 Z M14 32 V48" fill="none" stroke="#A85808" stroke-opacity=".12" stroke-width="1.5"/></pattern></defs>
     <ellipse cx="100" cy="220" rx="66" ry="7" fill="#6E3A0A" opacity=".14"/>
     ${cheio ? '<ellipse class="pd-poca" cx="100" cy="221" rx="92" ry="10" fill="url(#pdS)"/>' : ''}
     <path d="${POTE_CORPO}" class="pd-vidro"/>
@@ -3715,15 +3752,27 @@ function htmlPoteDS(feitos, total) {
 }
 const ICO_NAV = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 11 19-9-9 19-2-8-8-2z"/></svg>';
 var semanaHoje = false;
+var semanaPassados = false;
+const DIAS_LONGOS = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+// Semana do design: faixa com as bolinhas, dias que já passaram dobrados numa pílula e uma lista por dia
 function htmlSemanaDS(hoje, agora) {
-  return Array.from({ length: 7 }, (_, i) => {
-    const d = maisDias(hoje, i), ocs = ocorrencias(d, maisDias(d, 1)), feitos = ocs.filter(o => estaFeito(o.ev, o.inicio)).length;
-    return `<div class="sem-dia ${i ? '' : 'hj'}"><button class="sd-topo" data-sem-dia="${i}">
-        <span class="sd-data"><small>${DIAS_CURTOS[d.getDay()]}</small><b>${d.getDate()}</b></span>
-        <span class="sd-meio">${ocs.length ? `<span class="sd-qtd">${ocs.length} ${ocs.length === 1 ? 'compromisso' : 'compromissos'}${i ? '' : '<em>Hoje</em>'}</span><span class="sd-barra"><i style="width:${feitos / ocs.length * 100}%"></i></span>` : '<span class="sd-livre">Dia livre</span>'}</span>
-        <span class="ri-seta"></span></button>
-      ${ocs.length ? `<div class="sd-lista">${ocs.map(o => { const f = estaFeito(o.ev, o.inicio); return `<button class="sd-item ${f ? 'feito' : ''}" data-id="${o.ev.id}" data-oc-dia="${chaveDia(o.inicio)}"><span>${fmtHora(o.inicio)}</span><b>${esc(o.ev.titulo)}</b>${f ? ICONE_CHECK : ''}</button>`; }).join('')}</div>` : ''}</div>`;
-  }).join('');
+  const seg = maisDias(hoje, -((hoje.getDay() + 6) % 7));
+  const dias = Array.from({ length: 7 }, (_, i) => {
+    const d = maisDias(seg, i), ocs = ocorrencias(d, maisDias(d, 1));
+    return { d, i, ocs, feitos: ocs.filter(o => estaFeito(o.ev, o.inicio)).length, hj: chaveDia(d) === chaveDia(hoje), passado: d < hoje };
+  });
+  const total = dias.reduce((a, x) => a + x.ocs.length, 0), livres = dias.filter(x => !x.ocs.length).length, fim = dias[6].d;
+  const faixa = seg.getMonth() === fim.getMonth() ? `${seg.getDate()} – ${fim.getDate()} de ${fim.toLocaleDateString(LOCALE, { month: 'long' })}`
+    : `${seg.getDate()} de ${seg.toLocaleDateString(LOCALE, { month: 'short' }).replace('.', '')} – ${fim.getDate()} de ${fim.toLocaleDateString(LOCALE, { month: 'short' }).replace('.', '')}`;
+  const passados = dias.filter(x => x.passado);
+  let h = `<div class="sw-cab"><b>${faixa}</b><small>${total} ${total === 1 ? 'compromisso' : 'compromissos'} · ${livres} ${livres === 1 ? 'dia livre' : 'dias livres'}</small></div>
+    <div class="sw-faixa">${dias.map(x => `<button class="sw-dia ${x.hj ? 'hj' : ''} ${x.passado ? 'passou' : ''}" data-sw-ir="${chaveDia(x.d)}"><small>${DIAS_CURTOS[x.d.getDay()]}</small><b>${x.d.getDate()}</b><span>${x.ocs.slice(0, 4).map(o => `<i class="${estaFeito(o.ev, o.inicio) ? 'ok' : ''}"></i>`).join('')}</span></button>`).join('')}</div>`;
+  if (passados.length) h += `<button class="sw-passados" data-sw-passados>${semanaPassados ? `${ICO_SETA('cima')}Esconder dias anteriores` : `${ICO_DET.relogio}${passados.map(x => DIAS_CURTOS[x.d.getDay()]).join(passados.length === 2 ? ' e ' : ', ').replace(/^./, c => c.toUpperCase())} · ${passados.reduce((a, x) => a + x.feitos, 0)} feitos`}</button>`;
+  h += dias.filter(x => semanaPassados || !x.passado).map(x => `<section class="sw-sec ${x.passado ? 'passou' : ''}" id="sw-${chaveDia(x.d)}">
+      <button class="sw-tit" data-sem-dia-data="${chaveDia(x.d)}"><b>${DIAS_LONGOS[x.d.getDay()]}, ${x.d.getDate()}</b>${x.hj ? '<em>Hoje</em>' : ''}<span></span>${x.ocs.length ? `<small class="${x.feitos === x.ocs.length ? 'cheio' : ''}">${x.feitos === x.ocs.length ? 'Pote cheio' : `${x.feitos} de ${x.ocs.length}`}</small>` : ''}</button>
+      ${x.ocs.length ? `<div class="sw-lista">${x.ocs.map(o => { const f = estaFeito(o.ev, o.inicio), cat = categoria(o.ev.titulo); return `<button class="sw-item ${f ? 'feito' : ''}" data-id="${o.ev.id}" data-oc-dia="${chaveDia(o.inicio)}"><span class="sw-hora">${fmtHora(o.inicio)}</span><i class="sw-barra ${ehReuniao(o.ev) ? 'reu' : ''}"></i><span class="sw-txt"><b>${esc(o.ev.titulo)}</b>${cat ? `<small>${cat.nome}</small>` : ''}</span>${f ? ICONE_CHECK : ''}</button>`; }).join('')}</div>` : `<div class="sw-livre">${ICO_PF.lua}Dia livre</div>`}
+    </section>`).join('');
+  return h + `<div class="sw-legenda"><span><i></i>Compromisso</span><span><i class="reu"></i>Reunião</span></div>`;
 }
 function htmlProximoDS(o, agora) {
   const min = Math.round((o.inicio - agora) / 60000), chave = `${o.ev.id}|${chaveDia(o.inicio)}`;
@@ -4266,6 +4315,19 @@ document.getElementById('lista').addEventListener('click', (ev) => {
   }
   const mh = ev.target.closest('[data-modo-hoje]');
   if (mh) { semanaHoje = mh.dataset.modoHoje === 'semana'; vibrar('selecao'); return render(); }
+  if (ev.target.closest('[data-sw-passados]')) { semanaPassados = !semanaPassados; vibrar('selecao'); return render(); }
+  const sw = ev.target.closest('[data-sw-ir]');
+  if (sw) {
+    const k = sw.dataset.swIr;
+    if (!document.getElementById('sw-' + k)) { semanaPassados = true; render(); }
+    vibrar('selecao');
+    const alvo = document.getElementById('sw-' + k);
+    if (alvo) window.scrollTo({ top: alvo.getBoundingClientRect().top + scrollY - 80, behavior: 'smooth' });
+    return;
+  }
+  const sdd = ev.target.closest('[data-sem-dia-data]');
+  if (sdd) { const [a, m, d] = sdd.dataset.semDiaData.split('-').map(Number), alvo = new Date(a, m - 1, d), dif = Math.round((alvo - inicioDoDia(new Date())) / 86400000);
+    if (dif >= 0 && dif < DIAS_FAIXA) { semanaHoje = false; diaHoje = dif; vibrar('selecao'); return render(); } return; }
   const sd = ev.target.closest('[data-sem-dia]');
   if (sd) { semanaHoje = false; diaHoje = +sd.dataset.semDia; vibrar('selecao'); return render(); }
   if (ev.target.closest('[data-falar-vazio]')) { vibrar('medio'); return abrirVoz(); }
