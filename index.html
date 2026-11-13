@@ -3140,6 +3140,11 @@
   label.det-mudar { position: relative; display: inline-flex; align-items: center; overflow: hidden; cursor: pointer; }
   label.det-mudar input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.011; font-size: 16px; }
   label.det-mudar select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.011; font-size: 16px; -webkit-appearance: none; appearance: none; }
+  .fe-outro { position: relative; flex: 1; min-width: 0; height: 40px; display: grid; place-items: center; padding: 0 4px; border-radius: 12px; font: 600 14px var(--font-body); color: var(--text); white-space: nowrap; overflow: hidden; cursor: pointer; }
+  .fe-outro::after { content: ''; display: inline-block; width: 6px; height: 6px; margin-left: 6px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-2px) rotate(45deg); opacity: .5; }
+  .fe-outro { display: flex; align-items: center; justify-content: center; }
+  .fe-outro.on { background: var(--card); box-shadow: 0 1px 4px rgba(42,23,4,.14); color: var(--accent-text); font-weight: 800; }
+  .fe-outro select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.011; font-size: 16px; -webkit-appearance: none; appearance: none; }
 </style>
 </head>
 <body>
@@ -6766,7 +6771,13 @@ function abrirEdicao(ev, novo = false) {
     return v;
   };
   const nomeDia = (d) => { const dif = Math.round((d - inicioDoDia(new Date())) / 86400000); return dif === 0 ? 'Hoje' : dif === 1 ? 'Amanhã' : `${maiuscula(DIAS_CURTOS[d.getDay()])}, ${d.getDate()} de ${d.toLocaleDateString(LOCALE, { month: 'short' }).replace('.', '')}`; };
-  const seg = (attr, opcoes, atual) => `<div class="fe-seg">${opcoes.map(([v, t]) => `<button type="button" class="${String(atual) === String(v) ? 'on' : ''}" ${attr}="${v}">${t}</button>`).join('')}</div>`;
+  const seg = (attr, opcoes, atual, extra = '') => `<div class="fe-seg">${opcoes.map(([v, t]) => `<button type="button" class="${String(atual) === String(v) ? 'on' : ''}" ${attr}="${v}">${t}</button>`).join('')}${extra}</div>`;
+  // "Outro": abre a roda do iPhone com todas as opções
+  const DURACOES = [5, 10, 15, 20, 30, 45, 60, 75, 90, 120, 150, 180, 240, 300, 360, 480, 720];
+  const rodaDur = (atual) => { const fora = ![30, 60, 120].includes(atual);
+    return `<label class="fe-outro ${fora ? 'on' : ''}">${fora ? fmtMin(atual) : 'Outro'}<select id="feDurRoda" aria-label="Duração">${DURACOES.concat(DURACOES.includes(atual) ? [] : [atual]).sort((a, b) => a - b).map(m => `<option value="${m}" ${m === atual ? 'selected' : ''}>${fmtMin(m)}</option>`).join('')}</select></label>`; };
+  const rodaAviso = (atual) => { const fora = ![null, 15, 60].includes(atual);
+    return `<label class="fe-outro ${fora ? 'on' : ''}">${fora ? (OPCOES_AVISO.find(([x]) => x === atual)?.[1] || fmtLembrete(atual)).replace(' antes', '') : 'Outro'}<select id="feAvisoRoda" aria-label="Quando avisar">${OPCOES_AVISO.map(([x, t]) => `<option value="${x === null ? 'nao' : x}" ${x === atual ? 'selected' : ''}>${t}</option>`).join('')}</select></label>`; };
   const linhas = () => {
     const v = valor(), fim = new Date(+v.dia + (v.h * 60 + v.m + v.dur) * 60000), hoje = inicioDoDia(new Date());
     const tag = (k) => v.bee[k] ? '<em class="fe-bee">BEE</em>' : '';
@@ -6778,9 +6789,9 @@ function abrirEdicao(ev, novo = false) {
       <h3 class="fm-sec">Horário ${tag('hora')}</h3>
       <div class="fe-hora"><input type="time" id="feHora" value="${pad(v.h)}:${pad(v.m)}" aria-label="Horário"><span>até ${fmtHora(fim)}</span></div>
       <h3 class="fm-sec">Duração ${tag('dur')}</h3>
-      ${seg('data-fe-dur', [[15, '15 min'], [30, '30 min'], [60, '1 h'], [120, '2 h']], [15, 30, 60, 120].includes(v.dur) ? v.dur : '')}
+      ${seg('data-fe-dur', [[30, '30 min'], [60, '1 h'], [120, '2 h']], [30, 60, 120].includes(v.dur) ? v.dur : '', rodaDur(v.dur))}
       <h3 class="fm-sec">Aviso</h3>
-      ${seg('data-fe-lem', [['nao', 'Sem'], [0, 'Na hora'], [15, '15 min'], [60, '1 h'], [1440, '1 dia']], st.lembrete === null ? 'nao' : st.lembrete)}
+      ${seg('data-fe-lem', [['nao', 'Sem'], [15, '15 min'], [60, '1 h']], st.lembrete === null ? 'nao' : st.lembrete, rodaAviso(st.lembrete))}
       <h3 class="fm-sec">Repetir</h3>
       ${seg('data-fe-rep', [['nenhuma', 'Não'], ['diaria', 'Todo dia'], ['semanal', 'Semanal'], ['mensal', 'Mensal']], st.freq)}
       ${st.freq === 'semanal' ? `<div class="fm-chips fm-dias">${['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((l, i) => chip('data-fe-ds', i, st.diasSem.includes(i), l)).join('')}</div>` : ''}`;
@@ -6807,6 +6818,9 @@ function abrirEdicao(ev, novo = false) {
     ligarCampos();
   };
   const ligarCampos = () => {
+    const rd = document.getElementById('feDurRoda'), ra = document.getElementById('feAvisoRoda');
+    if (rd) rd.onchange = () => { st.dur = +rd.value; st.mexeu.dur = 1; vibrar('selecao'); atualizar(); };
+    if (ra) ra.onchange = () => { st.lembrete = ra.value === 'nao' ? null : +ra.value; vibrar('selecao'); atualizar(); };
     const dt = document.getElementById('feData'), hr = document.getElementById('feHora');
     if (dt) dt.onchange = () => { if (!dt.value) return; const [a, m, d] = dt.value.split('-').map(Number); st.dia = new Date(a, m - 1, d); st.mexeu.dia = 1; st.aberto = ''; atualizar(); };
     if (hr) { const muda = () => { const [h, m] = (hr.value || '').split(':').map(Number); if (isNaN(h)) return; st.h = h; st.m = m || 0; st.mexeu.hora = 1; }; hr.oninput = muda; hr.onchange = () => { muda(); atualizar(); }; hr.onblur = () => atualizar(); }
