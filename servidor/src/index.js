@@ -794,14 +794,14 @@ const ESQUEMA_REUNIAO = {
   properties: {
     titulo: { type: "string" },
     resumo: { type: "string" },
-    discutido: { type: "array", items: { type: "object", properties: { quando: { type: "string" }, texto: { type: "string" }, detalhe: { type: "string" } }, required: ["quando", "texto", "detalhe"], additionalProperties: false } },
+    assuntos: { type: "array", items: { type: "object", properties: { quando: { type: "string" }, titulo: { type: "string" }, resumo: { type: "string" }, detalhes: { type: "array", items: { type: "string" } } }, required: ["quando", "titulo", "resumo", "detalhes"], additionalProperties: false } },
     decisoes: { type: "array", items: { type: "object", properties: { texto: { type: "string" }, porque: { type: "string" } }, required: ["texto", "porque"], additionalProperties: false } },
     tarefas: { type: "array", items: { type: "object", properties: { texto: { type: "string" }, agenda: { type: "string" } }, required: ["texto", "agenda"], additionalProperties: false } },
     frase: { type: "string" },
     pontos: { type: "array", items: { type: "string" } },
     proxima: { type: "string" },
   },
-  required: ["titulo", "resumo", "discutido", "decisoes", "tarefas", "frase", "pontos", "proxima"],
+  required: ["titulo", "resumo", "assuntos", "decisoes", "tarefas", "frase", "pontos", "proxima"],
   additionalProperties: false,
 };
 const SISTEMA_REUNIAO = `Você é a Bee, secretária pessoal. Você recebe a transcrição automática de uma reunião, consulta, aula ou mentoria que a pessoa gravou com o celular.
@@ -809,7 +809,9 @@ A transcrição pode ter erros, não separa quem está falando e pode ter trecho
 Escreva um resumo gostoso de ler, em português do Brasil, falando com a pessoa de um jeito simples:
 - titulo: curto, até 6 palavras, dizendo o que foi (ex.: "Consulta com o cardiologista", "Mentoria sobre o aplicativo").
 - resumo: 2 ou 3 parágrafos curtos separados por uma linha em branco, contando a conversa como uma história. Marque os fatos-chave com **negrito** (datas, valores, nomes de remédios, o que foi escolhido).
-- discutido: os momentos da conversa em ordem, até 6. "quando" é o minuto aproximado no formato mm:ss tirado das marcas (ex.: "06:45"); "texto" é um título de até 6 palavras; "detalhe" é uma frase explicando.
+- Antes de escrever, leia a transcrição inteira e entenda a conversa toda: quem quer o quê, o que mudou ao longo da conversa e como terminou. Se algo foi dito no começo e corrigido depois, vale a versão final.
+- assuntos: separe a conversa por assunto, na ordem em que cada assunto começou. Junte num assunto só tudo o que foi falado sobre ele, mesmo que tenha voltado mais tarde na conversa. Use de 2 a 7 assuntos (menos se a conversa for curta).
+  "quando" é o minuto em que o assunto começou, no formato mm:ss tirado das marcas (ex.: "06:45"); "titulo" tem até 6 palavras; "resumo" é 1 ou 2 frases contando o que foi dito; "detalhes" são até 4 itens curtos com números, nomes, valores e combinados daquele assunto (pode ser vazio).
 - decisoes: o que ficou decidido ou combinado. "texto" é a decisão; "porque" é o motivo, se foi dito, ou "". Vazio se nada foi decidido.
 - tarefas: o que a pessoa precisa fazer depois. "texto" é uma frase curta começando com verbo (ex.: "Tomar o remédio de manhã por 30 dias").
   "agenda": se a tarefa tem dia, prazo ou horário dito na conversa, escreva como a pessoa falaria para a secretária marcar (ex.: "Retorno no cardiologista daqui a 30 dias", "Enviar a proposta sexta às 10"); se não tem quando, deixe "".
@@ -873,9 +875,9 @@ async function reuniao(req, env, origem) {
       const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
       const resp = await client.beta.messages.create({
         model: "claude-sonnet-5-5",
-        max_tokens: 8000,
+        max_tokens: 16000,
         betas: ["server-side-fallback-2026-07-01"], fallbacks: "default",
-        output_config: { effort: "medium", format: { type: "json_schema", schema: ESQUEMA_REUNIAO } },
+        output_config: { effort: "high", format: { type: "json_schema", schema: ESQUEMA_REUNIAO } },
         system: ingles ? `${SISTEMA_REUNIAO}\n\nEsta pessoa fala INGLÊS: escreva tudo em inglês natural.` : SISTEMA_REUNIAO,
         messages: [{ role: "user", content: `Hoje: ${String(e.agora || "").slice(0, 80)}\n\nTranscrição:\n${texto}` }],
       });

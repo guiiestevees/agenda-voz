@@ -301,6 +301,7 @@ public class GravadorPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "parar", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "ler", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "apagar", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "arquivos", returnType: CAPPluginReturnPromise),
     ]
     private let duracaoPedaco: TimeInterval = 300
     private var gravador: AVAudioRecorder?
@@ -309,8 +310,18 @@ public class GravadorPlugin: CAPPlugin, CAPBridgedPlugin {
     private var pausado = false
     private var relogio: Timer?
 
+    // O áudio fica guardado no iPhone para ouvir depois (Application Support não é apagado pelo sistema).
+    // Gravações antigas ficaram em Caches: se a pasta antiga existe, continua usando ela.
     private func pastaDe(_ id: String) -> URL {
-        FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0].appendingPathComponent("reuniao-\(id)", isDirectory: true)
+        let fm = FileManager.default
+        let antiga = fm.urls(for: .cachesDirectory, in: .userDomainMask)[0].appendingPathComponent("reuniao-\(id)", isDirectory: true)
+        if fm.fileExists(atPath: antiga.path) { return antiga }
+        var base = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("Reunioes", isDirectory: true)
+        if !fm.fileExists(atPath: base.path) {
+            try? fm.createDirectory(at: base, withIntermediateDirectories: true)
+            var v = URLResourceValues(); v.isExcludedFromBackup = true; try? base.setResourceValues(v)
+        }
+        return base.appendingPathComponent("reuniao-\(id)", isDirectory: true)
     }
 
     // Fala baixinha de longe vira um arquivo pequeno: AAC mono de 16 kHz, uns 15 MB por hora
@@ -395,6 +406,21 @@ public class GravadorPlugin: CAPPlugin, CAPBridgedPlugin {
     @objc func apagar(_ call: CAPPluginCall) {
         try? FileManager.default.removeItem(at: pastaDe(call.getString("id") ?? ""))
         call.resolve()
+    }
+
+    // Lista os pedaços da gravação, com o caminho e a duração de cada um, para o player do app
+    @objc func arquivos(_ call: CAPPluginCall) {
+        let pasta = pastaDe(call.getString("id") ?? "")
+        var lista: [[String: Any]] = []
+        var i = 0
+        while true {
+            let arq = pasta.appendingPathComponent("p\(i).m4a")
+            guard FileManager.default.fileExists(atPath: arq.path) else { break }
+            let dur = (try? AVAudioPlayer(contentsOf: arq))?.duration ?? 0
+            if dur > 0.5 { lista.append(["caminho": arq.path, "dur": dur]) }
+            i += 1
+        }
+        call.resolve(["arquivos": lista])
     }
 }
 
