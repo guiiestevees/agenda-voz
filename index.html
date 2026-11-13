@@ -3137,6 +3137,8 @@
   @keyframes abTexto { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
   @keyframes abSai { to { opacity: 0; transform: scale(1.04); visibility: hidden; } }
   :root[data-modo="escuro"] html body #abertura { background: linear-gradient(180deg, #FFD268 0%, #FFB626 50%, #F08F0A 100%); }
+  label.det-mudar { position: relative; display: inline-flex; align-items: center; overflow: hidden; cursor: pointer; }
+  label.det-mudar input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.011; font-size: 16px; }
 </style>
 </head>
 <body>
@@ -4794,8 +4796,8 @@ function abrirAcoes(ev, dia) {
     <h1 class="det-titulo">${esc(ev.titulo)}</h1>
     ${falta}
     <div class="det-cartao">
-      <div class="det-linha"><span class="det-ic">${ICO_DET.cal}</span><div><b>${maiuscula(quando.toLocaleDateString(LOCALE, { weekday: 'long', day: 'numeric', month: 'long' }))}</b>${rel ? `<small>${rel}</small>` : ''}</div><button class="det-mudar" data-det-editar>Mudar</button></div>
-      <div class="det-linha"><span class="det-ic">${ICO_DET.relogio}</span><div><b>${fmtHora(quando)} – ${fmtHora(fim)}</b><small>${fmtMin(dur)} de duração</small></div></div>
+      <div class="det-linha"><span class="det-ic">${ICO_DET.cal}</span><div><b>${maiuscula(quando.toLocaleDateString(LOCALE, { weekday: 'long', day: 'numeric', month: 'long' }))}</b>${rel ? `<small>${rel}</small>` : ''}</div>${ev.repetir ? '<button class="det-mudar" data-det-editar>Mudar</button>' : `<label class="det-mudar">Mudar<input type="date" id="detData" value="${chaveDia(quando)}"></label>`}</div>
+      <div class="det-linha"><span class="det-ic">${ICO_DET.relogio}</span><div><b>${fmtHora(quando)} – ${fmtHora(fim)}</b><small>${fmtMin(dur)} de duração</small></div><label class="det-mudar">Mudar<input type="time" id="detHora" value="${pad(quando.getHours())}:${pad(quando.getMinutes())}"></label></div>
     </div>
     ${reu ? `<div class="det-cartao det-reu">${botaoReuniaoDoEvento(ev, chaveDia(quando))}</div>` : ''}
     <h2 class="det-sec">Lembretes</h2>
@@ -4805,6 +4807,24 @@ function abrirAcoes(ev, dia) {
   </div>`);
 }
 const chaveProximoDe = (agora) => proximoDeHoje(agora);
+// Mudar dia ou horário direto no detalhe, sem abrir o formulário
+telaCheia.addEventListener('change', (e) => {
+  if (!acoesAbertas || !e.target.closest('.tela-det')) return;
+  const { ev, quando } = acoesAbertas, ini = new Date(ev.inicio), antes = JSON.stringify(eventos);
+  if (e.target.id === 'detHora') {
+    const [h, m] = (e.target.value || '').split(':').map(Number); if (isNaN(h)) return;
+    ini.setHours(h, m || 0, 0, 0);   // em série, vale para todos os dias dela
+  } else if (e.target.id === 'detData') {
+    if (!e.target.value) return;
+    const [a, mes, d] = e.target.value.split('-').map(Number); ini.setFullYear(a, mes - 1, d);
+  } else return;
+  ev.inicio = ini.toISOString(); ev.avisado = false; ev.avisados = [];
+  salvar(); render(); vibrar('sucesso');
+  const novo = new Date(ev.repetir ? new Date(quando).setHours(ini.getHours(), ini.getMinutes()) : ini);
+  abrirAcoes(ev, chaveDia(novo));
+  const choque = conflitoDe(ev);
+  toast(choque ? `Mudado. Atenção: você já tem “${choque.ev.titulo}” às ${fmtHora(choque.inicio)}.` : `Mudado para ${fmtQuando(novo)}`, 4500, { rotulo: 'Desfazer', fn: () => { eventos = JSON.parse(antes); salvar(); render(); fecharTela(); } });
+});
 telaCheia.addEventListener('click', (e) => {
   if (!e.target.closest('.tela-det') || !acoesAbertas) return;
   const { ev, quando } = acoesAbertas, chave = `${ev.id}|${chaveDia(quando)}`, feito = estaFeito(ev, quando);
