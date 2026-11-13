@@ -816,8 +816,21 @@ Escreva um resumo gostoso de ler, em português do Brasil, falando com a pessoa 
 - frase: a frase mais marcante dita na conversa, quase palavra por palavra, ou "" se nenhuma se destaca.
 - pontos: informações soltas que valem guardar (valores, nomes, telefones, recomendações), até 6 frases curtas. Não repita o que já está nas outras partes.
 - proxima: se combinaram um próximo encontro, escreva como a pessoa falaria para marcar (ex.: "Próxima mentoria terça às 10"); senão "".
-Use só o que está na transcrição: não invente nomes, números, remédios nem prazos.
+Cuidado para não errar:
+- A transcrição automática erra palavras. Se um trecho não faz sentido, ignore em vez de adivinhar. Nunca transforme uma palavra estranha em nome, remédio, valor ou compromisso.
+- Nem toda conversa é reunião. Se for um bate-papo (casal, família, amigos), resuma o assunto de forma leve e só coloque em decisões e tarefas o que a pessoa claramente combinou de fazer.
+- Hipóteses, brincadeiras, opiniões, desejos ("seria bom", "um dia a gente devia", "imagina se") e coisas contadas sobre o passado NÃO são tarefas nem decisões.
+- Na dúvida, deixe de fora: uma lista vazia é muito melhor do que um item errado. Prefira poucos itens certos.
+- Não repita o mesmo fato em várias partes.
+- Use só o que está na transcrição: não invente nomes, números, remédios nem prazos.
 Se não houver fala com conteúdo, use o título "Gravação sem conversa", um resumo de uma frase dizendo isso e deixe o resto vazio.`;
+// Frases que o Whisper costuma inventar em trechos de silêncio ou barulho
+const ALUCINACOES = /(legendas? (pela|por) (a )?comunidade[^.\n]*\.?|amara\.org|obrigad[oa] por assistir[^.\n]*\.?|inscreva-se no canal[^.\n]*\.?|ative o sininho[^.\n]*\.?|thanks? for watching[^.\n]*\.?|subtitles by[^.\n]*\.?)/gi;
+function limparAlucinacoes(t) {
+  return String(t || "").replace(/\bamara\.org\b/gi, "").replace(ALUCINACOES, "").split("\n\n").map((p) => p.replace(/\s+/g, " ").trim())
+    // a mesma frase repetida várias vezes seguidas também é invenção do Whisper
+    .map((p) => p.replace(/(\b[^.!?]{8,}[.!?])(\s*\1){2,}/g, "$1")).filter(Boolean).join("\n\n");
+}
 // Quebra a transcrição em parágrafos nas pausas da fala (ou quando o trecho fica longo), pra ficar gostosa de ler
 function emParagrafos(r) {
   const segs = Array.isArray(r.segments) ? r.segments.filter((x) => String(x.text || "").trim()) : [];
@@ -849,8 +862,10 @@ async function reuniao(req, env, origem) {
       let usados = 0;
       try { usados = await env.USO.get(env.USO.idFromName(`reu:${e.uid}`)).contar(mes); } catch (x) { console.error("Contador de reuniões:", x.message); }
       if (usados > LIMITE_PEDACOS_MES) return responder({ erro: "limite_mes" }, 429, origem);
-      const r = await env.AI.run("@cf/openai/whisper-large-v3-turbo", { audio, language: ingles ? "en" : "pt" });
-      return responder({ texto: emParagrafos(r) }, 200, origem);
+      // vad_filter pula os silêncios: sem ele o Whisper inventa frases ("Legendas pela comunidade...") onde ninguém falou
+      const r = await env.AI.run("@cf/openai/whisper-large-v3-turbo", { audio, language: ingles ? "en" : "pt", vad_filter: true,
+        initial_prompt: ingles ? "Conversation recorded on a phone." : "Conversa gravada no celular, em português do Brasil, com pontuação." });
+      return responder({ texto: limparAlucinacoes(emParagrafos(r)) }, 200, origem);
     }
     if (e.acao === "resumir") {
       const texto = String(e.texto || "").slice(0, 300000).trim();
@@ -860,7 +875,7 @@ async function reuniao(req, env, origem) {
         model: "claude-sonnet-5-5",
         max_tokens: 8000,
         betas: ["server-side-fallback-2026-07-01"], fallbacks: "default",
-        output_config: { effort: "low", format: { type: "json_schema", schema: ESQUEMA_REUNIAO } },
+        output_config: { effort: "medium", format: { type: "json_schema", schema: ESQUEMA_REUNIAO } },
         system: ingles ? `${SISTEMA_REUNIAO}\n\nEsta pessoa fala INGLÊS: escreva tudo em inglês natural.` : SISTEMA_REUNIAO,
         messages: [{ role: "user", content: `Hoje: ${String(e.agora || "").slice(0, 80)}\n\nTranscrição:\n${texto}` }],
       });

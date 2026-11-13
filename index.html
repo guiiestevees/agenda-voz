@@ -2876,6 +2876,10 @@
   :root[data-modo="escuro"] .dt-lista-ios small { background: #1C1C1E; }
   .dt-lista-ios i { display: flex; justify-content: space-between; padding: 11px 14px; border-top: 1px solid var(--line); font-style: normal; font-size: 15px; }
   .dt-lista-ios i.on { font-weight: 700; color: #007AFF; box-shadow: inset 0 0 0 2px var(--accent); border-radius: 10px; }
+  /* Perfil leve no iPhone: brilho menor no avatar, sem animação de toque pesada */
+  html body .pt-avatar { box-shadow: 0 8px 24px rgba(245,154,11,.35); }
+  html body .pf-cartao { box-shadow: 0 1px 2px rgba(42,23,4,.05), 0 4px 12px rgba(42,23,4,.05); }
+  .pf-linha { touch-action: manipulation; -webkit-user-select: none; user-select: none; }
 </style>
 </head>
 <body>
@@ -4483,6 +4487,8 @@ const ICO_PF = {
   boia: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><path d="m4.9 4.9 4.3 4.3M14.8 14.8l4.3 4.3M14.8 9.2l4.3-4.3M4.9 19.1l4.3-4.3"/></svg>',
   info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>',
 };
+// Páginas do site abrem no Safari (dentro do app elas tomavam a tela e não tinha como voltar)
+function abrirSite(pagina) { const a = document.createElement('a'); a.href = `https://guiiestevees.github.io/agenda-voz/${pagina}`; a.target = '_blank'; a.rel = 'noopener'; a.click(); }
 let versaoApp = '';
 window.Capacitor?.Plugins?.App?.getInfo?.().then(i => { versaoApp = i.version; if (aba === 'mais') desenharPerfil(); }).catch(() => {});
 function desenharPerfil() {
@@ -4490,7 +4496,7 @@ function desenharPerfil() {
   const linha = (acao, ico, tom, rot, desc, valor, fim = 'seta') => `<button class="pf-linha" data-pf="${acao}"><span class="pf-ic ${tom}">${ico}</span><span class="pf-txt"><b>${rot}</b>${desc ? `<small>${desc}</small>` : ''}</span>${valor ? `<em>${valor}</em>` : ''}${fim === 'chave' ? `<i class="pf-chave ${valor === '' && escuro ? 'on' : ''}"></i>` : fim === 'seta' ? '<i class="pf-seta"></i>' : ''}</button>`;
   const grupo = (tit, linhas) => linhas.filter(Boolean).length ? `<h2 class="pf-sec">${tit}</h2><div class="pf-cartao">${linhas.filter(Boolean).join('')}</div>` : '';
   const iphone = NATIVO && !EH_IPAD, cal = calPrefs(), notifOk = document.getElementById('btnNotif')?.classList.contains('on');
-  document.getElementById('perfilTopo').innerHTML = `
+  const html = `
     <div class="pf-topo"><span class="pt-avatar">${esc((nome || 'Você').trim().charAt(0).toUpperCase())}</span><b class="pt-nome">${esc(nome || 'Você')}</b></div>
     ${htmlSemanaMel()}
     ${grupo('Você', [linha('nome', ICO_PF.sorriso, '', 'Como prefere ser chamado', '', esc(nome)), linha('ia', ICO_PF.bee, '', 'Bee, sua secretária', 'Entende o que você fala', lerPref('agenda.iaOk', '') === 'sim' ? 'Ativa' : 'Ativar')])}
@@ -4501,7 +4507,10 @@ function desenharPerfil() {
       !waLigado() && linha('notif', ICO_PF.sino, 'violeta', 'Notificações', '', notifOk ? 'Ativas' : 'Ativar'),
       iphone && linha('cal', ICO_PF.cal, 'verde', 'Calendário do iPhone', 'Google Agenda e iCloud', cal.ligado ? 'Conectado' : 'Conectar')])}
     ${grupo('Sobre', [linha('priv', ICO_PF.escudo, 'neutro', 'Privacidade'), linha('sup', ICO_PF.boia, 'neutro', 'Suporte'), versaoApp && linha('', ICO_PF.info, 'neutro', 'Versão', '', versaoApp, '')])}`;
-  document.querySelector('#perfilTopo .pf-chave')?.classList.toggle('on', escuro);
+  // só troca o que está na tela se algo mudou: redesenhar à toa fazia o Perfil dar umas travadas no iPhone
+  const el = document.getElementById('perfilTopo');
+  if (el.dataset.html !== html) { el.innerHTML = html; el.dataset.html = html; }
+  el.querySelector('.pf-chave')?.classList.toggle('on', escuro);
 }
 document.getElementById('perfilTopo').onclick = (e) => {
   const b = e.target.closest('[data-pf]'); if (!b) return;
@@ -4509,7 +4518,7 @@ document.getElementById('perfilTopo').onclick = (e) => {
   vibrar('selecao');
   ({ nome: () => pedirNome(), ia: () => clicar('btnIA'), whats: () => clicar('btnWhats'), toques: () => clicar('btnDoisToques'), notif: () => clicar('btnNotif'), cal: () => clicar('btnCalendario'),
     escuro: () => { const ir = document.documentElement.dataset.modo === 'escuro' ? 'claro' : 'escuro'; b.querySelector('.pf-chave')?.classList.toggle('on', ir === 'escuro'); document.querySelector(`[data-escolher-modo="${ir}"]`)?.click(); },
-    priv: () => window.open(EM_INGLES ? 'privacy.html' : 'privacidade.html', '_blank'), sup: () => window.open(EM_INGLES ? 'support.html' : 'suporte.html', '_blank') }[b.dataset.pf] || (() => {}))();
+    priv: () => abrirSite(EM_INGLES ? 'privacy.html' : 'privacidade.html'), sup: () => abrirSite(EM_INGLES ? 'support.html' : 'suporte.html') }[b.dataset.pf] || (() => {}))();
 };
 // quando um botão antigo muda de texto ou estado (avisos, calendário, WhatsApp), o perfil acompanha
 let perfilTimer;
