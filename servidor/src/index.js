@@ -301,6 +301,21 @@ ${faltam.map((t, i) => `${i}. ${t}`).join("\n")}` }],
     await this.agendar();
     return { idioma: l.idioma, ok: true };
   }
+  async pedirMudanca(telefone, chave) {
+    const l = this.linha("SELECT uid, idioma FROM ligacoes WHERE telefone = ?", telefone);
+    if (!l) return { idioma: null, ok: false };
+    const e = this.linha("SELECT titulo FROM enviados WHERE uid = ? AND chave = ?", l.uid, chave);
+    if (!e) return { idioma: l.idioma, ok: false };
+    await this.ctx.storage.put(`mudar:${telefone}`, { titulo: e.titulo, em: Date.now() });
+    return { idioma: l.idioma, ok: true, titulo: e.titulo };
+  }
+  async mudancaPendente(telefone) {
+    const m = await this.ctx.storage.get(`mudar:${telefone}`);
+    if (!m) return null;
+    await this.ctx.storage.delete(`mudar:${telefone}`);
+    return Date.now() - m.em < 30 * 60000 ? m.titulo : null;
+  }
+  async contato(uid) { return this.linha("SELECT telefone, idioma, nome FROM ligacoes WHERE uid = ?", uid) || null; }
   async pendentes(uid) { return this.sql.exec("SELECT id, dados FROM pendentes WHERE uid = ? ORDER BY id", uid).toArray().map((p) => ({ id: p.id, ...JSON.parse(p.dados) })); }
   async confirmar(uid, ids) { for (const id of ids) this.sql.exec("DELETE FROM pendentes WHERE uid = ? AND id = ?", uid, id); }
   async agendar() {
@@ -330,11 +345,12 @@ ${faltam.map((t, i) => `${i}. ${t}`).join("\n")}` }],
       const chave = a.chave.split("#")[0], quandoTxt = `${a.dia || ""} ${idioma === "en_US" ? "at" : "às"} ${a.hora}`.trim();
       const modelo = textoDoAviso(a.tipo, a.recado, idioma, aprovados);
       if (!modelo) continue;
-      const valores = { nome, compromisso: a.titulo, quando: quandoTxt, hora: a.hora, recado: a.recado };
+      const valores = { nome, compromisso: a.titulo, quando: modelo.v4 ? quandoV4(a.dia, a.hora, idioma) : quandoTxt, hora: a.hora, recado: a.recado };
       const componentes = [{ type: "body", parameters: modelo.campos.map((c) => ({ type: "text", parameter_name: c, text: valores[c] })) }];
       if (modelo.botoes) componentes.push(
         { type: "button", sub_type: "quick_reply", index: "0", parameters: [{ type: "payload", payload: `feito|${chave}` }] },
-        { type: "button", sub_type: "quick_reply", index: "1", parameters: [{ type: "payload", payload: `adiar|${chave}` }] });
+        { type: "button", sub_type: "quick_reply", index: "1", parameters: [{ type: "payload", payload: `adiar|${chave}` }] },
+        ...(modelo.botoes === 3 ? [{ type: "button", sub_type: "quick_reply", index: "2", parameters: [{ type: "payload", payload: `mudar|${chave}` }] }] : []));
       const ok = await enviarWhatsapp(this.env, a.telefone, { type: "template", template: { name: modelo.nome, language: { code: idioma }, components: componentes } });
       if (ok) {
         this.sql.exec("INSERT OR REPLACE INTO envios VALUES (?, ?, ?)", a.uid, dia, n + 1);
@@ -486,6 +502,27 @@ const MODELOS_V3 = {
     recado: "🐝 *{{compromisso}}*\n🕐 {{quando}}\n\nHi {{nome}}! {{recado}}\n\nIf anything changes, just tell me here.",
   },
 };
+// Quarta geração (design system): só a 🐝 como marca, o quando no formato do app ("Hoje, 15:00"), uma frase curta
+// e o botão "Mudar horário". Tom de lembrete, sem animar nem elogiar (assim a Meta mantém como utilidade)
+const MODELOS_V4 = {
+  pt_BR: {
+    lembrete: "🐝 *{{compromisso}}*\n{{quando}}\n\nOi, {{nome}}! Passando pra te lembrar desse compromisso da sua agenda.\n\nJá resolveu? Toque em Feito. Precisa de outro horário? Toque em Mudar horário.",
+    recado: "🐝 *{{compromisso}}*\n{{quando}}\n\nOi, {{nome}}! {{recado}}\n\nJá resolveu? Toque em Feito. Precisa de outro horário? Toque em Mudar horário.",
+  },
+  en_US: {
+    lembrete: "🐝 *{{compromisso}}*\n{{quando}}\n\nHi {{nome}}! Just a reminder about this event on your calendar.\n\nAll set? Tap Done. Need another time? Tap Change time.",
+    recado: "🐝 *{{compromisso}}*\n{{quando}}\n\nHi {{nome}}! {{recado}}\n\nAll set? Tap Done. Need another time? Tap Change time.",
+  },
+};
+const BOTOES_V4 = { pt_BR: ["Feito", "Lembrar em 10 min", "Mudar horário"], en_US: ["Done", "Remind me in 10 min", "Change time"] };
+// Resumo da reunião pronto: avisa mesmo com o app fechado
+const MODELO_RESUMO = {
+  pt_BR: "🐝 *Resumo pronto: {{titulo}}*\n\n{{detalhe}}\n\nAbra o Tap Bee pra ver tudo, separado por assunto.",
+  en_US: "🐝 *Summary ready: {{titulo}}*\n\n{{detalhe}}\n\nOpen Tap Bee to see it all, sorted by topic.",
+};
+const EXEMPLO_RESUMO = { pt_BR: ["Consulta com o cardiologista", "A Bee achou 2 compromissos pra sua agenda."], en_US: ["Visit with the cardiologist", "Bee found 2 events for your calendar."] };
+// "hoje" + "15:00" vira "Hoje, 15:00"; "sexta-feira" vira "Sexta, 15:00"
+const quandoV4 = (dia, hora, idioma) => { const d = String(dia || "").replace("-feira", "").trim(); return d ? `${d[0].toUpperCase()}${d.slice(1)}, ${hora}` : (idioma === "en_US" ? `At ${hora}` : `Às ${hora}`); };
 const textoV2 = (idioma, meio) => `🐝 *{{compromisso}}*\n🕐 {{quando}}\n\n${meio}\n\n${ASSINATURA_BEE[idioma]}`;
 // O recado da IA cabe numa variável do WhatsApp: uma linha, sem formatação, curto
 const limparRecado = (t) => String(t || "").replace(/[\r\n\t*_~`]+/g, " ").replace(/\s{2,}/g, " ").trim().slice(0, 90);
@@ -494,6 +531,8 @@ const EXEMPLO_BEE = { pt_BR: ["Gui", "Pagar o boleto", "10:00", "hoje às 10:00"
 // Recado da IA quando ela teve certeza do que é o compromisso; senão o lembrete simples; senão um dos primeiros gerais
 function textoDoAviso(tipo, recado, idioma, aprovados) {
   const ok = (n) => aprovados.has(`${n}|${idioma}`);
+  if (recado && ok("bee4_recado")) return { nome: "bee4_recado", campos: ["compromisso", "quando", "nome", "recado"], botoes: 3, v4: true };
+  if (ok("bee4_lembrete")) return { nome: "bee4_lembrete", campos: ["compromisso", "quando", "nome"], botoes: 3, v4: true };
   if (recado && ok("bee3_recado")) return { nome: "bee3_recado", campos: ["compromisso", "quando", "nome", "recado"], botoes: true };
   if (ok("bee3_lembrete")) return { nome: "bee3_lembrete", campos: ["compromisso", "quando", "nome"], botoes: true };
   const velhos = [1, 2, 3, 4, 5, 6].map((i) => `bee_lembrete_${i}`).filter(ok);
@@ -511,12 +550,15 @@ async function modelosWhatsapp(req, env) {
   for (const [idioma, textos] of Object.entries(MODELOS_POR_TIPO)) for (const [tipo, texto] of Object.entries(textos)) pedidos.push({ name: `bee_${tipo}`, idioma, texto, quarto: "quando", botoes: BOTOES_BEE[idioma] });
   for (const [idioma, meios] of Object.entries(MODELOS_V2)) for (const [tipo, meio] of Object.entries(meios)) pedidos.push({ name: `bee2_${tipo}`, idioma, texto: textoV2(idioma, meio), quarto: "quando", botoes: BOTOES_BEE[idioma], recado: tipo === "recado" });
   for (const [idioma, textos] of Object.entries(MODELOS_V3)) for (const [tipo, texto] of Object.entries(textos)) pedidos.push({ name: `bee3_${tipo}`, idioma, texto, quarto: "quando", botoes: BOTOES_BEE[idioma], recado: tipo === "recado" });
+  for (const [idioma, textos] of Object.entries(MODELOS_V4)) for (const [tipo, texto] of Object.entries(textos)) pedidos.push({ name: `bee4_${tipo}`, idioma, texto, quarto: "quando", botoes: BOTOES_V4[idioma], recado: tipo === "recado", v4: true });
+  for (const [idioma, texto] of Object.entries(MODELO_RESUMO)) pedidos.push({ name: "bee4_resumo", idioma, texto, resumo: true });
   const resultado = [];
   for (const p of pedidos) {
     if (existe.has(`${p.name}|${p.idioma}`)) continue;
     const [nome, compromisso, hora, quando, recado] = EXEMPLO_BEE[p.idioma];
-    const exemplos = [{ param_name: "nome", example: nome }, { param_name: "compromisso", example: compromisso }, { param_name: p.quarto, example: p.quarto === "hora" ? hora : quando }];
+    let exemplos = [{ param_name: "nome", example: nome }, { param_name: "compromisso", example: compromisso }, { param_name: p.quarto, example: p.quarto === "hora" ? hora : p.v4 ? (p.idioma === "en_US" ? "Today, 10:00 AM" : "Hoje, 10:00") : quando }];
     if (p.recado) exemplos.push({ param_name: "recado", example: recado });
+    if (p.resumo) exemplos = [{ param_name: "titulo", example: EXEMPLO_RESUMO[p.idioma][0] }, { param_name: "detalhe", example: EXEMPLO_RESUMO[p.idioma][1] }];
     const componentes = [{ type: "BODY", text: p.texto, example: { body_text_named_params: exemplos } }];
     if (p.botoes) componentes.push({ type: "BUTTONS", buttons: p.botoes.map((text) => ({ type: "QUICK_REPLY", text })) });
     const r = await fetch(`${WA_API}${WA_CONTA}/message_templates`, {
@@ -542,14 +584,15 @@ const RESPOSTAS_WA = {
   ligado: { pt_BR: (n) => `Oi${n ? `, ${n}` : ""}! Que bom te ver por aqui 🐝\n\nA partir de agora, seus lembretes chegam nesta conversa, na hora certa.\n\nE pode me pedir o que precisar, escrevendo ou mandando áudio. Por exemplo: "marca dentista sexta às 3" ou "o que eu tenho amanhã?".\n\nSe um dia quiser parar, é só mandar SAIR.`, en_US: (n) => `Hi${n ? ` ${n}` : ""}! So glad to see you here 🐝\n\nFrom now on, your reminders will arrive in this chat, right on time.\n\nAnd you can ask me anything, by text or voice message. For example: "dentist Friday at 3" or "what do I have tomorrow?".\n\nIf you ever want to stop, just send STOP.` },
   saiu: { pt_BR: () => "Tudo bem! Não vou mais te avisar por aqui. Os avisos voltam para o iPhone. Para voltar, é só ativar de novo no Tap Bee. 🐝", en_US: () => "No problem! I won't remind you here anymore. Reminders go back to your iPhone. To come back, just turn it on again in Tap Bee. 🐝" },
   outro: { pt_BR: () => "Oi! 🐝 Eu sou a Bee, a secretária do Tap Bee. Para eu te avisar por aqui, ative em Ajustes → Avisos pelo WhatsApp no app.", en_US: () => "Hi! 🐝 I'm Bee, the Tap Bee secretary. To get reminders here, turn it on in Settings → WhatsApp reminders in the app." },
-  feito: { pt_BR: () => "Boa! Marquei como feito ✅ 🐝", en_US: () => "Nice! Marked as done ✅ 🐝" },
-  adiar: { pt_BR: () => "Combinado! Te lembro de novo em 10 minutos ⏰", en_US: () => "Deal! I'll remind you again in 10 minutes ⏰" },
-  perdido: { pt_BR: () => "Esse lembrete já passou, mas tá tudo certo na sua agenda. 🐝", en_US: () => "That reminder has passed, but your calendar is all set. 🐝" },
+  feito: { pt_BR: () => "Feito! Já marquei na sua agenda.", en_US: () => "Done! I've marked it in your calendar." },
+  adiar: { pt_BR: () => "Combinado. Te lembro de novo em 10 minutos.", en_US: () => "Sure. I'll remind you again in 10 minutes." },
+  mudar: { pt_BR: (t) => `Pra quando mudo *${t}*? Pode escrever ou mandar áudio, tipo "16h" ou "amanhã às 9".`, en_US: (t) => `When should I move *${t}* to? Type or send a voice note, like "4pm" or "tomorrow at 9".` },
+  perdido: { pt_BR: () => "Esse lembrete já passou, mas tá tudo certo na sua agenda.", en_US: () => "That reminder has passed, but your calendar is all set. 🐝" },
   audio: { pt_BR: () => "Não consegui ouvir esse áudio direito. Pode mandar de novo ou escrever? 🐝", en_US: () => "I couldn't hear that voice message well. Can you send it again or type it? 🐝" },
   fim: { pt_BR: () => "Sua assinatura do Tap Bee terminou, então eu parei de te avisar por aqui. Seus avisos voltam a funcionar quando você assinar de novo no app. 🐝", en_US: () => "Your Tap Bee subscription ended, so I stopped reminding you here. Reminders work again when you subscribe in the app. 🐝" },
   assine: { pt_BR: () => "Os avisos pelo WhatsApp são para quem assina o Tap Bee. Assine no app e ative de novo em Ajustes. 🐝", en_US: () => "WhatsApp reminders are for Tap Bee subscribers. Subscribe in the app and turn it on again in Settings. 🐝" },
   limite: { pt_BR: () => "Você falou bastante comigo hoje! Preciso descansar um pouco. Amanhã eu volto. Os lembretes continuam chegando normalmente. 🐝", en_US: () => "You've talked to me a lot today! I need a little rest. I'll be back tomorrow. Your reminders keep coming as usual. 🐝" },
-  erro: { pt_BR: () => "Tive um probleminha agora. Tenta de novo daqui a pouco? 🐝", en_US: () => "I had a little problem just now. Try again in a moment? 🐝" },
+  erro: { pt_BR: () => "Tive um probleminha agora. Tenta de novo daqui a pouco?", en_US: () => "I had a little problem just now. Try again in a moment? 🐝" },
 };
 
 // ---------- Fuso de cada pessoa: o servidor fala de "hoje" e "amanhã" no horário dela ----------
@@ -733,6 +776,11 @@ async function tratarMensagem(env, msg) {
   if (lig && !(await avisos.assinou(lig.uid))) return avisos.desligarSemAssinatura(lig.uid);
   // Botões do aviso
   const payload = msg.type === "button" ? msg.button?.payload : msg.type === "interactive" ? msg.interactive?.button_reply?.id : "";
+  if (payload && /^mudar\|/.test(payload)) {
+    const r = await avisos.pedirMudanca(de, payload.slice(6));
+    if (r.idioma === null) return avisar("outro", "pt_BR");
+    return r.ok ? avisar("mudar", r.idioma, r.titulo) : avisar("perdido", r.idioma);
+  }
   if (payload && /^(feito|adiar)\|/.test(payload)) {
     const [acao, ...resto] = payload.split("|"), r = await avisos.botao(de, acao, resto.join("|"));
     if (r.idioma === null) return avisar("outro", "pt_BR");
@@ -754,6 +802,9 @@ async function tratarMensagem(env, msg) {
   if (r.tipo === "ligado" && !(await avisos.assinou(r.uid, true))) { await avisos.sair(r.uid); return avisar("assine", r.idioma); }
   if (r.tipo !== "pedido") return avisar(r.tipo, r.idioma, r.nome);
   if (!texto.trim()) return avisar("outro", r.idioma);
+  // Tocou em "Mudar horário" há pouco: a próxima mensagem é o novo horário daquele compromisso
+  const mudando = await avisos.mudancaPendente(de);
+  if (mudando) texto = (r.idioma === "en_US" ? `Move “${mudando}” to ${texto}` : `Muda “${mudando}” para ${texto}`);
   try { await pedidoWhatsapp(env, avisos, lig, de, texto); } catch (e) { console.error("WhatsApp: pedido", e.message); await avisar("erro", r.idioma); }
 }
 
@@ -865,12 +916,25 @@ async function fazerResumo(env, texto, agora, ingles) {
   if (resp.stop_reason === "refusal") { const x = new Error("recusa"); x.recusa = true; throw x; }
   return JSON.parse(resp.content.find((b) => b.type === "text").text);
 }
+// Quem liga os avisos pelo WhatsApp recebe lá o "resumo pronto" (modelo aprovado pela Meta; sem ele, não manda nada)
+async function avisarResumoPronto(env, uid, resultado) {
+  if (!uid || !env.WA_TOKEN) return;
+  const c = await env.AVISOS.get(env.AVISOS.idFromName("avisos")).contato(uid);
+  if (!c) return;
+  const idioma = c.idioma === "en_US" ? "en_US" : "pt_BR";
+  const n = (resultado.tarefas || []).filter((t) => t.data || t.agenda).length + (resultado.proxima ? 1 : 0);
+  const detalhe = idioma === "en_US"
+    ? (n ? `Bee found ${n} ${n === 1 ? "event" : "events"} for your calendar.` : "Everything is organized for you.")
+    : (n ? `A Bee achou ${n} ${n === 1 ? "compromisso" : "compromissos"} pra sua agenda.` : "Tá tudo organizado pra você.");
+  const titulo = String(resultado.titulo || (idioma === "en_US" ? "Meeting" : "Reunião")).replace(/[\r\n*_~`]+/g, " ").slice(0, 60);
+  await enviarWhatsapp(env, c.telefone, { type: "template", template: { name: "bee4_resumo", language: { code: idioma }, components: [{ type: "body", parameters: [{ type: "text", parameter_name: "titulo", text: titulo }, { type: "text", parameter_name: "detalhe", text: detalhe }] }] } });
+}
 // Um trabalho de resumo por reunião: guarda a transcrição, faz o resumo num alarme (até 15 min) e guarda o resultado por 3 dias
 export class ResumoReuniao extends DurableObject {
-  async iniciar({ texto, agora, ingles }) {
+  async iniciar({ texto, agora, ingles, uid }) {
     const atual = await this.ctx.storage.get("estado");
     if (atual) return this.situacao();
-    await this.ctx.storage.put({ estado: "fila", texto, agora, ingles: !!ingles, tentativas: 0, criado: Date.now() });
+    await this.ctx.storage.put({ estado: "fila", texto, agora, ingles: !!ingles, tentativas: 0, criado: Date.now(), uid });
     await this.ctx.storage.setAlarm(Date.now() + 50);
     return { status: "fila" };
   }
@@ -888,6 +952,7 @@ export class ResumoReuniao extends DurableObject {
       const resultado = await fazerResumo(this.env, texto, agora, ingles);
       await this.ctx.storage.put({ estado: "pronto", resultado });
       await this.ctx.storage.delete("texto");
+      await avisarResumoPronto(this.env, await this.ctx.storage.get("uid"), resultado).catch((x) => console.error("WhatsApp: resumo pronto", x.message));
       await this.ctx.storage.setAlarm(Date.now() + 3 * 86400000);
     } catch (x) {
       console.error("Resumo em segundo plano:", x.message);
@@ -925,7 +990,7 @@ async function reuniao(req, env, origem) {
       const texto = String(e.texto || "").slice(0, 300000).trim();
       if (!texto) return responder({ erro: "texto vazio" }, 400, origem);
       const obj = env.RESUMOS.get(env.RESUMOS.idFromName(`${e.uid}:${e.job}`));
-      return responder(await obj.iniciar({ texto, agora: String(e.agora || "").slice(0, 80), ingles }), 200, origem);
+      return responder(await obj.iniciar({ texto, agora: String(e.agora || "").slice(0, 80), ingles, uid: e.uid }), 200, origem);
     }
     if (e.acao === "resultado") {
       if (!/^[a-z0-9]{6,40}$/i.test(String(e.job || ""))) return responder({ erro: "job inválido" }, 400, origem);
