@@ -2917,6 +2917,28 @@
   html body .pote-ds { --jar-glass: rgba(255,255,255,.88); --jar-stroke: rgba(168,88,8,.34); }
   :root[data-modo="escuro"] html body .pote-ds { --jar-glass: rgba(255,255,255,.10); --jar-stroke: rgba(255,220,140,.45); }
   html body .pote-ds::before { inset: -10% -28% -12%; }
+  /* Pra não esquecer (Início) */
+  html body .pn { margin: 22px 0 0; padding: 0; border-radius: 22px; background: var(--card); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-card); overflow: hidden; }
+  html body .pn summary { display: flex; align-items: center; gap: 12px; min-height: 68px; padding: 12px 16px; list-style: none; cursor: pointer; font-weight: 400; }
+  html body .pn summary::-webkit-details-marker { display: none; }
+  html body .pn[open] summary { border-bottom: 1px solid var(--border-subtle); }
+  .pn-ic { flex: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-text); }
+  .pn-ic svg { width: 20px; height: 20px; }
+  .pn-cab { flex: 1; min-width: 0; } .pn-cab b { display: block; font-size: 17px; font-weight: 700; color: var(--text); }
+  .pn-cab small { display: block; margin-top: 2px; font-size: 14px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  html body .pn summary em { flex: none; min-width: 26px; height: 26px; padding: 0 8px; border-radius: 999px; display: grid; place-items: center; background: var(--gradient-honey); color: var(--text-on-honey); font: 700 13px var(--font-body); font-style: normal; }
+  html body .pn summary .pf-seta { transform: rotate(135deg); transition: transform 220ms var(--ease-out); }
+  html body .pn[open] summary .pf-seta { transform: rotate(-45deg); }
+  .pn-lista { padding: 4px 0; }
+  html body .pn .pn-item { display: flex; align-items: center; gap: 12px; margin: 0; padding: 10px 12px 10px 16px; min-height: 56px; border: 0; border-bottom: 1px solid var(--border-subtle); background: none; box-shadow: none; border-radius: 0; }
+  .pn-anel { flex: none; width: 26px; height: 26px; padding: 0; border-radius: 50%; display: grid; place-items: center; border: 2px solid var(--accent); background: transparent; cursor: pointer; }
+  .pn-anel svg { width: 14px; height: 14px; fill: none; stroke: var(--text-on-honey); stroke-width: 3; opacity: 0; }
+  .pn-anel.on, .pn-anel:active { border: 0; background: var(--gradient-honey); } .pn-anel.on svg { opacity: 1; }
+  .pn-txt { flex: 1; min-width: 0; font-size: 16px; line-height: 1.35; color: var(--text); overflow-wrap: anywhere; }
+  .pn-dia { flex: none; width: 38px; height: 38px; padding: 0; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--border-default); background: var(--card); color: var(--accent-text); cursor: pointer; }
+  .pn-dia svg { width: 18px; height: 18px; }
+  .pn-add { display: flex; align-items: center; gap: 8px; width: 100%; padding: 14px 16px; border: 0; background: none; color: var(--accent-text); font: 600 15px var(--font-body); cursor: pointer; }
+  .pn-add svg { width: 18px; height: 18px; }
 </style>
 </head>
 <body>
@@ -3812,15 +3834,17 @@ function htmlPoteDoDia() {
 let notasAbertas = false;
 document.addEventListener('toggle', (e) => { if (e.target.classList?.contains('notas-dobra')) notasAbertas = e.target.open; }, true);
 function htmlNotas() {
-  const itens = notas.map(n => `
-    <div class="nota" data-nota="${n.id}">
-      <button class="check" data-nota-feita="${n.id}" aria-label="Marcar “${esc(n.titulo)}” como feito">${ICONE_CHECK}</button>
-      <span class="nota-txt">${esc(n.titulo)}</span>
-      <button class="nota-quando" data-nota-agendar="${n.id}">${ICO.relogio || ''}Marcar dia</button>
-    </div>`).join('');
   if (!notas.length) return '';
-  return `<details class="grupo notas-grupo notas-dobra" ${notasAbertas ? 'open' : ''}><summary><span>📝 Pra não esquecer</span><em>${notas.length}</em></summary>
-    ${itens}<button class="nota-add" data-nova-nota>${ICO.mais}Anotar</button></details>`;
+  const itens = notas.map(n => `
+    <div class="pn-item nota" data-nota="${n.id}">
+      <button class="pn-anel" data-nota-feita="${n.id}" aria-label="Marcar “${esc(n.titulo)}” como feito">${ICONE_CHECK}</button>
+      <span class="pn-txt">${esc(n.titulo)}</span>
+      <button class="pn-dia" data-nota-agendar="${n.id}" aria-label="Marcar dia">${ICO_DET.cal}</button>
+    </div>`).join('');
+  const prev = notas.slice(0, 2).map(n => esc(n.titulo)).join(' · ');
+  return `<details class="pn notas-dobra" ${notasAbertas ? 'open' : ''}>
+    <summary><span class="pn-ic">${ICO_TB.lampada}</span><span class="pn-cab"><b>Pra não esquecer</b><small>${prev}</small></span><em>${notas.length}</em><i class="pf-seta"></i></summary>
+    <div class="pn-lista">${itens}<button class="pn-add" data-nova-nota>${ICO.mais}Anotar mais uma</button></div></details>`;
 }
 function abrirNota(id) {
   const n = id ? notas.find(x => x.id === id) : null;
@@ -4309,7 +4333,7 @@ document.getElementById('lista').addEventListener('click', (ev) => {
   const nt = ev.target.closest('[data-nova-nota], [data-nota-feita], [data-nota-agendar], [data-nota]');
   if (nt) {
     if ('novaNota' in nt.dataset) return abrirNota(null);
-    if (nt.dataset.notaFeita) return tirarNota(nt.dataset.notaFeita, 'feita');
+    if (nt.dataset.notaFeita) { nt.classList.add('on'); vibrar('leve'); return setTimeout(() => tirarNota(nt.dataset.notaFeita, 'feita'), 280); }
     if (nt.dataset.notaAgendar) return agendarNota(nt.dataset.notaAgendar);
     return abrirNota(nt.dataset.nota);
   }
