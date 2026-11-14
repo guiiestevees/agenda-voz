@@ -3325,14 +3325,20 @@
   .qn-pay-topo { position: absolute; top: calc(env(safe-area-inset-top) + 8px); left: 12px; right: 12px; z-index: 5; display: flex; justify-content: space-between; align-items: center; }
   .qn-fechar { width: 40px; height: 40px; border-radius: 50%; border: 0; background: #F3EBD8; color: rgba(30,20,10,.62); display: grid; place-items: center; cursor: pointer; }
   .qn-restaurar { border: 0; background: none; padding: 8px; font: 600 14px var(--font-body, system-ui); color: rgba(30,20,10,.62); cursor: pointer; }
-  .qn-fones { position: relative; height: 236px; margin: 22px -16px 0; }
-  .qn-fones .qn-luz { left: 50%; top: 50%; width: 340px; height: 280px; margin: -140px 0 0 -170px; }
-  .qn-fone { position: absolute; left: 50%; aspect-ratio: 9 / 19; padding: 5px; border-radius: 26px; background: #1b1726; box-shadow: 0 12px 36px rgba(42,23,4,.14), inset 0 0 0 1px rgba(255,255,255,.08); }
-  .qn-fone img { display: block; width: 100%; height: 100%; border-radius: 21px; object-fit: cover; object-position: top; background: #FBF6EA; }
-  .qn-fone.meio { width: 106px; top: 4px; margin-left: -53px; z-index: 2; }
-  .qn-fone.esq { width: 88px; top: 26px; margin-left: -132px; transform: rotate(-9deg); }
-  .qn-fone.dir { width: 88px; top: 26px; margin-left: 44px; transform: rotate(9deg); }
-  .qn-pay-tit { font-size: 27px; line-height: 30px; margin: 4px 0 24px; }
+  .qz-t-pagamento .qz-corpo { justify-content: flex-start; }
+  .qn-pay { margin: auto 0; padding-top: 44px; }
+  .qn-fones { position: relative; display: flex; justify-content: center; align-items: flex-start; height: 232px; padding-top: 6px; }
+  .qn-fones .qn-luz { left: 50%; top: 50%; width: 320px; height: 240px; margin: -120px 0 0 -160px; }
+  .qn-fone { position: relative; flex: none; aspect-ratio: 9 / 19; padding: 5px; border-radius: 24px; background: #1b1726; box-shadow: 0 12px 36px rgba(42,23,4,.14), inset 0 0 0 1px rgba(255,255,255,.08); }
+  .qn-fone img { display: block; width: 100%; height: 100%; border-radius: 19px; object-fit: cover; object-position: top; background: #FBF6EA; }
+  .qn-fone.meio { width: 102px; z-index: 2; }
+  .qn-fone.lado { width: 90px; top: 16px; z-index: 1; }
+  .qn-fone.esq { margin-right: -18px; transform: rotate(-8deg); }
+  .qn-fone.dir { margin-left: -18px; transform: rotate(8deg); }
+  .qn-rotulos { display: flex; justify-content: center; gap: 18px; margin-top: 8px; font: 700 13px var(--font-body, system-ui); }
+  .qn-rotulos span { display: inline-flex; align-items: center; gap: 5px; }
+  .qn-rotulos .roxo { color: #6B42DB; } .qn-rotulos .mel { color: #F59A0B; } .qn-rotulos .verde { color: #22C27A; }
+  .qn-pay-tit { font-size: 27px; line-height: 30px; margin: 16px 0 26px; }
   .qn-plano { position: relative; padding: 18px 16px 14px; border-radius: 22px; background: rgba(245,154,11,.14); border: 2px solid #FFB626; box-shadow: 0 0 48px rgba(255,182,38,.45), 0 0 120px rgba(240,143,10,.25); text-align: center; }
   .qn-plano .qn-selo { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: #FFF3D6; }
   .qn-plano .qn-selo.verde { background: #E3F7EC; }
@@ -8470,13 +8476,16 @@ const TELAS_QUIZ = [
   { id: 'pagamento', semTopo: true, bt: 'Quero desbloquear minha agenda', html: () => {
       const podeFechar = !qz.ofertaVista && (!RC_CHAVE || !lerPref('agenda.ofertaVista3', ''));
       return `<div class="qn-pay-topo">${podeFechar ? `<button class="qn-fechar" id="qnFechar" aria-label="Fechar">${qnIco('x', 20)}</button>` : '<span></span>'}<button class="qn-restaurar" id="qzRestaurar">Restaurar</button></div>
-        <div class="qn-fones"><span class="qn-luz"></span>
-          <div class="qn-fone esq"><img src="quiz/print-semana.jpg" alt=""></div>
-          <div class="qn-fone dir"><img src="quiz/print-zap.jpg" alt=""></div>
-          <div class="qn-fone meio"><img src="quiz/print-hoje.jpg" alt=""></div>
-        </div>
-        <h1 class="qn-tit qn-c qn-pay-tit">Organize sua mente. Destrave sua prosperidade.</h1>
-        ${qnPlano(false)}${qnRecursos()}`;
+        <div class="qn-pay">
+          <div class="qn-fones"><span class="qn-luz"></span>
+            <div class="qn-fone lado esq"><img src="quiz/print-resumo.jpg" alt=""></div>
+            <div class="qn-fone meio"><img src="quiz/print-hoje.jpg" alt=""></div>
+            <div class="qn-fone lado dir"><img src="quiz/print-zap.jpg" alt=""></div>
+          </div>
+          <div class="qn-rotulos"><span class="roxo">${qnIco('file-text', 15)}Reuniões</span><span class="mel">${qnIco('calendar', 15)}Agenda</span><span class="verde">${qnIco('message-circle', 15)}WhatsApp</span></div>
+          <h1 class="qn-tit qn-c qn-pay-tit">Organize sua mente. Destrave sua prosperidade.</h1>
+          ${qnPlano(false)}
+        </div>`;
     },
     aoAbrir: () => { const x = document.getElementById('qnFechar'); if (x) x.onclick = () => qzJogo(); },
     extra: qnLegal },
