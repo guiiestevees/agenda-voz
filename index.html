@@ -3380,6 +3380,10 @@
   .qn-confete i { position: absolute; top: -20px; animation: qnCai cubic-bezier(.2,.6,.4,1) forwards; }
   @keyframes qnCai { to { transform: translate(var(--x), 110vh) rotate(var(--r)); } }
   #quiz.qn .qz-loja { z-index: 60; }
+
+  /* sem barra de rolagem em nenhuma lista do app */
+  html, body, * { scrollbar-width: none; }
+  ::-webkit-scrollbar { display: none; width: 0; height: 0; }
 </style>
 </head>
 <body>

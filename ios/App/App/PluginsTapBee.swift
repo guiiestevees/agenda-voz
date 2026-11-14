@@ -21,6 +21,9 @@ class TapBeeViewController: CAPBridgeViewController {
         webView?.scrollView.minimumZoomScale = 1
         webView?.scrollView.maximumZoomScale = 1
         webView?.scrollView.bouncesZoom = false
+        // Sem a barrinha de rolagem do iPhone na lateral
+        webView?.scrollView.showsVerticalScrollIndicator = false
+        webView?.scrollView.showsHorizontalScrollIndicator = false
     }
 }
 
