@@ -3390,6 +3390,11 @@
   /* sem barra de rolagem em nenhuma lista do app */
   html, body, * { scrollbar-width: none; }
   ::-webkit-scrollbar { display: none; width: 0; height: 0; }
+
+  /* aviso (toast) embaixo, acima da barra de abas: fica perto de onde a pessoa está e nunca fica escondido */
+  html body .toast { top: auto; bottom: calc(env(safe-area-inset-bottom) + 104px); transform: translate(-50%, calc(100% + 130px + env(safe-area-inset-bottom))); z-index: 60000; pointer-events: none; }
+  html body .toast.show { transform: translate(-50%, 0); }
+  html body .toast .toast-acao { pointer-events: auto; }
 </style>
 </head>
 <body>
@@ -5580,6 +5585,7 @@ function terminarCiclo() {
     if (qtd === META_DIA) setTimeout(() => { ganhar(PONTOS.quatroFocos, { x: innerWidth / 2, y: innerHeight / 2.5 }); confete(innerWidth / 2, innerHeight / 3, true); }, 700);
   }
   avisarFoco(!eraFoco ? 'A pausa acabou. Seu próximo foco está pronto.'
+    : !JOGO ? (qtd === META_DIA ? '4 focos hoje! Você merece uma pausa.' : 'Foco concluído. Você merece uma pausa.')
     : !vale ? `Foco curto concluído. A partir de ${FOCO_MIN_PONTOS} min ele vale pontos e enche um pote.`
     : qtd === META_DIA ? `4 focos hoje! +${PONTOS.quatroFocos} de bônus. Você merece uma pausa.` : `+${PONTOS.foco} pontos. Você merece uma pausa.`, eraFoco, qtd);
   if (aba === 'foco') render();
@@ -5948,6 +5954,7 @@ function caiuDeTitulo(t) {
 // Compromissos de dias que já passaram sem check perdem pontos (uma vez cada).
 // Aniversários e datas anuais não contam.
 function aplicarPenalidades() {
+  if (!JOGO) return;   // sem gamificação: ninguém perde pontos
   const hoje = inicioDoDia(new Date());
   const [a, m, d] = xp.desde.split('-').map(Number);
   const de = new Date(Math.max(new Date(a, m - 1, d), maisDias(hoje, -30)));
