@@ -1,7 +1,7 @@
 // Guarda o app no aparelho para abrir mesmo sem internet.
 // Sempre tenta a versão nova primeiro; sem conexão, usa a cópia guardada.
-const CACHE = 'agenda-v104';
-const ARQUIVOS = ['./', './index.html', './privacidade.html', './suporte.html', './privacy.html', './support.html', './i18n-en.js', './fontes/figtree.woff2', './fontes/bricolage.woff2', './mascotes/acenando.webp', './mascotes/comemorando.webp', './mascotes/dormindo.webp', './mascotes/ouvindo.webp', './mascotes/pensando.webp', './mascotes/logo.webp'];
+const CACHE = 'agenda-v105';
+const ARQUIVOS = ['./', './index.html', './privacidade.html', './suporte.html', './privacy.html', './support.html', './i18n-en.js', './fontes/figtree.woff2', './fontes/bricolage.woff2', './mascotes/acenando.webp', './mascotes/comemorando.webp', './mascotes/dormindo.webp', './mascotes/ouvindo.webp', './mascotes/pensando.webp', './mascotes/logo.webp', './mascotes/cansada.webp'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ARQUIVOS)).then(() => self.skipWaiting()));
@@ -18,7 +18,7 @@ self.addEventListener('fetch', (e) => {
   // Só arquivos do próprio app; a secretária (outro endereço) precisa de internet de qualquer jeito
   if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
   // Áudio vai direto ao servidor: o iPhone pede o som em pedaços e o intermediário atrapalha
-  if (new URL(req.url).pathname.includes('/sons/')) return;
+  if (new URL(req.url).pathname.includes('/sons/') || new URL(req.url).pathname.endsWith('.mp4')) return;
   e.respondWith(
     fetch(req)
       .then((resp) => {
